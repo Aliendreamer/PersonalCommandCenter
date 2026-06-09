@@ -9,7 +9,9 @@
     "build": "nx run-many -t build",
     "typecheck": "nx run-many -t typecheck",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "release": "node tools/release.mjs",
+    "release:dry": "node tools/release.mjs --dry-run"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

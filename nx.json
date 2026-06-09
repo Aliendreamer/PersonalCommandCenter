@@ -1,5 +1,17 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "release": {
+    "projects": ["web", "@pcc/contracts"],
+    "projectsRelationship": "fixed",
+    "releaseTagPattern": "v{version}",
+    "version": {
+      "conventionalCommits": true
+    },
+    "changelog": {
+      "workspaceChangelog": true,
+      "projectChangelogs": false
+    }
+  },
   "namedInputs": {
     "default": ["{projectRoot}/**/*", "sharedGlobals"],
     "production": [
