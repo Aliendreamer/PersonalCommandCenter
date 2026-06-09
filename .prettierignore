@@ -13,3 +13,9 @@ pnpm-lock.yaml
 openspec
 docs
 *.md
+
+# .NET projects (handled by dotnet format, not prettier)
+apps/core-api
+plugins/*/*.api
+libs/plugin-abstractions
+tests

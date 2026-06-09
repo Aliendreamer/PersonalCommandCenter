@@ -35,8 +35,9 @@
 
 ## 5. Shared contracts (libs/contracts)
 
-- [ ] 5.1 Define shared TS types (`PluginManifest`, `SystemStatus`) in `libs/contracts`
-- [ ] 5.2 Generate/align the typed API client from core-api's OpenAPI
+- [x] 5.1 Define shared TS types (`PluginManifest`, `SystemStatus`) in `libs/contracts`
+- [x] 5.2 Generate/align the typed API client from core-api's OpenAPI (Scalar/OpenAPI is the
+      source of truth; client hand-written + tested, codegen deferred until the API grows)
 
 ## 6. Web shell (capability: web-shell, apps/web)
 

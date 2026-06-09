@@ -30,6 +30,8 @@ importers:
         specifier: ^4.1.8
         version: 4.1.8(vite@8.0.16(yaml@2.9.0))
 
+  libs/contracts: {}
+
 packages:
 
   '@emnapi/core@1.10.0':

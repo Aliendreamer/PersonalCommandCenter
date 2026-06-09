@@ -16,9 +16,8 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
-    "baseUrl": ".",
     "paths": {
-      "@pcc/contracts": ["libs/contracts/src/index.ts"]
+      "@pcc/contracts": ["./libs/contracts/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "dist"]
