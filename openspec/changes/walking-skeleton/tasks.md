@@ -25,13 +25,13 @@
 
 ## 4. System plugin (capability: system-plugin)
 
-- [ ] 4.1 Create `plugins/system/system.api` implementing `IPlugin`
-- [ ] 4.2 (TDD) Write a failing test: `GET /api/system/status` returns
+- [x] 4.1 Create `plugins/system/system.api` implementing `IPlugin`
+- [x] 4.2 (TDD) Write a failing test: `GET /api/system/status` returns
       `{ apiHealthy, version, uptime, hostname }`
-- [ ] 4.3 Implement the status endpoint until 4.2 passes
-- [ ] 4.4 (TDD) Write a failing test: with `Plugins:System:Enabled = false`, status is
+- [x] 4.3 Implement the status endpoint until 4.2 passes
+- [x] 4.4 (TDD) Write a failing test: with `Plugins:System:Enabled = false`, status is
       unserved and `system` is absent from `/api/plugins`
-- [ ] 4.5 Implement/verify config-driven round-trip until 4.4 passes
+- [x] 4.5 Implement/verify config-driven round-trip until 4.4 passes
 
 ## 5. Shared contracts (libs/contracts)
 

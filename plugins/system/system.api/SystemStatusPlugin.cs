@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,10 +9,12 @@ namespace Pcc.Plugins.SystemPlugin;
 
 /// <summary>
 /// The sample plugin. Exercises every layer of the host: discovery, config-driven
-/// activation, manifest, and (in task 4) a status endpoint plus UI surfaces.
+/// activation, manifest, a status endpoint, and (in the UI lib) dashboard surfaces.
 /// </summary>
 public sealed class SystemStatusPlugin : IPlugin
 {
+    private static readonly DateTimeOffset StartedAt = DateTimeOffset.UtcNow;
+
     public string Id => "system";
 
     public PluginManifest Manifest { get; } =
@@ -21,8 +25,16 @@ public sealed class SystemStatusPlugin : IPlugin
         // No services needed yet.
     }
 
-    public void MapEndpoints(IEndpointRouteBuilder endpoints)
-    {
-        // Status endpoint added via TDD in task 4.
-    }
+    public void MapEndpoints(IEndpointRouteBuilder endpoints) =>
+        endpoints.MapGet("/api/system/status", () => Results.Ok(CurrentStatus()));
+
+    private static SystemStatus CurrentStatus() =>
+        new(
+            ApiHealthy: true,
+            Version: typeof(SystemStatusPlugin).Assembly.GetName().Version?.ToString() ?? "0.0.0",
+            UptimeSeconds: Math.Round((DateTimeOffset.UtcNow - StartedAt).TotalSeconds, 3),
+            Hostname: Environment.MachineName);
 }
+
+/// <summary>Live status reported by the system plugin and rendered on the dashboard tile.</summary>
+public sealed record SystemStatus(bool ApiHealthy, string Version, double UptimeSeconds, string Hostname);
