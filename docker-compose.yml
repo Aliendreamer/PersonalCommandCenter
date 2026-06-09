@@ -6,6 +6,8 @@ services:
     environment:
       ASPNETCORE_HTTP_PORTS: '8080'
       Plugins__System__Enabled: 'true'
+      # Restrict CORS to the web shell's browser origin.
+      Web__Origins: 'http://localhost:${WEB_PORT:-3000}'
     ports:
       # Published so the browser (client-side tile) can reach the API at localhost:5080.
       - '${CORE_API_PORT:-5080}:8080'

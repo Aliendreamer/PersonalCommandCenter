@@ -8,9 +8,13 @@ var builder = WebApplication.CreateBuilder(args);
 // OpenAPI document, surfaced through the Scalar API reference UI at /scalar.
 builder.Services.AddOpenApi();
 
-// The web shell calls the API from a different origin (local network); allow it.
+// The web shell calls the API from a different origin (local network). Allow only the
+// configured shell origin(s) — comma-separated in `Web:Origins` — rather than any origin.
+var corsOrigins = (builder.Configuration["Web:Origins"] ?? "http://localhost:3000")
+    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 builder.Services.AddCors(options =>
-    options.AddDefaultPolicy(policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+    options.AddDefaultPolicy(policy =>
+        policy.WithOrigins(corsOrigins).AllowAnyHeader().AllowAnyMethod()));
 
 // Discover and activate plugins before the container is built so each enabled plugin can
 // register its services. Compile-time referenced plugin assemblies are listed here.
