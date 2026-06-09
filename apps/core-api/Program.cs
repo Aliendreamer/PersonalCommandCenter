@@ -1,5 +1,6 @@
 using System.Reflection;
 using CoreApi.Plugins;
+using Pcc.Plugins.Iot;
 using Pcc.Plugins.SystemPlugin;
 using Scalar.AspNetCore;
 
@@ -18,7 +19,7 @@ builder.Services.AddCors(options =>
 
 // Discover and activate plugins before the container is built so each enabled plugin can
 // register its services. Compile-time referenced plugin assemblies are listed here.
-Assembly[] pluginAssemblies = [typeof(SystemStatusPlugin).Assembly];
+Assembly[] pluginAssemblies = [typeof(SystemStatusPlugin).Assembly, typeof(IotPlugin).Assembly];
 
 using var bootstrapLoggerFactory = LoggerFactory.Create(logging => logging.AddConsole());
 var bootstrapLogger = bootstrapLoggerFactory.CreateLogger("Plugins");

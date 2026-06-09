@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\libs\plugin-abstractions\PluginAbstractions.csproj" />
     <ProjectReference Include="..\..\plugins\system\system.api\SystemPlugin.csproj" />
+    <ProjectReference Include="..\..\plugins\iot\iot.api\IotPlugin.csproj" />
   </ItemGroup>
 
   <ItemGroup>

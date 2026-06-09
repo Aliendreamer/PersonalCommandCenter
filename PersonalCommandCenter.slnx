@@ -8,6 +8,10 @@
     <Project Path="libs/plugin-abstractions/PluginAbstractions.csproj" />
   </Folder>
   <Folder Name="/plugins/" />
+  <Folder Name="/plugins/iot/" />
+  <Folder Name="/plugins/iot/iot.api/">
+    <Project Path="plugins/iot/iot.api/IotPlugin.csproj" />
+  </Folder>
   <Folder Name="/plugins/system/" />
   <Folder Name="/plugins/system/system.api/">
     <Project Path="plugins/system/system.api/SystemPlugin.csproj" />
