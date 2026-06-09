@@ -75,4 +75,5 @@
       `prettier --check` (7 frontend tests passing)
 - [x] 9.3 Round-trip verified in containers: with `Plugins__System__Enabled=false`,
       `/api/plugins` → `[]` and `/api/system/status` → 404; enabled → System renders
-- [ ] 9.4 Request code review before merge (user-triggered, e.g. `/code-review`)
+- [x] 9.4 Code review (`/code-review`) completed; findings fixed (CORS origin restriction,
+      same-origin API proxy, discovery GetTypes guard, multi-stage web image, uptime clamp)
