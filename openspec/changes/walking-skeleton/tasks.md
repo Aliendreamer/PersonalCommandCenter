@@ -14,14 +14,14 @@
 
 ## 3. Plugin host (capability: plugin-host)
 
-- [ ] 3.1 (TDD) Write failing unit tests for the registry: enabled plugin activates, disabled
+- [x] 3.1 (TDD) Write failing unit tests for the registry: enabled plugin activates, disabled
       plugin does not, failing plugin is skipped (defensive activation)
-- [ ] 3.2 Define the `IPlugin` contract (`Id`, `Manifest`, `Configure`, `MapEndpoints`) and
+- [x] 3.2 Define the `IPlugin` contract (`Id`, `Manifest`, `Configure`, `MapEndpoints`) and
       the `PluginManifest` model
-- [ ] 3.3 Implement startup discovery + `appsettings` (`Plugins:{id}:Enabled`) activation,
+- [x] 3.3 Implement startup discovery + `appsettings` (`Plugins:{id}:Enabled`) activation,
       passing each plugin its config section; isolate failures (log + skip + continue)
-- [ ] 3.4 (TDD) Write a failing integration test: `GET /api/plugins` lists only enabled plugins
-- [ ] 3.5 Implement the `GET /api/plugins` manifest endpoint until 3.1 and 3.4 pass
+- [x] 3.4 (TDD) Write a failing integration test: `GET /api/plugins` lists only enabled plugins
+- [x] 3.5 Implement the `GET /api/plugins` manifest endpoint until 3.1 and 3.4 pass
 
 ## 4. System plugin (capability: system-plugin)
 

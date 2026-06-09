@@ -20,6 +20,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Lets tests use IServiceCollection / IConfiguration / IEndpointRouteBuilder / logging directly. -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\apps\core-api\CoreApi.csproj" />
   </ItemGroup>
 

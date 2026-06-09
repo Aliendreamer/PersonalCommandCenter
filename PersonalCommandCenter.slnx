@@ -3,6 +3,15 @@
   <Folder Name="/apps/core-api/">
     <Project Path="apps/core-api/CoreApi.csproj" />
   </Folder>
+  <Folder Name="/libs/" />
+  <Folder Name="/libs/plugin-abstractions/">
+    <Project Path="libs/plugin-abstractions/PluginAbstractions.csproj" />
+  </Folder>
+  <Folder Name="/plugins/" />
+  <Folder Name="/plugins/system/" />
+  <Folder Name="/plugins/system/system.api/">
+    <Project Path="plugins/system/system.api/SystemPlugin.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/CoreApi.Tests/CoreApi.Tests.csproj" />
   </Folder>
