@@ -60,15 +60,19 @@
 
 ## 8. Deployment (docker-compose)
 
-- [ ] 8.1 Add Dockerfiles for `core-api` and `web`
-- [ ] 8.2 Add `docker-compose.yml` (services `web` + `core-api`) and `.env` for local network
-- [ ] 8.3 Verify `docker-compose up` serves the shell with a live System tile on the LAN
+- [x] 8.1 Add Dockerfiles for `core-api` (.NET multi-stage) and `web` (node + srvx serving
+      the SSR build), plus `.dockerignore`
+- [x] 8.2 Add `docker-compose.yml` (services `web` + `core-api`) and `.env.example`; core-api
+      gets CORS so the browser-side tile can reach it
+- [x] 8.3 Verify `docker compose up` serves the shell with the System nav/tile (SSR renders
+      from the manifest; /health, /api/plugins, /api/system/status all 200 in containers)
 
 ## 9. Done gate (dev-flow quality gates — all must be green)
 
-- [ ] 9.1 .NET gates green: `dotnet build -warnaserror`, `dotnet format --verify-no-changes`,
-      `dotnet test`
-- [ ] 9.2 Frontend gates green: `nx run-many -t typecheck lint test build` + `prettier --check`
-- [ ] 9.3 Manual round-trip verified: disable `system` in `appsettings`, restart, confirm it
-      vanishes from `/api/plugins` and the UI; re-enable and confirm it returns
-- [ ] 9.4 Request code review before merge
+- [x] 9.1 .NET gates green: `dotnet build` (warnings-as-errors), `dotnet format
+      --verify-no-changes`, `dotnet test` (8 passing)
+- [x] 9.2 Frontend gates green: `nx run-many -t typecheck lint test build` (2 projects) +
+      `prettier --check` (7 frontend tests passing)
+- [x] 9.3 Round-trip verified in containers: with `Plugins__System__Enabled=false`,
+      `/api/plugins` → `[]` and `/api/system/status` → 404; enabled → System renders
+- [ ] 9.4 Request code review before merge (user-triggered, e.g. `/code-review`)

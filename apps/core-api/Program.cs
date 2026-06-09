@@ -8,6 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 // OpenAPI document, surfaced through the Scalar API reference UI at /scalar.
 builder.Services.AddOpenApi();
 
+// The web shell calls the API from a different origin (local network); allow it.
+builder.Services.AddCors(options =>
+    options.AddDefaultPolicy(policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+
 // Discover and activate plugins before the container is built so each enabled plugin can
 // register its services. Compile-time referenced plugin assemblies are listed here.
 Assembly[] pluginAssemblies = [typeof(SystemStatusPlugin).Assembly];
@@ -21,6 +25,8 @@ registry.ActivateEnabled(available, builder.Services, builder.Configuration, boo
 builder.Services.AddSingleton(registry);
 
 var app = builder.Build();
+
+app.UseCors();
 
 app.MapOpenApi();
 app.MapScalarApiReference();

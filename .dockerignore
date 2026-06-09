@@ -1,0 +1,12 @@
+**/node_modules
+**/dist
+**/.output
+**/.nx
+**/bin
+**/obj
+**/coverage
+**/routeTree.gen.ts
+.git
+.remember
+.serena
+.claude
