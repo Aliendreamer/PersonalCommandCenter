@@ -1,0 +1,15 @@
+node_modules
+dist
+.nx
+coverage
+**/bin
+**/obj
+pnpm-lock.yaml
+
+# Tooling, memory, and spec/doc dirs (not application source)
+.claude
+.remember
+.serena
+openspec
+docs
+*.md

@@ -1,9 +1,9 @@
 ## 1. Monorepo & tooling
 
-- [ ] 1.1 Initialize the Nx workspace at repo root (package manager: pnpm)
-- [ ] 1.2 Add the `apps/`, `libs/`, `plugins/` structure and shared TS/lint/prettier config
-- [ ] 1.3 Configure Nx targets: `lint`, `test`, `build`, `typecheck` (so `nx affected` works)
-- [ ] 1.4 Add `.editorconfig` and `Directory.Build.props` (warnings-as-errors) for .NET
+- [x] 1.1 Initialize the Nx workspace at repo root (package manager: pnpm)
+- [x] 1.2 Add the `apps/`, `libs/`, `plugins/` structure and shared TS/lint/prettier config
+- [x] 1.3 Configure Nx targets: `lint`, `test`, `build`, `typecheck` (so `nx affected` works)
+- [x] 1.4 Add `.editorconfig` and `Directory.Build.props` (warnings-as-errors) for .NET
 
 ## 2. Core API skeleton (apps/core-api)
 
