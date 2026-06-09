@@ -81,6 +81,19 @@ A change is done ONLY when ALL of these are true and you have **seen the output*
 All of these mean: stop, run the gate, write the missing test, and confirm green before
 saying done.
 
+## Releasing
+
+Versioning and changelogs use **Nx Release**, driven by Conventional Commits (which this
+flow already produces). One fixed version spans the whole repo — JS and .NET stay in lockstep.
+
+- **Preview:** `pnpm release:dry` — reports the next version + changelog, changes nothing.
+- **Release:** `pnpm release` — bumps versions, stamps `<Version>` into `Directory.Build.props`,
+  updates root `CHANGELOG.md`, then commits `chore(release): vX.Y.Z` and tags `vX.Y.Z`.
+- First release only: `pnpm release --first-release` (seeds the baseline).
+
+Release after a meaningful batch of `feat`/`fix` commits is on `main` and green. Nothing is
+published (private workspace); nothing is pushed (no remote yet).
+
 ## Conventions this flow assumes
 
 - **Plugins are compile-time modules activated via `appsettings`** (`Plugins:{id}:Enabled`).

@@ -18,7 +18,12 @@ const { workspaceVersion } = await releaseVersion({
   stageChanges: false,
 });
 
-if (workspaceVersion && !dryRun) {
+if (!workspaceVersion) {
+  console.log('No release-worthy changes since the last release; nothing to do.');
+  process.exit(0);
+}
+
+if (!dryRun) {
   stampDotNetVersion('Directory.Build.props', workspaceVersion);
 }
 
