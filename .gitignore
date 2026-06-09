@@ -6,6 +6,9 @@ dist
 coverage
 *.tsbuildinfo
 
+# TanStack Router generated route tree
+**/routeTree.gen.ts
+
 # .NET
 bin/
 obj/

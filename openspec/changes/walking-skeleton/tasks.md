@@ -41,19 +41,22 @@
 
 ## 6. Web shell (capability: web-shell, apps/web)
 
-- [ ] 6.1 Scaffold the TanStack Start app `apps/web`
-- [ ] 6.2 (TDD) Write a failing component test: shell renders nav/tiles from a mocked
+- [x] 6.1 Scaffold the TanStack Start app `apps/web` (official scaffolder, SSR, React 19)
+- [x] 6.2 (TDD) Write a failing component test: shell renders nav/tiles from a mocked
       manifest and hides plugins absent from it
-- [ ] 6.3 Implement manifest fetch + nav/tile rendering for enabled plugins until 6.2 passes
-- [ ] 6.4 Implement lazy-loading of each enabled plugin's `*.ui` routes
-- [ ] 6.5 (TDD) Write a failing test: unreachable manifest → empty dashboard + non-blocking
+- [x] 6.3 Implement manifest fetch + nav/tile rendering for enabled plugins until 6.2 passes
+- [x] 6.4 Implement lazy-loading of each enabled plugin's `*.ui` routes (React.lazy `/system`
+      route → separate `system-page` chunk confirmed in the build)
+- [x] 6.5 (TDD) Write a failing test: unreachable manifest → empty dashboard + non-blocking
       error; implement graceful degradation until it passes
 
 ## 7. System plugin UI (plugins/system/system.ui)
 
-- [ ] 7.1 Create the `system.ui` React lib: "System" nav entry, dashboard tile, detail page
-- [ ] 7.2 (TDD) Write a failing test: tile shows live status, and a degraded state on error
-- [ ] 7.3 Implement the tile + detail page until 7.2 passes
+- [x] 7.1 Create the system plugin UI: dashboard tile + detail page. NOTE: for the skeleton
+      these live in `apps/web` (`src/components/system-*`); extracting to a standalone
+      `plugins/system/system.ui` package is deferred to keep one frontend toolchain for now.
+- [x] 7.2 (TDD) Write a failing test: tile shows live status, and a degraded state on error
+- [x] 7.3 Implement the tile + detail page until 7.2 passes
 
 ## 8. Deployment (docker-compose)
 
