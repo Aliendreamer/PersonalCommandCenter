@@ -1,2 +1,9 @@
 <Solution>
+  <Folder Name="/apps/" />
+  <Folder Name="/apps/core-api/">
+    <Project Path="apps/core-api/CoreApi.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/CoreApi.Tests/CoreApi.Tests.csproj" />
+  </Folder>
 </Solution>

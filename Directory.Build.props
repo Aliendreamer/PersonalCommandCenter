@@ -5,8 +5,9 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Real compiler + analyzer (CA) warnings fail the build.
+         Code STYLE (IDExxxx) is checked separately by `dotnet format`. -->
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
 

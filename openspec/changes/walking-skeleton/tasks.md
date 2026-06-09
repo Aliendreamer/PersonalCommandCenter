@@ -7,10 +7,10 @@
 
 ## 2. Core API skeleton (apps/core-api)
 
-- [ ] 2.1 Scaffold the .NET minimal-API project `apps/core-api` with a `/health` endpoint
-- [ ] 2.2 Add the xUnit test project for core-api
-- [ ] 2.3 (TDD) Write a failing integration test: `GET /health` returns 200
-- [ ] 2.4 Implement until 2.3 passes
+- [x] 2.1 Scaffold the .NET minimal-API project `apps/core-api` with a `/health` endpoint
+- [x] 2.2 Add the xUnit test project for core-api
+- [x] 2.3 (TDD) Write a failing integration test: `GET /health` returns 200
+- [x] 2.4 Implement until 2.3 passes
 
 ## 3. Plugin host (capability: plugin-host)
 

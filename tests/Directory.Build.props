@@ -1,0 +1,12 @@
+<Project>
+
+  <!-- Inherit the repo-root build settings, then relax test-only analyzer rules. -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <!-- Allow Method_under_test_naming in tests. -->
+    <NoWarn>$(NoWarn);CA1707</NoWarn>
+  </PropertyGroup>
+
+</Project>
