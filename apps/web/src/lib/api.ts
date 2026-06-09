@@ -1,15 +1,17 @@
 import { createApiClient } from '@pcc/contracts'
 
 /**
- * Base URL for the core-api. During SSR the server reads `API_URL` at runtime (e.g. the
- * docker service name); otherwise it falls back to the local dev port.
+ * Base URL for the core-api.
+ * - Server (SSR): call core-api directly via `API_URL` (the compose service / dev port).
+ * - Browser: same-origin (empty base); the web server proxies `/api/*` to core-api
+ *   (see `routes/api/$.ts`), so no API host is hardcoded in client code.
  */
 function resolveBaseUrl(): string {
-  const fromServerEnv =
-    typeof process !== 'undefined' ? process.env.API_URL : undefined
-  return (
-    fromServerEnv ?? import.meta.env.VITE_API_URL ?? 'http://localhost:5080'
-  )
+  const isServer = typeof window === 'undefined'
+  if (isServer) {
+    return process.env.API_URL ?? 'http://localhost:5080'
+  }
+  return ''
 }
 
 export const api = createApiClient(resolveBaseUrl())

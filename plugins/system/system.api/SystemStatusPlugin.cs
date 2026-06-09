@@ -32,7 +32,7 @@ public sealed class SystemStatusPlugin : IPlugin
         new(
             ApiHealthy: true,
             Version: typeof(SystemStatusPlugin).Assembly.GetName().Version?.ToString() ?? "0.0.0",
-            UptimeSeconds: Math.Round((DateTimeOffset.UtcNow - StartedAt).TotalSeconds, 3),
+            UptimeSeconds: Math.Round(Math.Max(0, (DateTimeOffset.UtcNow - StartedAt).TotalSeconds), 3),
             Hostname: Environment.MachineName);
 }
 
