@@ -20,4 +20,11 @@ describe('createApiClient', () => {
 
     await expect(client.getSystemStatus()).rejects.toThrow('status 500');
   });
+
+  it('fetches IoT entities from /api/iot/entities', async () => {
+    const entities = [{ entityId: 'light.kitchen', name: 'Kitchen', domain: 'light', state: 'on' }];
+    const client = createApiClient('http://api', jsonFetch(entities));
+
+    await expect(client.getIotEntities()).resolves.toEqual(entities);
+  });
 });

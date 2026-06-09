@@ -3,6 +3,7 @@ import type { PluginManifest } from '@pcc/contracts'
 import { api } from '../lib/api'
 import { PluginShell } from '../components/plugin-shell'
 import { SystemTile } from '../components/system-tile'
+import { IotSummaryTile } from '../components/iot-summary-tile'
 
 interface DashboardData {
   manifests: PluginManifest[]
@@ -28,9 +29,11 @@ function Home() {
     <PluginShell
       manifests={manifests}
       error={error}
-      renderTile={(manifest) =>
-        manifest.widgets.includes('system-status') ? <SystemTile /> : null
-      }
+      renderTile={(manifest) => {
+        if (manifest.widgets.includes('system-status')) return <SystemTile />
+        if (manifest.widgets.includes('iot-summary')) return <IotSummaryTile />
+        return null
+      }}
     />
   )
 }

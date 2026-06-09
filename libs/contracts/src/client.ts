@@ -1,10 +1,11 @@
-import type { PluginManifest, SystemStatus } from './types';
+import type { IotEntity, PluginManifest, SystemStatus } from './types';
 
 type FetchLike = typeof fetch;
 
 export interface ApiClient {
   getPlugins(): Promise<PluginManifest[]>;
   getSystemStatus(): Promise<SystemStatus>;
+  getIotEntities(): Promise<IotEntity[]>;
 }
 
 /**
@@ -23,5 +24,6 @@ export function createApiClient(baseUrl: string, fetchImpl: FetchLike = fetch): 
   return {
     getPlugins: () => getJson<PluginManifest[]>('/api/plugins'),
     getSystemStatus: () => getJson<SystemStatus>('/api/system/status'),
+    getIotEntities: () => getJson<IotEntity[]>('/api/iot/entities'),
   };
 }

@@ -13,3 +13,12 @@ export interface SystemStatus {
   uptimeSeconds: number;
   hostname: string;
 }
+
+/** Mirrors the backend `IotEntity` returned by `GET /api/iot/entities`. */
+export interface IotEntity {
+  entityId: string;
+  name: string;
+  domain: string;
+  state: string;
+  unit?: string | null;
+}
