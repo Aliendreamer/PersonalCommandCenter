@@ -50,6 +50,29 @@
       "Bash(git branch --delete --force*)"
     ]
   },
+  "sandbox": {
+    "enabled": true,
+    "network": {
+      "allowedDomains": [
+        "localhost",
+        "127.0.0.1",
+        "*.pcc.localhost",
+        "registry.npmjs.org",
+        "*.nuget.org",
+        "github.com",
+        "*.githubusercontent.com",
+        "ghcr.io",
+        "quay.io",
+        "*.docker.io"
+      ]
+    },
+    "filesystem": {
+      "allowWrite": [
+        "/home/aliendreamer/projects/PersonalCommandCenter",
+        "/tmp"
+      ]
+    }
+  },
   "hooks": {
     "PreToolUse": [
       {
