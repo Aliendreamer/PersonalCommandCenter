@@ -98,6 +98,14 @@ skill and `openspec/`). Commit directly on `main` (no `feat/*` branches for now)
 `dotnet build` + `dotnet test` + `dotnet format --verify-no-changes` and
 `pnpm typecheck/lint/test/build` + `pnpm format:check`.
 
+**Frontend (apps/web) — always load TanStack skills first.** Before substantial frontend work,
+run the TanStack intent skill check and load the matching skill (see `AGENTS.md`):
+
+```bash
+pnpm dlx @tanstack/intent@latest list                 # see available skills
+pnpm dlx @tanstack/intent@latest load <package>#<skill> # then follow the returned SKILL.md
+```
+
 ## Gotchas
 
 - **Warnings are errors** (`Directory.Build.props`: `TreatWarningsAsErrors=true`). Compiler +
