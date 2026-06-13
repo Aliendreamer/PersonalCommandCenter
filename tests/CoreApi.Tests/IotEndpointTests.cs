@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
+using CoreApi.Tests.Auth;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Pcc.Plugins.Iot;
 
@@ -13,10 +13,10 @@ public class IotEndpointTests(WebApplicationFactory<Program> factory)
     private readonly WebApplicationFactory<Program> _factory = factory;
 
     [Fact]
-    public async Task Lists_entities_when_enabled()
+    public async Task Lists_entities_when_enabled_and_authenticated()
     {
         var entities = new List<IotEntity> { new("light.kitchen", "Kitchen", "light", "on", null) };
-        var client = WithHaClient(new FakeClient(entities)).CreateClient();
+        var client = AuthedWithHa(new FakeClient(entities));
 
         var result = await client.GetFromJsonAsync<List<EntityDto>>("/api/iot/entities");
 
@@ -25,9 +25,17 @@ public class IotEndpointTests(WebApplicationFactory<Program> factory)
     }
 
     [Fact]
+    public async Task Requires_authentication()
+    {
+        var response = await _factory.CreateClient().GetAsync("/api/iot/entities");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Returns_502_when_home_assistant_fails()
     {
-        var client = WithHaClient(new ThrowingClient()).CreateClient();
+        var client = AuthedWithHa(new ThrowingClient());
 
         var response = await client.GetAsync("/api/iot/entities");
 
@@ -41,7 +49,7 @@ public class IotEndpointTests(WebApplicationFactory<Program> factory)
         try
         {
             await using var factory = new WebApplicationFactory<Program>();
-            var client = factory.CreateClient();
+            var client = factory.AuthedClient();
 
             var entitiesResponse = await client.GetAsync("/api/iot/entities");
             var plugins = await client.GetFromJsonAsync<List<PluginDto>>("/api/plugins");
@@ -56,9 +64,12 @@ public class IotEndpointTests(WebApplicationFactory<Program> factory)
         }
     }
 
-    private WebApplicationFactory<Program> WithHaClient(IHomeAssistantClient client) =>
-        _factory.WithWebHostBuilder(builder =>
-            builder.ConfigureTestServices(services => services.AddSingleton(client)));
+    private HttpClient AuthedWithHa(IHomeAssistantClient ha)
+    {
+        var client = _factory.Authed(s => s.AddSingleton(ha)).CreateClient();
+        client.DefaultRequestHeaders.Add(TestAuthHandler.Header, "1");
+        return client;
+    }
 
     private sealed record EntityDto(string EntityId, string Name, string Domain, string State, string? Unit);
 

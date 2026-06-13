@@ -62,7 +62,7 @@
       `Callback` (stubbed Keycloak token endpoint → `mp_sid` + 302 to `{AppBaseUrl}{returnTo}`),
       `Logout` (revoke + clear), `Me` (`GET api/me` → 200 authed / 401 anon); revocation test
       (login → capture `mp_sid` → logout → reuse → 401).
-- [ ] 3.9 (TDD) Gate all non-auth endpoints (default authorization); keep health anonymous; update
+- [x] 3.9 (TDD) Gate all non-auth endpoints (default authorization); keep health anonymous; update
       `PluginsEndpointTests`/`SystemStatusTests`/`IotEndpointTests` for 401-anon / 200-authed (iot 502
       when HA down, authed).
 - [x] 3.10 .NET gates green (build `-warnaserror` · format · test, incl. new auth tests + migrations).

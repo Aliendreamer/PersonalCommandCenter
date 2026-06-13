@@ -27,7 +27,6 @@ internal sealed class GetIotEntitiesEndpoint : EndpointWithoutRequest<IReadOnlyL
     public override void Configure()
     {
         Get("/iot/entities");
-        AllowAnonymous();
     }
 
     // The client is resolved lazily (not constructor-injected) so the host can instantiate this

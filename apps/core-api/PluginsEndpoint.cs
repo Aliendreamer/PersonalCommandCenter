@@ -11,7 +11,6 @@ internal sealed class PluginsEndpoint(PluginRegistry registry)
     public override void Configure()
     {
         Get("/plugins");
-        AllowAnonymous();
     }
 
     public override Task HandleAsync(CancellationToken ct) =>

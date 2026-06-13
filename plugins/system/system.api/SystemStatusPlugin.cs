@@ -32,7 +32,6 @@ internal sealed class SystemStatusEndpoint : EndpointWithoutRequest<SystemStatus
     public override void Configure()
     {
         Get("/system/status");
-        AllowAnonymous();
     }
 
     public override Task HandleAsync(CancellationToken ct) =>
