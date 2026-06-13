@@ -1,0 +1,12 @@
+# Home Assistant config, managed in git and mounted read-only over /config/configuration.yaml
+# so the reverse-proxy setup is reproducible on a fresh volume (HA state still lives in the
+# ha-config volume; this file just configures HA itself).
+#
+# default_config pulls in the standard integrations (frontend, sun, etc.). The http block makes
+# HA accept requests forwarded by Traefik (otherwise ha.pcc.localhost returns 400).
+default_config:
+
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 172.20.0.0/16 # the compose network (Traefik)

@@ -85,6 +85,8 @@ services:
     image: ghcr.io/home-assistant/home-assistant:stable
     volumes:
       - ha-config:/config
+      # Reverse-proxy config managed in git (overlays the volume's configuration.yaml).
+      - ./harness/home-assistant/configuration.yaml:/config/configuration.yaml:ro
     labels:
       - traefik.enable=true
       - 'traefik.http.routers.ha.rule=Host(`ha.pcc.localhost`)'
