@@ -8,7 +8,17 @@ import { stampDotNetVersion } from './stamp-dotnet-version.mjs';
 const dryRun = process.argv.includes('--dry-run');
 const firstRelease = process.argv.includes('--first-release');
 
-const { workspaceVersion } = await releaseVersion({
+// The release makes one all-encompassing `git add -A` commit, so the tree must be clean first —
+// otherwise unrelated changes get swept into the release commit.
+if (!dryRun) {
+  const dirty = execFileSync('git', ['status', '--porcelain']).toString().trim();
+  if (dirty) {
+    console.error('Working tree is not clean; commit or stash changes before releasing:\n' + dirty);
+    process.exit(1);
+  }
+}
+
+const { workspaceVersion, projectsVersionData } = await releaseVersion({
   dryRun,
   firstRelease,
   // Seed the very first release at 0.1.0; afterwards Conventional Commits drive the bump.
@@ -31,6 +41,9 @@ await releaseChangelog({
   dryRun,
   firstRelease,
   version: workspaceVersion,
+  // Required: without the per-project version data the changelog renders empty section
+  // headers (no feat/fix entries).
+  versionData: projectsVersionData,
   gitCommit: false,
   gitTag: false,
   stageChanges: false,
