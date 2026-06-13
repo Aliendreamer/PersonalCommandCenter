@@ -8,6 +8,10 @@ COPY apps/web/package.json apps/web/
 RUN pnpm install --frozen-lockfile
 COPY libs/contracts/ libs/contracts/
 COPY apps/web/ apps/web/
+# API origin baked into the client bundle (browser → API directly). Origin only; the client
+# appends /api/...
+ARG VITE_API_URL=http://api.pcc.localhost
+ENV VITE_API_URL=$VITE_API_URL
 RUN pnpm --filter web build
 
 # Runtime stage: only production deps + the built output (the SSR entry imports framework

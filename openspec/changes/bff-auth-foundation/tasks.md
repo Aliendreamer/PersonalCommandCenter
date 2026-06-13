@@ -69,18 +69,18 @@
 
 ## 4. Frontend (TDD; whole app behind login)
 
-- [ ] 4.1 Remove the FE→API server proxy (`routes/api/$.ts`) and the SSR `API_URL` hop; set
+- [x] 4.1 Remove the FE→API server proxy (`routes/api/$.ts`) and the SSR `API_URL` hop; set
       `VITE_API_URL=http://api.pcc.localhost/api`.
-- [ ] 4.2 (TDD) Extend `lib/api.ts`: `credentials:'include'`, `ApiError` on non-2xx, `401` (except a
+- [x] 4.2 (TDD) Extend `lib/api.ts`: `credentials:'include'`, `ApiError` on non-2xx, `401` (except a
       `skipAuthRedirect` flag) → full-page redirect to `api/auth/login?returnTo=<path>` → tests.
-- [ ] 4.3 (TDD) `lib/auth/auth-api.ts`: `Me` + `fetchMe` + `meQueryOptions` (client-only,
+- [x] 4.3 (TDD) `lib/auth/auth-api.ts`: `Me` + `fetchMe` + `meQueryOptions` (client-only,
       `retry:false`) + `ensureMe` + `login(returnTo)`/`logout()` + `requireAuth`/`requireRole` +
       `ADMIN_ROLE` → tests.
-- [ ] 4.4 `lib/auth/AuthProvider.tsx` (context + `useAuth`) → test.
-- [ ] 4.5 (TDD) Authed-layout route wrapping app routes (`beforeLoad` → `ensureMe` → 401 redirect);
+- [x] 4.4 `lib/auth/AuthProvider.tsx` (context + `useAuth`) → test.
+- [x] 4.5 (TDD) Authed-layout route wrapping app routes (`beforeLoad` → `ensureMe` → 401 redirect);
       `plugin-shell` fetches `/api/plugins` after auth; adapt `plugin-shell.test`.
-- [ ] 4.6 (TDD) Nav identity/logout chip (`{name} · roles · Logout`) + `forbidden.tsx` → tests.
-- [ ] 4.7 `pnpm --filter web generate-routes`; FE gates green: `nx affected -t typecheck lint test
+- [x] 4.6 (TDD) Nav identity/logout chip (`{name} · roles · Logout`) + `forbidden.tsx` → tests.
+- [x] 4.7 `pnpm --filter web generate-routes`; FE gates green: `nx affected -t typecheck lint test
       build` + `prettier --check`.
 
 ## 5. E2E verification + done gate
