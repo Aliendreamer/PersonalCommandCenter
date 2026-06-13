@@ -51,7 +51,7 @@
     ]
   },
   "sandbox": {
-    "enabled": true,
+    "enabled": false,
     "network": {
       "allowedDomains": [
         "localhost",
@@ -64,7 +64,8 @@
         "ghcr.io",
         "quay.io",
         "*.docker.io"
-      ]
+      ],
+      "allowAllUnixSockets": true
     },
     "filesystem": {
       "allowWrite": [
