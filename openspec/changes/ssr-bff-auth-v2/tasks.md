@@ -1,15 +1,15 @@
 ## 1. Substrate & config cutover (api. internal-only)
 
-- [ ] 1.1 `harness/traefik/dynamic.yml`: remove the `api.pcc.localhost` router/service (core-api
+- [x] 1.1 `harness/traefik/dynamic.yml`: remove the `api.pcc.localhost` router/service (core-api
       stays reachable only as `core-api:8080` on the compose network). Keep `app.`/`keycloak.`/`ha.`/
       `portainer.`.
-- [ ] 1.2 `harness/keycloak/Pcc-realm.json`: change client `pcc_api` `redirectUris` to
+- [x] 1.2 `harness/keycloak/Pcc-realm.json`: change client `pcc_api` `redirectUris` to
       `http://app.pcc.localhost/api/auth/callback` (keep `webOrigins` = `http://app.pcc.localhost`).
-- [ ] 1.3 `docker-compose.yml` core-api env: `Auth__Keycloak__CallbackUri` →
+- [x] 1.3 `docker-compose.yml` core-api env: `Auth__Keycloak__CallbackUri` →
       `http://app.pcc.localhost/api/auth/callback`.
-- [ ] 1.4 `apps/web/Dockerfile` + compose `web`: server-side `API_URL=http://core-api:8080` (used by
+- [x] 1.4 `apps/web/Dockerfile` + compose `web`: server-side `API_URL=http://core-api:8080` (used by
       server functions); drop the browser `VITE_API_URL` build arg.
-- [ ] 1.5 `docker compose config` valid; note that `core-api` no longer publishes via Traefik.
+- [x] 1.5 `docker compose config` valid; note that `core-api` no longer publishes via Traefik.
 
 ## 2. SSR auth proxy + cookie re-homing (TDD)
 

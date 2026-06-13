@@ -3,10 +3,8 @@
 # their compose-internal DNS names; the standalone Portainer via the host gateway.
 http:
   routers:
-    api:
-      rule: "Host(`api.pcc.localhost`)"
-      entryPoints: ["web"]
-      service: api
+    # NOTE: no api.pcc.localhost route — core-api is internal only (SSR-BFF). The web SSR server
+    # is the sole public ingress; it proxies /api/auth/* and fetches data from core-api:8080.
     app:
       rule: "Host(`app.pcc.localhost`)"
       entryPoints: ["web"]
@@ -24,10 +22,6 @@ http:
       entryPoints: ["web"]
       service: portainer
   services:
-    api:
-      loadBalancer:
-        servers:
-          - url: "http://core-api:8080"
     app:
       loadBalancer:
         servers:

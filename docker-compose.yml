@@ -60,7 +60,7 @@ services:
       Auth__Keycloak__Authority: 'http://keycloak.pcc.localhost/realms/Pcc'
       Auth__Keycloak__ClientId: 'pcc_api'
       Auth__Keycloak__ClientSecret: '${KEYCLOAK_CLIENT_SECRET:-pcc-dev-secret}'
-      Auth__Keycloak__CallbackUri: 'http://api.pcc.localhost/api/auth/callback'
+      Auth__Keycloak__CallbackUri: 'http://app.pcc.localhost/api/auth/callback'
       Auth__Keycloak__AppBaseUrl: 'http://app.pcc.localhost'
       Auth__Keycloak__PostLogoutRedirectUri: 'http://app.pcc.localhost'
       Auth__Cookies__Domain: '.pcc.localhost'
@@ -96,10 +96,10 @@ services:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
-      args:
-        VITE_API_URL: 'http://api.pcc.localhost'
     environment:
       PORT: '3000'
+      # Server-side only: the SSR server (BFF) calls core-api over the internal network.
+      # The browser never gets an API URL — it only talks to this SSR server.
       API_URL: 'http://core-api:8080'
     depends_on:
       - core-api
