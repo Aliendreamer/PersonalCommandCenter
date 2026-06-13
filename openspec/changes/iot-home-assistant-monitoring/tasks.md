@@ -44,7 +44,12 @@
 
 - [x] 7.1 .NET gates green: `dotnet build`, `dotnet format --verify-no-changes`, `dotnet test`
 - [x] 7.2 Frontend gates green: `nx run-many -t typecheck lint test build` + `prettier --check`
-- [~] 7.3 E2E: container wiring verified WITHOUT HA — `/api/plugins` includes `iot`,
-      `/api/iot/entities` → 502 (degraded), SSR renders the Devices nav + iot-summary tile.
-      REMAINING (manual, needs you): `docker compose up`, onboard HA at http://localhost:8123,
-      create a long-lived token into `.env` (HA_TOKEN), confirm `/devices` lists real entities.
+- [x] 7.3 E2E (full stack via docker compose + Home Assistant): onboarded HA, minted a
+      long-lived token into `.env`, and confirmed real data end-to-end — `/api/plugins`
+      includes `iot`, `/api/iot/entities` → 200 with real HA entities (sun/backup sensors),
+      `/devices` renders them grouped by domain, and the dashboard `iot-summary` tile shows
+      "10 devices · 0 on". Degraded path also verified (no token → `/api/iot/entities` 502).
+      Fixed a latent web-serving bug found during E2E: srvx resolves `--static` relative to
+      the server entry dir, so `-s dist/client` silently disabled static serving (all
+      `/assets/*` 404, page stuck on "Loading…"); corrected to `-s ../client` in the web
+      Dockerfile + package.json `start`.

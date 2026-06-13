@@ -24,4 +24,8 @@ COPY --from=build /repo/apps/web/dist apps/web/dist
 WORKDIR /repo/apps/web
 ENV PORT=3000
 EXPOSE 3000
-CMD ["pnpm", "exec", "srvx", "--prod", "-s", "dist/client", "dist/server/server.js"]
+# srvx resolves --static relative to the SERVER ENTRY's directory (dist/server), not the
+# cwd — so the client assets (dist/client, a sibling of dist/server) must be given as
+# ../client. With plain "dist/client" srvx silently disables static serving and every
+# /assets/* + favicon request 404s, leaving the SSR shell stuck on "Loading…".
+CMD ["pnpm", "exec", "srvx", "--prod", "-s", "../client", "dist/server/server.js"]

@@ -10,7 +10,7 @@
     "dev": "vite dev --port 3000",
     "generate-routes": "tsr generate",
     "build": "vite build",
-    "start": "srvx --prod -s dist/client dist/server/server.js",
+    "start": "srvx --prod -s ../client dist/server/server.js",
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsr generate && tsc --noEmit",
