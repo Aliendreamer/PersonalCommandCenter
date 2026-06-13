@@ -44,7 +44,7 @@
       Serilog, security headers.
 - [x] 3.2 (TDD) `OidcProtocol` unit tests (PKCE S256, state round-trip + tamper-reject, `returnTo`
       sanitize cases, session-token gen + **hash-only**, JWT `sub` read) → implement `OidcProtocol`.
-- [ ] 3.3 `PccDbContext` + `User`/`UserSession` (+ `AuditableEntity`) configured inline in
+- [x] 3.3 `PccDbContext` + `User`/`UserSession` (+ `AuditableEntity`) configured inline in
       `OnModelCreating`; migrations `AddUsers`/`AddUserSessions`; design-time factory; EF migrate on
       startup.
 - [x] 3.4 (TDD) `SessionService` tests (EF InMemory + Moq `KeycloakClient`): create→persist hash,
@@ -54,11 +54,11 @@
       `HttpMessageHandler`) → implement `KeycloakClient : IKeycloakClient` + discovery.
 - [x] 3.6 (TDD) `CurrentUser` tests (JIT upsert by `sub`, cached, roles from `realm_access`) →
       implement `CurrentUser : ICurrentUser` (FusionCache `sub→id`).
-- [ ] 3.7 Composition root: `AddAuthentication(JwtBearer)` + `CookieJwtBearerEvents.OnMessageReceived`
+- [x] 3.7 Composition root: `AddAuthentication(JwtBearer)` + `CookieJwtBearerEvents.OnMessageReceived`
       → `SessionService`; bind `AuthOptions` (`Keycloak`/`Cookies`/`Store`); CORS (exact app origin +
       `AllowCredentials`); `CurrentUserPreProcessor` (global); `SessionCleanupHostedService`; named
       Keycloak `HttpClient`; security headers + Serilog request logging.
-- [ ] 3.8 (TDD) Auth endpoints + integration tests: `Login` (`GET api/auth/login` → 302 + `mp_pkce`),
+- [x] 3.8 (TDD) Auth endpoints + integration tests: `Login` (`GET api/auth/login` → 302 + `mp_pkce`),
       `Callback` (stubbed Keycloak token endpoint → `mp_sid` + 302 to `{AppBaseUrl}{returnTo}`),
       `Logout` (revoke + clear), `Me` (`GET api/me` → 200 authed / 401 anon); revocation test
       (login → capture `mp_sid` → logout → reuse → 401).
