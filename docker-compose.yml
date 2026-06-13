@@ -71,6 +71,8 @@ services:
         condition: service_started
       home-assistant:
         condition: service_started
+    volumes:
+      - pcc-dataprotection:/keys
     # The Keycloak issuer URL must resolve to the same host from inside this container.
     extra_hosts:
       - 'keycloak.pcc.localhost:host-gateway'
@@ -107,3 +109,4 @@ services:
 volumes:
   ha-config:
   pcc-postgres:
+  pcc-dataprotection:

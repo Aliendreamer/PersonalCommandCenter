@@ -5,6 +5,7 @@ using CoreApi.Data;
 using CoreApi.Plugins;
 using FastEndpoints;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Pcc.Plugins.Iot;
@@ -34,6 +35,15 @@ builder.Services.AddHttpClient<IKeycloakClient, KeycloakClient>();
 builder.Services.AddScoped<ISessionService, SessionService>();
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 builder.Services.AddHostedService<SessionCleanupHostedService>();
+
+// Persist DataProtection keys to a mounted volume so they survive container restarts
+// (Development/tests use the default ephemeral keystore).
+if (!builder.Environment.IsDevelopment())
+{
+    builder.Services.AddDataProtection()
+        .PersistKeysToFileSystem(new DirectoryInfo("/keys"))
+        .SetApplicationName("pcc-core-api");
+}
 
 // JwtBearer validates the Keycloak access token; the token is sourced from the mp_sid cookie.
 var keycloak = builder.Configuration.GetSection("Auth:Keycloak").Get<KeycloakSettings>() ?? new KeycloakSettings();
