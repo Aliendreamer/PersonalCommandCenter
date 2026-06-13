@@ -85,14 +85,14 @@
 
 ## 5. E2E verification + done gate
 
-- [ ] 5.1 `docker compose up -d --build` → traefik/keycloak/postgres/core-api/web/ha healthy; realm
+- [x] 5.1 `docker compose up -d --build` → traefik/keycloak/postgres/core-api/web/ha healthy; realm
       imports; `portainer.pcc.localhost` route resolves to the standalone instance.
-- [ ] 5.2 Playwright E2E: `app.pcc.localhost` logged-out → login `testuser/Test123!` → dashboard
+- [x] 5.2 Playwright E2E: `app.pcc.localhost` logged-out → login `testuser/Test123!` → dashboard
       renders (system + iot tiles) → `GET api/me` 200 with cookie, 401 without → **revocation**
       (logout → reuse cookie → 401).
-- [ ] 5.3 Re-verify the IoT path behind auth on `api.pcc.localhost` (entities load; 502-degraded when
+- [x] 5.3 Re-verify the IoT path behind auth on `api.pcc.localhost` (entities load; 502-degraded when
       HA down).
-- [ ] 5.4 Full gates green: .NET (build `-warnaserror` · format · test) + FE (typecheck · lint · test
+- [x] 5.4 Full gates green: .NET (build `-warnaserror` · format · test) + FE (typecheck · lint · test
       · build · prettier); update `CLAUDE.md` (auth substrate, `*.pcc.localhost`, FastEndpoints,
       Keycloak/Postgres).
-- [ ] 5.5 Mark all tasks complete; ready for `/opsx:archive`.
+- [x] 5.5 Mark all tasks complete; ready for `/opsx:archive`.
