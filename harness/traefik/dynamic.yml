@@ -6,39 +6,39 @@ http:
     # NOTE: no api.pcc.localhost route — core-api is internal only (SSR-BFF). The web SSR server
     # is the sole public ingress; it proxies /api/auth/* and fetches data from core-api:8080.
     app:
-      rule: "Host(`app.pcc.localhost`)"
-      entryPoints: ["web"]
+      rule: 'Host(`app.pcc.localhost`)'
+      entryPoints: ['web']
       service: app
     keycloak:
-      rule: "Host(`keycloak.pcc.localhost`)"
-      entryPoints: ["web"]
+      rule: 'Host(`keycloak.pcc.localhost`)'
+      entryPoints: ['web']
       service: keycloak
     ha:
-      rule: "Host(`ha.pcc.localhost`)"
-      entryPoints: ["web"]
+      rule: 'Host(`ha.pcc.localhost`)'
+      entryPoints: ['web']
       service: ha
     portainer:
-      rule: "Host(`portainer.pcc.localhost`)"
-      entryPoints: ["web"]
+      rule: 'Host(`portainer.pcc.localhost`)'
+      entryPoints: ['web']
       service: portainer
   services:
     app:
       loadBalancer:
         servers:
-          - url: "http://web:3000"
+          - url: 'http://web:3000'
     keycloak:
       loadBalancer:
         servers:
-          - url: "http://keycloak:8080"
+          - url: 'http://keycloak:8080'
     ha:
       loadBalancer:
         servers:
-          - url: "http://home-assistant:8123"
+          - url: 'http://home-assistant:8123'
     portainer:
       loadBalancer:
         serversTransport: insecure
         servers:
-          - url: "https://host.docker.internal:9443"
+          - url: 'https://host.docker.internal:9443'
   serversTransports:
     insecure:
       insecureSkipVerify: true

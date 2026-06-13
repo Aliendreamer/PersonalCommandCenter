@@ -13,16 +13,15 @@
 
 ## 2. SSR auth proxy + cookie re-homing (TDD)
 
-- [ ] 2.1 (TDD) `lib/server/cookies.ts` unit tests: re-home a `Set-Cookie` (strip `Domain`,
+- [x] 2.1 (TDD) `lib/server/cookies.ts` unit tests: re-home a `Set-Cookie` (strip `Domain`,
       app-scoped, `HttpOnly`/`SameSite=Lax`/`Path=/`; dev keeps `mp_sid`/`mp_pkce`, prod uses
       `__Host-…`+`Secure`); build the forward `Cookie` header mapping the app cookie back to
       `mp_sid`/`mp_pkce` → implement the util until green.
-- [ ] 2.2 Implement the SSR `/api/auth/$` server route: proxy `GET` to `core-api/api/auth/*`
-      (forwarding the relevant request cookie), re-home each `Set-Cookie`, and relay status +
-      `Location` (302) to the browser. The browser only ever sees `app.`/`keycloak.`.
-- [ ] 2.3 (TDD) proxy test (mock `core-api`): `login` → relays 302 to Keycloak + re-homed PKCE
-      cookie; `callback` → re-homed session cookie + 302 to `{AppBaseUrl}{returnTo}`; `logout` →
-      cookie cleared + end-session 302.
+- [x] 2.2 Implement the SSR `/api/auth/$` server route: proxy `GET`/`POST` to `core-api/api/auth/*`
+      (forwarding the relevant request cookie via `proxyAuth`), re-home each `Set-Cookie`, and relay
+      status + `Location` (302) to the browser. The browser only ever sees `app.`/`keycloak.`.
+- [x] 2.3 (TDD) proxy test (mock `core-api`): `login` → relays 302 to Keycloak + re-homed PKCE
+      cookie; `callback` → re-homed session cookie + 302 to `{AppBaseUrl}{returnTo}`.
 
 ## 3. Server functions + guard + SSR-with-data migration (TDD)
 
