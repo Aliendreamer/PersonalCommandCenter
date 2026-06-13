@@ -19,6 +19,10 @@ RUN dotnet publish apps/core-api/CoreApi.csproj -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
+# Npgsql probes GSSAPI/Kerberos; install the lib so it doesn't error on connect.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libgssapi-krb5-2 \
+    && rm -rf /var/lib/apt/lists/*
 COPY --from=build /app/publish ./
 ENV ASPNETCORE_HTTP_PORTS=8080
 EXPOSE 8080

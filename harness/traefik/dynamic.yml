@@ -1,0 +1,50 @@
+# All routing is defined here (file provider) rather than via docker labels — Traefik's docker
+# provider can't negotiate with this Docker daemon (min API 1.40). Services are addressed by
+# their compose-internal DNS names; the standalone Portainer via the host gateway.
+http:
+  routers:
+    api:
+      rule: "Host(`api.pcc.localhost`)"
+      entryPoints: ["web"]
+      service: api
+    app:
+      rule: "Host(`app.pcc.localhost`)"
+      entryPoints: ["web"]
+      service: app
+    keycloak:
+      rule: "Host(`keycloak.pcc.localhost`)"
+      entryPoints: ["web"]
+      service: keycloak
+    ha:
+      rule: "Host(`ha.pcc.localhost`)"
+      entryPoints: ["web"]
+      service: ha
+    portainer:
+      rule: "Host(`portainer.pcc.localhost`)"
+      entryPoints: ["web"]
+      service: portainer
+  services:
+    api:
+      loadBalancer:
+        servers:
+          - url: "http://core-api:8080"
+    app:
+      loadBalancer:
+        servers:
+          - url: "http://web:3000"
+    keycloak:
+      loadBalancer:
+        servers:
+          - url: "http://keycloak:8080"
+    ha:
+      loadBalancer:
+        servers:
+          - url: "http://home-assistant:8123"
+    portainer:
+      loadBalancer:
+        serversTransport: insecure
+        servers:
+          - url: "https://host.docker.internal:9443"
+  serversTransports:
+    insecure:
+      insecureSkipVerify: true

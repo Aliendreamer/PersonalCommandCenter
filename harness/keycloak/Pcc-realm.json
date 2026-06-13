@@ -1,0 +1,45 @@
+{
+  "realm": "Pcc",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "roles": {
+    "realm": [
+      { "name": "Admin", "description": "PCC administrator" },
+      { "name": "User", "description": "PCC user" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "pcc_api",
+      "name": "PCC API (BFF)",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "pcc-dev-secret",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": ["http://api.pcc.localhost/api/auth/callback"],
+      "webOrigins": ["http://app.pcc.localhost"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://app.pcc.localhost##http://app.pcc.localhost/*"
+      }
+    }
+  ],
+  "users": [
+    {
+      "username": "testuser",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "testuser@pcc.local",
+      "firstName": "Test",
+      "lastName": "User",
+      "credentials": [
+        { "type": "password", "value": "Test123!", "temporary": false }
+      ],
+      "realmRoles": ["Admin", "User"]
+    }
+  ]
+}

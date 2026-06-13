@@ -42,7 +42,8 @@ builder.Services
     .AddJwtBearer(options =>
     {
         options.Authority = string.IsNullOrEmpty(keycloak.Authority) ? null : keycloak.Authority;
-        options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
+        // The local *.pcc.localhost harness is HTTP; require HTTPS metadata only for an https Authority.
+        options.RequireHttpsMetadata = keycloak.Authority.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateAudience = false,

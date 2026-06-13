@@ -1,4 +1,50 @@
 services:
+  # Reverse proxy — the ONLY published port. Routes *.pcc.localhost to the services below
+  # (docker provider) and the standalone Portainer (file provider, see harness/traefik).
+  proxy:
+    image: traefik:v3.2
+    command:
+      - --providers.file.directory=/etc/traefik/dynamic
+      - --providers.file.watch=true
+      - --entrypoints.web.address=:80
+    ports:
+      - '80:80'
+    volumes:
+      - ./harness/traefik:/etc/traefik/dynamic:ro
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: pcc
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pcc-dev}
+      POSTGRES_DB: pcc
+    volumes:
+      - pcc-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U pcc -d pcc']
+      interval: 5s
+      timeout: 3s
+      retries: 15
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    command: ['start-dev', '--import-realm']
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HOSTNAME: http://keycloak.pcc.localhost
+      KC_HOSTNAME_STRICT: 'false'
+      KC_HTTP_ENABLED: 'true'
+      KC_PROXY_HEADERS: xforwarded
+    volumes:
+      - ./harness/keycloak:/opt/keycloak/data/import:ro
+    labels:
+      - traefik.enable=true
+      - 'traefik.http.routers.keycloak.rule=Host(`keycloak.pcc.localhost`)'
+      - traefik.http.services.keycloak.loadbalancer.server.port=8080
+
   core-api:
     build:
       context: .
@@ -6,38 +52,58 @@ services:
     environment:
       ASPNETCORE_HTTP_PORTS: '8080'
       Plugins__System__Enabled: 'true'
-      # Restrict CORS to the web shell's browser origin.
-      Web__Origins: 'http://localhost:${WEB_PORT:-3000}'
-      # IoT plugin → Home Assistant (token from .env; see .env.example).
       Plugins__Iot__Enabled: 'true'
       Plugins__Iot__HomeAssistant__BaseUrl: 'http://home-assistant:8123'
       Plugins__Iot__HomeAssistant__Token: '${HA_TOKEN:-}'
+      Web__Origins: 'http://app.pcc.localhost'
+      ConnectionStrings__Postgres: 'Host=postgres;Database=pcc;Username=pcc;Password=${POSTGRES_PASSWORD:-pcc-dev}'
+      Auth__Keycloak__Authority: 'http://keycloak.pcc.localhost/realms/Pcc'
+      Auth__Keycloak__ClientId: 'pcc_api'
+      Auth__Keycloak__ClientSecret: '${KEYCLOAK_CLIENT_SECRET:-pcc-dev-secret}'
+      Auth__Keycloak__CallbackUri: 'http://api.pcc.localhost/api/auth/callback'
+      Auth__Keycloak__AppBaseUrl: 'http://app.pcc.localhost'
+      Auth__Keycloak__PostLogoutRedirectUri: 'http://app.pcc.localhost'
+      Auth__Cookies__Domain: '.pcc.localhost'
     depends_on:
-      - home-assistant
-    ports:
-      # Published so the browser (client-side tile) can reach the API at localhost:5080.
-      - '${CORE_API_PORT:-5080}:8080'
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+      home-assistant:
+        condition: service_started
+    # The Keycloak issuer URL must resolve to the same host from inside this container.
+    extra_hosts:
+      - 'keycloak.pcc.localhost:host-gateway'
+    labels:
+      - traefik.enable=true
+      - 'traefik.http.routers.api.rule=Host(`api.pcc.localhost`)'
+      - traefik.http.services.api.loadbalancer.server.port=8080
 
   home-assistant:
     image: ghcr.io/home-assistant/home-assistant:stable
     volumes:
       - ha-config:/config
-    ports:
-      # Published for one-time onboarding + long-lived token creation.
-      - '${HA_PORT:-8123}:8123'
+    labels:
+      - traefik.enable=true
+      - 'traefik.http.routers.ha.rule=Host(`ha.pcc.localhost`)'
+      - traefik.http.services.ha.loadbalancer.server.port=8123
 
   web:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
+      args:
+        VITE_API_URL: 'http://api.pcc.localhost/api'
     environment:
       PORT: '3000'
-      # SSR (server-side) reaches the API over the compose network.
       API_URL: 'http://core-api:8080'
     depends_on:
       - core-api
-    ports:
-      - '${WEB_PORT:-3000}:3000'
+    labels:
+      - traefik.enable=true
+      - 'traefik.http.routers.app.rule=Host(`app.pcc.localhost`)'
+      - traefik.http.services.app.loadbalancer.server.port=3000
 
 volumes:
   ha-config:
+  pcc-postgres:

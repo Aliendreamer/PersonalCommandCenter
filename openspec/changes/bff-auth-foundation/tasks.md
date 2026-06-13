@@ -17,25 +17,25 @@
 
 ## 2. Substrate cutover (Traefik + Keycloak + Postgres; everything behind Traefik)
 
-- [ ] 2.1 Add `traefik` (v3) service: `ports: ["80:80"]`, docker provider, mount docker.sock ro,
+- [x] 2.1 Add `traefik` (v3) service: `ports: ["80:80"]`, docker provider, mount docker.sock ro,
       enable file provider (dynamic config dir).
-- [ ] 2.2 Add `postgres` (17-alpine) service (healthcheck, internal only).
-- [ ] 2.3 Add `keycloak` (26) service: `start-dev --import-realm`, mount `./harness/keycloak`,
+- [x] 2.2 Add `postgres` (17-alpine) service (healthcheck, internal only).
+- [x] 2.3 Add `keycloak` (26) service: `start-dev --import-realm`, mount `./harness/keycloak`,
       `KC_HOSTNAME=http://keycloak.pcc.localhost`, `KC_HOSTNAME_STRICT=false`, `KC_HTTP_ENABLED=true`,
       `KC_PROXY_HEADERS=xforwarded`; Traefik label `Host(keycloak.pcc.localhost)` → :8080.
-- [ ] 2.4 Create `harness/keycloak/Pcc-realm.json`: realm `Pcc`; roles `Admin`/`User`; confidential
+- [x] 2.4 Create `harness/keycloak/Pcc-realm.json`: realm `Pcc`; roles `Admin`/`User`; confidential
       client `pcc_api` (`publicClient:false`, secret, redirect `…/api/auth/callback`, post-logout in
       client `attributes` `##`-separated, `pkce S256`); seed user `testuser/Test123!` with both roles.
-- [ ] 2.5 Add Traefik labels to `core-api` (`api.pcc.localhost`→:8080), `web`
+- [x] 2.5 Add Traefik labels to `core-api` (`api.pcc.localhost`→:8080), `web`
       (`app.pcc.localhost`→:3000), `home-assistant` (`ha.pcc.localhost`→:8123); add api
       `extra_hosts: ["keycloak.pcc.localhost:host-gateway"]`; **drop the direct `:5080/:3000/:8123`
       host ports**.
-- [ ] 2.6 Add a Traefik file-provider dynamic config routing `portainer.pcc.localhost` → the existing
+- [x] 2.6 Add a Traefik file-provider dynamic config routing `portainer.pcc.localhost` → the existing
       standalone Portainer (do not add/rebuild a Portainer service).
-- [ ] 2.7 `.env`/`.env.example`: Keycloak client secret, Postgres connection, `AppBaseUrl`, cookie
+- [x] 2.7 `.env`/`.env.example`: Keycloak client secret, Postgres connection, `AppBaseUrl`, cookie
       domain `.pcc.localhost`, CORS origin `http://app.pcc.localhost`; web build arg
       `VITE_API_URL=http://api.pcc.localhost/api`.
-- [ ] 2.8 `docker compose up -d --build` → traefik/keycloak/postgres/core-api/web/ha healthy; realm
+- [x] 2.8 `docker compose up -d --build` → traefik/keycloak/postgres/core-api/web/ha healthy; realm
       imports; `app.pcc.localhost` + `keycloak.pcc.localhost` reachable through Traefik.
 
 ## 3. Auth backend (TDD; consolidated services per design)
