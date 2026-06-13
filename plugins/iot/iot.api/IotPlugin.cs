@@ -1,9 +1,7 @@
-using Microsoft.AspNetCore.Builder;
+using FastEndpoints;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Pcc.Plugins;
 
 namespace Pcc.Plugins.Iot;
 
@@ -21,20 +19,31 @@ public sealed class IotPlugin : IPlugin
         services.Configure<IotOptions>(config);
         services.AddHttpClient<IHomeAssistantClient, HomeAssistantClient>();
     }
+}
 
-    public void MapEndpoints(IEndpointRouteBuilder endpoints) =>
-        endpoints.MapGet(
-            "/api/iot/entities",
-            async (IHomeAssistantClient client, CancellationToken cancellationToken) =>
-            {
-                try
-                {
-                    return Results.Ok(await client.GetEntitiesAsync(cancellationToken));
-                }
-                catch (Exception)
-                {
-                    // HA unreachable/misconfigured — surface as a gateway error; the UI degrades.
-                    return Results.StatusCode(StatusCodes.Status502BadGateway);
-                }
-            });
+/// <summary><c>GET /api/iot/entities</c> — registered by the host only when the plugin is enabled.</summary>
+internal sealed class GetIotEntitiesEndpoint : EndpointWithoutRequest<IReadOnlyList<IotEntity>>
+{
+    public override void Configure()
+    {
+        Get("/iot/entities");
+        AllowAnonymous();
+    }
+
+    // The client is resolved lazily (not constructor-injected) so the host can instantiate this
+    // endpoint at startup to read its config even before the plugin's services are registered.
+    public override async Task HandleAsync(CancellationToken ct)
+    {
+        var client = Resolve<IHomeAssistantClient>();
+        try
+        {
+            var entities = await client.GetEntitiesAsync(ct);
+            await Send.OkAsync(entities, ct);
+        }
+        catch (Exception)
+        {
+            // HA unreachable/misconfigured — surface as a gateway error; the UI degrades.
+            await Send.ResultAsync(Results.StatusCode(StatusCodes.Status502BadGateway));
+        }
+    }
 }

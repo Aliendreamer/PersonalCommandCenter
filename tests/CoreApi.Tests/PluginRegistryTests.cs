@@ -1,5 +1,4 @@
 using CoreApi.Plugins;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -52,7 +51,5 @@ public class PluginRegistryTests
 
             Configured = true;
         }
-
-        public void MapEndpoints(IEndpointRouteBuilder endpoints) { }
     }
 }

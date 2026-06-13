@@ -1,9 +1,6 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
+using FastEndpoints;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Pcc.Plugins;
 
 namespace Pcc.Plugins.SystemPlugin;
 
@@ -13,8 +10,6 @@ namespace Pcc.Plugins.SystemPlugin;
 /// </summary>
 public sealed class SystemStatusPlugin : IPlugin
 {
-    private static readonly DateTimeOffset StartedAt = DateTimeOffset.UtcNow;
-
     public string Id => "system";
 
     public PluginManifest Manifest { get; } =
@@ -24,9 +19,24 @@ public sealed class SystemStatusPlugin : IPlugin
     {
         // No services needed yet.
     }
+}
 
-    public void MapEndpoints(IEndpointRouteBuilder endpoints) =>
-        endpoints.MapGet("/api/system/status", () => Results.Ok(CurrentStatus()));
+/// <summary>Live status reported by the system plugin and rendered on the dashboard tile.</summary>
+public sealed record SystemStatus(bool ApiHealthy, string Version, double UptimeSeconds, string Hostname);
+
+/// <summary><c>GET /api/system/status</c> — discovered by the host when the plugin is enabled.</summary>
+internal sealed class SystemStatusEndpoint : EndpointWithoutRequest<SystemStatus>
+{
+    private static readonly DateTimeOffset StartedAt = DateTimeOffset.UtcNow;
+
+    public override void Configure()
+    {
+        Get("/system/status");
+        AllowAnonymous();
+    }
+
+    public override Task HandleAsync(CancellationToken ct) =>
+        Send.OkAsync(CurrentStatus(), ct);
 
     private static SystemStatus CurrentStatus() =>
         new(
@@ -35,6 +45,3 @@ public sealed class SystemStatusPlugin : IPlugin
             UptimeSeconds: Math.Round(Math.Max(0, (DateTimeOffset.UtcNow - StartedAt).TotalSeconds), 3),
             Hostname: Environment.MachineName);
 }
-
-/// <summary>Live status reported by the system plugin and rendered on the dashboard tile.</summary>
-public sealed record SystemStatus(bool ApiHealthy, string Version, double UptimeSeconds, string Hostname);

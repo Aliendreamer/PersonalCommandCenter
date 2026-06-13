@@ -1,18 +1,18 @@
 ## 1. FastEndpoints migration (behavior identical; gates green before Phase 2)
 
-- [ ] 1.1 Add FastEndpoints (+ Swagger + HealthChecks) to `core-api`; register
+- [x] 1.1 Add FastEndpoints (+ Swagger + HealthChecks) to `core-api`; register
       `AddFastEndpoints(o => o.Assemblies = pluginAssemblies)` (core-api + plugin assemblies);
       `UseFastEndpoints(c => c.Endpoints.RoutePrefix = "api")`; keep Scalar at `/scalar`.
-- [ ] 1.2 Change `IPlugin` in `libs/plugin-abstractions`: remove `MapEndpoints`; keep `Id`,
+- [x] 1.2 Change `IPlugin` in `libs/plugin-abstractions`: remove `MapEndpoints`; keep `Id`,
       `Manifest`, `Configure`. Update `PluginRegistry` to stop calling `MapEndpoints`.
-- [ ] 1.3 (TDD) Adapt `PluginsEndpointTests`; implement `PluginsEndpoint` (FastEndpoints) for
+- [x] 1.3 (TDD) Adapt `PluginsEndpointTests`; implement `PluginsEndpoint` (FastEndpoints) for
       `GET api/plugins` returning enabled-plugin manifests (behavior identical).
-- [ ] 1.4 (TDD) Rewrite system status as `SystemStatusEndpoint` (FastEndpoints, group `system/`);
+- [x] 1.4 (TDD) Rewrite system status as `SystemStatusEndpoint` (FastEndpoints, group `system/`);
       adapt `SystemStatusTests`.
-- [ ] 1.5 (TDD) Rewrite iot entities as `GetIotEntitiesEndpoint` (FastEndpoints, group `iot/`),
+- [x] 1.5 (TDD) Rewrite iot entities as `GetIotEntitiesEndpoint` (FastEndpoints, group `iot/`),
       keeping the HA client + 502-degraded; adapt `IotEndpointTests`.
-- [ ] 1.6 Remove dead minimal-API mapping code; confirm health endpoint is anonymous.
-- [ ] 1.7 .NET gates green: `dotnet build -warnaserror`, `dotnet format --verify-no-changes`,
+- [x] 1.6 Remove dead minimal-API mapping code; confirm health endpoint is anonymous.
+- [x] 1.7 .NET gates green: `dotnet build -warnaserror`, `dotnet format --verify-no-changes`,
       `dotnet test`.
 
 ## 2. Substrate cutover (Traefik + Keycloak + Postgres; everything behind Traefik)

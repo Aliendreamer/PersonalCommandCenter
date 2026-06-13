@@ -1,5 +1,6 @@
 using System.Reflection;
 using CoreApi.Plugins;
+using FastEndpoints;
 using Pcc.Plugins.Iot;
 using Pcc.Plugins.SystemPlugin;
 using Scalar.AspNetCore;
@@ -29,6 +30,11 @@ var registry = new PluginRegistry();
 registry.ActivateEnabled(available, builder.Services, builder.Configuration, bootstrapLogger);
 builder.Services.AddSingleton(registry);
 
+// FastEndpoints discovers endpoint classes from the host assembly and every referenced plugin
+// assembly. We gate registration to the host plus the ENABLED plugins (see the filter below),
+// so a disabled plugin's endpoints are never mapped.
+builder.Services.AddFastEndpoints(o => o.Assemblies = pluginAssemblies);
+
 var app = builder.Build();
 
 app.UseCors();
@@ -36,14 +42,20 @@ app.UseCors();
 app.MapOpenApi();
 app.MapScalarApiReference();
 
-app.MapGet("/", () => "Hello World!");
-app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
-app.MapGet("/api/plugins", (PluginRegistry plugins) => Results.Ok(plugins.Manifests));
-
-// Let each enabled plugin map its own endpoints onto the host.
-foreach (var plugin in registry.EnabledPlugins)
+// All FastEndpoints routes are prefixed with `api` (e.g. /api/plugins, /api/system/status).
+// Only host endpoints and endpoints from enabled plugins' assemblies are registered.
+var hostAssembly = typeof(Program).Assembly;
+var enabledAssemblies = registry.EnabledPlugins.Select(p => p.GetType().Assembly).ToHashSet();
+app.UseFastEndpoints(c =>
 {
-    plugin.MapEndpoints(app);
-}
+    c.Endpoints.RoutePrefix = "api";
+    c.Endpoints.Filter = ep =>
+        ep.EndpointType.Assembly == hostAssembly || enabledAssemblies.Contains(ep.EndpointType.Assembly);
+});
+
+app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
 
 app.Run();
+
+// Exposed so WebApplicationFactory<Program> can boot the host in integration tests.
+public partial class Program;
