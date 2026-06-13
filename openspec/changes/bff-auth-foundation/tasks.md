@@ -42,7 +42,7 @@
 
 - [ ] 3.1 Add deps: EF Core + Npgsql, `Microsoft.AspNetCore.Authentication.JwtBearer`, FusionCache,
       Serilog, security headers.
-- [ ] 3.2 (TDD) `OidcProtocol` unit tests (PKCE S256, state round-trip + tamper-reject, `returnTo`
+- [x] 3.2 (TDD) `OidcProtocol` unit tests (PKCE S256, state round-trip + tamper-reject, `returnTo`
       sanitize cases, session-token gen + **hash-only**, JWT `sub` read) → implement `OidcProtocol`.
 - [ ] 3.3 `PccDbContext` + `User`/`UserSession` (+ `AuditableEntity`) configured inline in
       `OnModelCreating`; migrations `AddUsers`/`AddUserSessions`; design-time factory; EF migrate on
