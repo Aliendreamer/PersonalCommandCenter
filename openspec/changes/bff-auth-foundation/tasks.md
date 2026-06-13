@@ -40,14 +40,14 @@
 
 ## 3. Auth backend (TDD; consolidated services per design)
 
-- [ ] 3.1 Add deps: EF Core + Npgsql, `Microsoft.AspNetCore.Authentication.JwtBearer`, FusionCache,
+- [x] 3.1 Add deps: EF Core + Npgsql, `Microsoft.AspNetCore.Authentication.JwtBearer`, FusionCache,
       Serilog, security headers.
 - [x] 3.2 (TDD) `OidcProtocol` unit tests (PKCE S256, state round-trip + tamper-reject, `returnTo`
       sanitize cases, session-token gen + **hash-only**, JWT `sub` read) → implement `OidcProtocol`.
 - [ ] 3.3 `PccDbContext` + `User`/`UserSession` (+ `AuditableEntity`) configured inline in
       `OnModelCreating`; migrations `AddUsers`/`AddUserSessions`; design-time factory; EF migrate on
       startup.
-- [ ] 3.4 (TDD) `SessionService` tests (EF InMemory + Moq `KeycloakClient`): create→persist hash,
+- [x] 3.4 (TDD) `SessionService` tests (EF InMemory + Moq `KeycloakClient`): create→persist hash,
       resolve unexpired, refresh-on-expiry, **revoke→resolve null**, purge → implement
       `SessionService : ISessionService`.
 - [ ] 3.5 (TDD) `KeycloakClient` tests (authorize-URL shape; exchange/refresh request shape via stub
@@ -65,7 +65,7 @@
 - [ ] 3.9 (TDD) Gate all non-auth endpoints (default authorization); keep health anonymous; update
       `PluginsEndpointTests`/`SystemStatusTests`/`IotEndpointTests` for 401-anon / 200-authed (iot 502
       when HA down, authed).
-- [ ] 3.10 .NET gates green (build `-warnaserror` · format · test, incl. new auth tests + migrations).
+- [x] 3.10 .NET gates green (build `-warnaserror` · format · test, incl. new auth tests + migrations).
 
 ## 4. Frontend (TDD; whole app behind login)
 
