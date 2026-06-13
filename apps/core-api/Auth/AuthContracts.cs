@@ -1,3 +1,5 @@
+using System.Security.Claims;
+
 namespace CoreApi.Auth;
 
 /// <summary>The OIDC tokens the API holds for a session (never exposed to the browser).</summary>
@@ -34,4 +36,16 @@ public interface ISessionService
 
     /// <summary>Removes revoked and fully-expired sessions; returns how many were removed.</summary>
     Task<int> PurgeAsync(CancellationToken ct);
+}
+
+/// <summary>The authenticated request's identity, JIT-provisioned from the Keycloak principal.</summary>
+public interface ICurrentUser
+{
+    int Id { get; }
+    string Sub { get; }
+    string? Email { get; }
+    IReadOnlyList<string> Roles { get; }
+
+    /// <summary>Reads sub/email/realm roles from the principal and ensures a local user row exists.</summary>
+    Task InitializeAsync(ClaimsPrincipal principal, CancellationToken ct);
 }

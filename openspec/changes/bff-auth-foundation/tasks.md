@@ -50,9 +50,9 @@
 - [x] 3.4 (TDD) `SessionService` tests (EF InMemory + Moq `KeycloakClient`): create→persist hash,
       resolve unexpired, refresh-on-expiry, **revoke→resolve null**, purge → implement
       `SessionService : ISessionService`.
-- [ ] 3.5 (TDD) `KeycloakClient` tests (authorize-URL shape; exchange/refresh request shape via stub
+- [x] 3.5 (TDD) `KeycloakClient` tests (authorize-URL shape; exchange/refresh request shape via stub
       `HttpMessageHandler`) → implement `KeycloakClient : IKeycloakClient` + discovery.
-- [ ] 3.6 (TDD) `CurrentUser` tests (JIT upsert by `sub`, cached, roles from `realm_access`) →
+- [x] 3.6 (TDD) `CurrentUser` tests (JIT upsert by `sub`, cached, roles from `realm_access`) →
       implement `CurrentUser : ICurrentUser` (FusionCache `sub→id`).
 - [ ] 3.7 Composition root: `AddAuthentication(JwtBearer)` + `CookieJwtBearerEvents.OnMessageReceived`
       → `SessionService`; bind `AuthOptions` (`Keycloak`/`Cookies`/`Store`); CORS (exact app origin +
