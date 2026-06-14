@@ -160,4 +160,10 @@ describe('createApiClient', () => {
     const client = createApiClient('http://api', jsonFetch(body));
     await expect(client.getRss()).resolves.toEqual(body);
   });
+
+  it('fetches goodreads books', async () => {
+    const body = [{ title: 'Dune', author: 'Herbert', link: 'u', coverUrl: 'c' }];
+    const client = createApiClient('http://api', jsonFetch(body));
+    await expect(client.getGoodreads()).resolves.toEqual(body);
+  });
 });

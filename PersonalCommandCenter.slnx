@@ -40,6 +40,10 @@
   <Folder Name="/plugins/rss/rss.api/">
     <Project Path="plugins/rss/rss.api/RssPlugin.csproj" />
   </Folder>
+  <Folder Name="/plugins/goodreads/" />
+  <Folder Name="/plugins/goodreads/goodreads.api/">
+    <Project Path="plugins/goodreads/goodreads.api/GoodreadsPlugin.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/CoreApi.Tests/CoreApi.Tests.csproj" />
   </Folder>

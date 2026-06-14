@@ -112,6 +112,14 @@ export interface RssItem {
   source: string;
 }
 
+/** Mirrors the backend `Book` from `GET /api/goodreads`. */
+export interface Book {
+  title: string;
+  author?: string | null;
+  link: string;
+  coverUrl?: string | null;
+}
+
 /** Mirrors the backend `Weather` from `GET /api/weather`. */
 export interface Weather {
   current: WeatherCurrent;

@@ -1,0 +1,45 @@
+using System.ServiceModel.Syndication;
+using System.Xml;
+using Microsoft.Extensions.Options;
+
+namespace Pcc.Plugins.Goodreads;
+
+/// <summary>Reads a Goodreads shelf RSS feed and maps its (custom-element) book metadata.</summary>
+public sealed class GoodreadsClient(HttpClient http, IOptions<GoodreadsOptions> options) : IGoodreadsClient
+{
+    private readonly GoodreadsOptions _options = options.Value;
+
+    public async Task<IReadOnlyList<Book>> GetShelfAsync(CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(_options.UserId))
+        {
+            throw new InvalidOperationException("Goodreads:UserId is not configured.");
+        }
+
+        var url = $"{_options.BaseUrl.TrimEnd('/')}/review/list_rss/{_options.UserId}?shelf={Uri.EscapeDataString(_options.Shelf)}";
+        using var stream = await http.GetStreamAsync(new Uri(url), cancellationToken);
+        using var reader = XmlReader.Create(stream, new XmlReaderSettings { Async = false });
+        var feed = SyndicationFeed.Load(reader);
+
+        return feed.Items.Select(item => new Book(
+            item.Title?.Text ?? "",
+            Extension(item, "author_name"),
+            item.Links.FirstOrDefault()?.Uri?.ToString() ?? "",
+            Extension(item, "book_large_image_url") ?? Extension(item, "book_image_url")))
+            .ToList();
+    }
+
+    // Goodreads carries book metadata in custom <item> elements (no namespace).
+    private static string? Extension(SyndicationItem item, string name)
+    {
+        var ext = item.ElementExtensions.FirstOrDefault(e => string.Equals(e.OuterName, name, StringComparison.Ordinal));
+        if (ext is null)
+        {
+            return null;
+        }
+
+        using var reader = ext.GetReader();
+        var value = reader.ReadElementContentAsString();
+        return string.IsNullOrWhiteSpace(value) ? null : value;
+    }
+}

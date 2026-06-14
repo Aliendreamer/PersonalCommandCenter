@@ -1,4 +1,5 @@
 import type {
+  Book,
   CalendarEvent,
   CalendarEventInput,
   IotEntity,
@@ -32,6 +33,7 @@ export interface ApiClient {
   getSearch(q: string): Promise<SearchResult[]>;
   getWeather(): Promise<Weather>;
   getRss(): Promise<RssItem[]>;
+  getGoodreads(): Promise<Book[]>;
 }
 
 /**
@@ -88,5 +90,6 @@ export function createApiClient(baseUrl: string, fetchImpl: FetchLike = fetch): 
     getSearch: (q) => getJson<SearchResult[]>(`/api/search?q=${encodeURIComponent(q)}`),
     getWeather: () => getJson<Weather>('/api/weather'),
     getRss: () => getJson<RssItem[]>('/api/rss'),
+    getGoodreads: () => getJson<Book[]>('/api/goodreads'),
   };
 }

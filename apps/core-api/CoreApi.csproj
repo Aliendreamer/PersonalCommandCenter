@@ -10,6 +10,7 @@
     <ProjectReference Include="..\..\plugins\search\search.api\SearchPlugin.csproj" />
     <ProjectReference Include="..\..\plugins\weather\weather.api\WeatherPlugin.csproj" />
     <ProjectReference Include="..\..\plugins\rss\rss.api\RssPlugin.csproj" />
+    <ProjectReference Include="..\..\plugins\goodreads\goodreads.api\GoodreadsPlugin.csproj" />
   </ItemGroup>
 
   <ItemGroup>

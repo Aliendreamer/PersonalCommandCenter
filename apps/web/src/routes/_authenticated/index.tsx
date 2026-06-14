@@ -7,6 +7,7 @@ import {
   getPlugins,
   getSystemStatus,
   getTasks,
+  getGoodreads,
   getRss,
   getWeather,
 } from '../../lib/server/api'
@@ -20,22 +21,33 @@ import { NotificationsUnreadTile } from '../../components/notifications-unread-t
 import { SearchBoxTile } from '../../components/search-box-tile'
 import { WeatherTodayTile } from '../../components/weather-today-tile'
 import { RssLatestTile } from '../../components/rss-latest-tile'
+import { GoodreadsReadingTile } from '../../components/goodreads-reading-tile'
 
 export const Route = createFileRoute('/_authenticated/')({
   // SSR-with-data: the dashboard renders fully populated. Each source is settled independently so
   // one plugin's outage (e.g. IoT 502 without an HA token) degrades only its tile.
   loader: async () => {
-    const [plugins, system, iot, calendar, tasks, notifications, weather, rss] =
-      await Promise.all([
-        settle(getPlugins()),
-        settle(getSystemStatus()),
-        settle(getIotEntities()),
-        settle(getCalendarEvents()),
-        settle(getTasks()),
-        settle(getNotifications()),
-        settle(getWeather()),
-        settle(getRss()),
-      ])
+    const [
+      plugins,
+      system,
+      iot,
+      calendar,
+      tasks,
+      notifications,
+      weather,
+      rss,
+      goodreads,
+    ] = await Promise.all([
+      settle(getPlugins()),
+      settle(getSystemStatus()),
+      settle(getIotEntities()),
+      settle(getCalendarEvents()),
+      settle(getTasks()),
+      settle(getNotifications()),
+      settle(getWeather()),
+      settle(getRss()),
+      settle(getGoodreads()),
+    ])
     return {
       plugins,
       system,
@@ -45,14 +57,24 @@ export const Route = createFileRoute('/_authenticated/')({
       notifications,
       weather,
       rss,
+      goodreads,
     }
   },
   component: Home,
 })
 
 function Home() {
-  const { plugins, system, iot, calendar, tasks, notifications, weather, rss } =
-    Route.useLoaderData()
+  const {
+    plugins,
+    system,
+    iot,
+    calendar,
+    tasks,
+    notifications,
+    weather,
+    rss,
+    goodreads,
+  } = Route.useLoaderData()
   const navigate = useNavigate()
   return (
     <PluginShell
@@ -95,6 +117,14 @@ function Home() {
         }
         if (manifest.widgets.includes('rss-latest')) {
           return <RssLatestTile items={rss.data} error={rss.error} />
+        }
+        if (manifest.widgets.includes('goodreads-reading')) {
+          return (
+            <GoodreadsReadingTile
+              books={goodreads.data}
+              error={goodreads.error}
+            />
+          )
         }
         return null
       }}

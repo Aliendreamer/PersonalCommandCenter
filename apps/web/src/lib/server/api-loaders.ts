@@ -1,5 +1,6 @@
 import { isRedirect, redirect } from '@tanstack/react-router'
 import type {
+  Book,
   CalendarEvent,
   CalendarEventInput,
   IotEntity,
@@ -113,6 +114,9 @@ export const loadWeather = (fetchImpl: FetchLike): Promise<Weather> =>
 
 export const loadRss = (fetchImpl: FetchLike): Promise<RssItem[]> =>
   loadProtected<RssItem[]>(fetchImpl, '/api/rss')
+
+export const loadGoodreads = (fetchImpl: FetchLike): Promise<Book[]> =>
+  loadProtected<Book[]>(fetchImpl, '/api/goodreads')
 
 /**
  * Sends a protected mutation server-to-server. 401 → login redirect (revoked session); 404 → null

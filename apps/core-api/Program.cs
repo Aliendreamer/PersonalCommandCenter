@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Pcc.Plugins;
 using Pcc.Plugins.Calendar;
+using Pcc.Plugins.Goodreads;
 using Pcc.Plugins.Iot;
 using Pcc.Plugins.Notifications;
 using Pcc.Plugins.Rss;
@@ -92,6 +93,7 @@ Assembly[] pluginAssemblies =
     typeof(SearchPlugin).Assembly,
     typeof(WeatherPlugin).Assembly,
     typeof(RssPlugin).Assembly,
+    typeof(GoodreadsPlugin).Assembly,
 ];
 
 using var bootstrapLoggerFactory = LoggerFactory.Create(logging => logging.AddConsole());
