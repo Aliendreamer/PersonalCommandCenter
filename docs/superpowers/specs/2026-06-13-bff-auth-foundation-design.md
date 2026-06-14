@@ -2,15 +2,15 @@
 
 **Date:** 2026-06-13
 **Status:** Approved (brainstorm) — pending implementation plan
-**Reference recipe:** repo-root `bff-auth-template.md` (the exact token/cookie/PKCE recipe; this
-doc is the PCC-specific adaptation and decisions, not a re-statement of it).
+**Reference recipe:** repo-root `bff-auth-direct-template.md` (the exact token/cookie/PKCE recipe;
+this doc is the PCC-specific adaptation and decisions, not a re-statement of it).
 
 ## Context & motivation
 
 PCC currently has no authentication — `core-api` (a .NET minimal-API plugin host) is reachable
 on direct ports with only a CORS lock. Before the command center is exposed beyond localhost /
-Tailscale it needs real auth. We are adopting the **BFF "World B" cookie-session** model from
-`bff-auth-template.md`: the .NET API owns the OIDC code exchange and tokens, the browser holds
+Tailscale it needs real auth. We are adopting the **Direct-BFF cookie-session** model from
+`bff-auth-direct-template.md`: the .NET API owns the OIDC code exchange and tokens, the browser holds
 only an opaque `HttpOnly` session cookie, and a Postgres session store gives **instant
 server-side revocation**.
 
@@ -21,7 +21,7 @@ as **one OpenSpec change** (user decision).
 
 1. **FastEndpoints replaces the minimal API** across `core-api` (mandatory). This changes the
    `IPlugin` contract (see Backend).
-2. **World B** token ownership: the .NET API holds tokens; browser gets only `mp_sid`.
+2. **Direct-BFF** token ownership: the .NET API holds tokens; browser gets only `mp_sid`.
 3. **Full cutover** to **Traefik + `*.pcc.localhost`** — drop the direct `:5080/:3000/:8123`
    host ports; only Traefik publishes `:80`.
 4. **Whole app behind login** — only the auth endpoints + health are anonymous; everything else

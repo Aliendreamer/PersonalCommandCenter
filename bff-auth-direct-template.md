@@ -1,11 +1,31 @@
-# BFF Cookie-Auth — full build template (World B)
+# Cookie-Auth Template — Direct BFF (browser ↔ .NET API)
 
 A complete, reusable build playbook to recreate the **TanStack Start (FE) + .NET
 FastEndpoints (BE) + Keycloak** server-owned-session auth stack with a Postgres
-session store (instant revocation) and a dockerized `*.localhost` harness.
+session store (instant revocation) and a dockerized `*.localhost` harness. Here the
+**.NET API is itself the BFF**: the browser holds the session cookie and calls the
+API **directly** at `api.<slug>.localhost`.
 
 Paste this whole file into a fresh Claude session. It is the spec **and** the
 recipe — follow it top to bottom.
+
+> **Two templates — pick one.** This is the **Direct BFF** variant. Its sibling
+> `bff-auth-ssr-template.md` builds the **SSR BFF** variant (the TanStack SSR server
+> is the BFF; the API is internal-only; the browser only ever sees `app.`).
+
+| | **Direct BFF (this file)** | **SSR BFF (`bff-auth-ssr-template.md`)** |
+|---|---|---|
+| Public surface | `app.` **and** `api.` | only `app.` (+ `keycloak.`) |
+| Who calls the API | the **browser**, directly | the SSR server, server-to-server |
+| Auth gate | client `AuthProvider` probing `/me` | `_authenticated` `beforeLoad` (server-side `getMe`) |
+| Page data | client TanStack Query after the gate | SSR loaders → server functions (renders **with data**) |
+| API exposure | published behind Traefik (`api.`) | **internal-only** (`<be-service>:8080`) |
+| Cookie | shared parent domain, sent cross-subdomain | app host-only, re-homed by the SSR proxy |
+| Pick when | the API must be independently reachable (mobile, 3rd-party); simpler FE server | you want one origin, no API host/token in the client, SSR-with-data, smaller attack surface |
+
+Both keep **.NET as the sole token owner** with a revocable Postgres session — they
+differ only in *where the BFF lives* and *who holds the cookie*. The **BE is ~95%
+identical** between the two.
 
 ---
 
@@ -51,10 +71,10 @@ realm:     <Realm>           client (confidential): <slug>_api
 
 ---
 
-## Architecture — World B (the organizing rule)
+## Architecture — Direct BFF (the organizing rule)
 
 > **Whoever exchanges the Keycloak `code` holds the tokens. Pick exactly one
-> owner. Here it is the .NET API.**
+> owner. Here it is the .NET API, which the browser calls directly.**
 
 ```
 Browser ──HttpOnly opaque cookie (auto)──►  .NET API  ──server-to-server──► Keycloak

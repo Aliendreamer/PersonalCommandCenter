@@ -1,4 +1,4 @@
-# SSR-BFF Cookie-Auth — full build template (World A)
+# Cookie-Auth Template — SSR BFF (browser ↔ SSR ↔ internal API)
 
 A complete, reusable build playbook to recreate the **TanStack Start (FE) + .NET
 FastEndpoints (BE) + Keycloak** auth stack where the **always-on SSR server is the
@@ -10,28 +10,29 @@ server proxies the OIDC dance and fetches page data **server-to-server** from a
 Paste this whole file into a fresh Claude session. It is the spec **and** the
 recipe — follow it top to bottom.
 
-> **Sibling template:** `bff-auth-template.md` builds **World B** (browser calls
-> `api.<slug>.localhost` directly; client-side `/me` gate). This file builds
-> **World A**. Pick one — see "World A vs World B" below.
+> **Two templates — pick one.** This is the **SSR BFF** variant. Its sibling
+> `bff-auth-direct-template.md` builds the **Direct BFF** variant (the browser calls
+> `api.<slug>.localhost` directly; a client-side `AuthProvider` `/me` gate). Pick one
+> with the table below.
 
 ---
 
-## World A vs World B — pick one before STEP 0
+## SSR BFF vs Direct BFF — pick one before STEP 0
 
-| | **World A — SSR-BFF (this file)** | **World B — direct BFF (`bff-auth-template.md`)** |
+| | **SSR BFF (this file)** | **Direct BFF (`bff-auth-direct-template.md`)** |
 |---|---|---|
 | Public surface | only `app.` (+ `keycloak.`) | `app.` **and** `api.` |
 | Who calls the API | the SSR server, server-to-server | the **browser**, directly |
 | Auth gate | `_authenticated` `beforeLoad` (server-side `getMe`) | client `AuthProvider` probing `/me` |
 | Page data | SSR loaders → server functions (renders **with data**) | client TanStack Query after the gate |
-| API exposure | **internal-only** (`core-api:8080`) | published behind Traefik (`api.`) |
-| Cookie | app host-only (re-homed by SSR) | shared parent domain, sent cross-subdomain |
-| Best when | you want one origin, no token/host in the client, SSR-with-data, tighter attack surface | you want the API independently reachable (mobile, 3rd-party, simpler FE server) |
+| API exposure | **internal-only** (`<be-service>:8080`) | published behind Traefik (`api.`) |
+| Cookie | app host-only (re-homed by the SSR proxy) | shared parent domain, sent cross-subdomain |
+| Pick when | you want one origin, no API host/token in the client, SSR-with-data, smaller attack surface | the API must be independently reachable (mobile, 3rd-party); simpler FE server |
 
-Both keep **.NET as the sole token owner** with a revocable Postgres session. World
-A simply hides the API behind the SSR server and re-homes the cookie. **The BE is
-~95% identical** between the two — World A only changes *where the API lives* and
-*who holds the cookie*, not how it mints sessions.
+Both keep **.NET as the sole token owner** with a revocable Postgres session. The SSR
+variant simply hides the API behind the SSR server and re-homes the cookie. **The BE
+is ~95% identical** between the two — this template only changes *where the BFF lives*
+and *who holds the cookie*, not how the API mints sessions.
 
 ---
 
@@ -87,7 +88,7 @@ realm:                <Realm>      client (confidential): <slug>_api
 
 ---
 
-## Architecture — World A (the organizing rule)
+## Architecture — SSR BFF (the organizing rule)
 
 > **The always-on SSR server is the BFF. The browser has exactly one origin
 > (`app.`). The .NET API still owns the tokens but is unreachable from the
@@ -113,25 +114,31 @@ Browser ──app-host cookie──► SSR server (TanStack Start) ──server-
 
 The cookie is **app-host-only** (not shared across subdomains), because the browser
 never needs to send it to the API — only to `app.`, which forwards it inward. This is
-why World A can use the `__Host-` prefix in prod (single origin, `Path=/`, no `Domain`).
+why the SSR variant can use the `__Host-` prefix in prod (single origin, `Path=/`, no
+`Domain`).
 
 ## Stack (pin exact versions)
 
 - **FE**: TanStack Start (SSR) + TanStack Router (file-based) + TypeScript strict +
   Tailwind v4 + native `fetch` (no axios) + (optional) react-i18next/TanStack Store.
   Vitest + RTL. pnpm, `save-exact`. Prod served by **srvx** (or Nitro `node-server`).
+  Use the **Direct template's FE `package.json` as the dependency baseline**, with two
+  deltas: drop the browser API client (data comes from server functions, so TanStack
+  Query is optional) and **never add `VITE_API_URL`** (the only API config is the
+  server-side `API_URL`).
 - **BE**: .NET (latest LTS) + FastEndpoints + EF Core (Npgsql) + Serilog +
   `Microsoft.AspNetCore.Authentication.JwtBearer` + FusionCache. xUnit + Moq +
-  EF InMemory; treat-warnings-as-errors. All routes under `api/`. **Identical to
-  World B's BE** — see that file's "Exact dependencies" + "BE — components to build".
+  EF InMemory; treat-warnings-as-errors. All routes under `api/`. **Identical to the
+  Direct template's BE** — see `bff-auth-direct-template.md`'s "Exact dependencies" +
+  "BE — components to build".
 - **Infra**: PostgreSQL + Keycloak + Traefik + Docker Compose. Only Traefik publishes
   a port; **no `api.` router**.
 
 ---
 
-## BE — same as World B, with these deltas only
+## BE — same as the Direct template, with these deltas only
 
-Build the **entire** BE exactly as `bff-auth-template.md` describes (data + migration →
+Build the **entire** BE exactly as `bff-auth-direct-template.md` describes (data + migration →
 `SessionStore` → JwtBearer wiring with `OnMessageReceived` cookie resolver → endpoints
 `login/callback/logout` → `/me` → cleanup → JIT provisioning). **The C# does not
 change.** Only configuration and exposure change:
@@ -147,14 +154,14 @@ change.** Only configuration and exposure change:
    is reached only as `<be-service>:8080` on the compose network.
 4. **Cookies stay `Domain`-scoped at the API** (`Domain=.<slug>.localhost`) — the SSR
    proxy is what strips `Domain` and app-scopes them. (You may also set the API cookie
-   `Domain`-less; the proxy normalizes either way. Keeping the API unchanged from World
-   B is simplest.)
+   `Domain`-less; the proxy normalizes either way. Keeping the API unchanged from the
+   Direct template is simplest.)
 5. CORS is **no longer the browser front line** (the browser is same-origin to `app.`),
    but keep `Web__Origins`/`AllowedCorsOrigins` locked to the app origin anyway —
    never `*`.
 
 Everything else (token resolver, session store + revocation, `/me`, claims
-transformation, EF model, cleanup service) is byte-for-byte World B.
+transformation, EF model, cleanup service) is byte-for-byte the Direct template's BE.
 
 ---
 
@@ -188,8 +195,8 @@ src/
   **preserve the lifetime** (`Max-Age`/`Expires`), and when `secure` add the
   **`__Host-` prefix + `Secure`**.
 - `forwardCookieHeader(cookieHeader, secure)`: build the `Cookie` header sent to the
-  API from the browser's incoming `Cookie` — keep **only** the auth cookies
-  (`<sid>`, `<pkce>`) and map `__Host-…` names back to the bare API names.
+  API from the browser's incoming `Cookie` — keep **only** the auth cookies (the API's
+  `mp_sid`/`mp_pkce`) and map `__Host-…` names back to the bare API names.
 - `cookiesAreSecure()`: `process.env.COOKIE_SECURE === 'true'` (see gotcha #4 — **not**
   `NODE_ENV`).
 
@@ -380,8 +387,8 @@ Realm import JSON: realm `<Realm>`; roles `Admin`,`User`; **confidential** clien
 
 ## Suggested build order
 
-1. (If OpenSpec) propose specs. 2. **BE = World B verbatim**, then apply the 5 config
-   deltas above (callback/redirect → `app.`; no `api.` route). 3. FE data layer:
+1. (If OpenSpec) propose specs. 2. **BE = the Direct template verbatim**, then apply the
+   5 config deltas above (callback/redirect → `app.`; no `api.` route). 3. FE data layer:
    `cookies.ts` (+tests) → `auth-proxy.ts` + `routes/api/auth/$.ts` →
    `api-loaders.ts` (+tests) → `api.ts` server functions. 4. FE routing:
    `createRootRouteWithContext` + router `context` → `_authenticated` guard → move

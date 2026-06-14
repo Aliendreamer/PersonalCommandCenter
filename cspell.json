@@ -46,7 +46,16 @@
     "testuser",
     "xforwarded",
     "dockerized",
-    "typechecks"
+    "typechecks",
+    "Allman",
+    "appsettings",
+    "cooldown",
+    "inlines",
+    "languagedetector",
+    "lightningcss",
+    "runsettings",
+    "slnx",
+    "unrs"
   ],
   "ignorePaths": [
     "node_modules/**",

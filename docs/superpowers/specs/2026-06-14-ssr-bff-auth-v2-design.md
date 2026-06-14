@@ -2,12 +2,12 @@
 
 **Date:** 2026-06-14
 **Status:** Approved (brainstorm) — pending implementation plan
-**Supersedes (for this repo):** the World-B split in `bff-auth-template.md` / the `auth` capability,
+**Supersedes (for this repo):** the Direct-BFF split in `bff-auth-direct-template.md` / the `auth` capability,
 where the browser talked to `api.pcc.localhost` directly. `.NET` remains the auth authority.
 
 ## Context & motivation
 
-The web app is SSR (TanStack Start) — the server runs on every request anyway. Today (World B) the
+The web app is SSR (TanStack Start) — the server runs on every request anyway. Today (Direct BFF) the
 browser bypasses it and calls `api.pcc.localhost` directly, so: the session cookie must be
 `Domain`-scoped (can't use `__Host-`), auth is gated **client-side** (`AuthProvider` probes `/api/me`
 after hydration → a "Loading…" flash, no SSR data), and `api.` is publicly exposed.
