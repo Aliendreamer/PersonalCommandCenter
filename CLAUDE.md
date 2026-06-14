@@ -89,7 +89,7 @@ server is the public BFF:
 
 core-api's auth code (`apps/core-api/Auth/`) is unchanged by the SSR-BFF cutover — only Keycloak
 `redirectUri` + `CallbackUri` config moved to `app.pcc.localhost/api/auth/callback`. See
-`bff-auth-template.md` and `openspec/changes/archive/ssr-bff-auth-v2/`.
+`bff-auth-template.md` and `openspec/changes/archive/2026-06-14-ssr-bff-auth-v2/`.
 
 ### Adding a plugin (the non-obvious part)
 
