@@ -41,7 +41,12 @@
     "JwtBearer",
     "Kestrel",
     "devtools",
-    "Scalar"
+    "Scalar",
+    "rehome",
+    "testuser",
+    "xforwarded",
+    "dockerized",
+    "typechecks"
   ],
   "ignorePaths": [
     "node_modules/**",
