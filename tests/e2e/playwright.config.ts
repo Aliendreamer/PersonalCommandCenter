@@ -6,6 +6,9 @@ export default defineConfig({
   testDir: '.',
   timeout: 60_000,
   fullyParallel: false,
+  // One worker: the suite drives a single shared live stack, and the dev Radicale drops
+  // connections under concurrent load — run the specs serially.
+  workers: 1,
   reporter: [['list']],
   use: {
     headless: true,

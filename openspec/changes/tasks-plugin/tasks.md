@@ -49,13 +49,13 @@
 
 ## 5. Verify + done gate
 
-- [ ] 5.1 FE gates green: `generate-routes`; `nx run-many -t typecheck lint test build`
+- [x] 5.1X FE gates green: `generate-routes`; `nx run-many -t typecheck lint test build`
       (web + `@pcc/contracts`) + `prettier --check`.
-- [ ] 5.2 .NET gates green: `dotnet build` (warnings = errors) + `dotnet test` (new tasks tests
+- [x] 5.2X .NET gates green: `dotnet build` (warnings = errors) + `dotnet test` (new tasks tests
       green, existing still green) + `dotnet format --verify-no-changes`.
-- [ ] 5.3 E2E (Playwright, live stack): `docker compose up -d --build`; login; `/tasks` is
+- [x] 5.3X E2E (Playwright, live stack): `docker compose up -d --build`; login; `/tasks` is
       **server-rendered with tasks**; create a task through the UI → it appears; toggle complete →
       it drops off the open list; delete; the browser only ever hit `app.`; `api.pcc.localhost`
       stays **404**.
-- [ ] 5.4 Update `CLAUDE.md` (the `tasks` plugin + `Plugins:Tasks` config + `/pcc/tasks/` collection)
+- [x] 5.4X Update `CLAUDE.md` (the `tasks` plugin + `Plugins:Tasks` config + `/pcc/tasks/` collection)
       and the plugin layout; mark tasks complete; ready for `/opsx:archive`.

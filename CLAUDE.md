@@ -10,8 +10,9 @@ plugins from a manifest and renders their nav entries, dashboard tiles, and rout
 sits **behind Keycloak login**. The **always-on SSR server is the public BFF tier** (SSR-BFF): the
 browser only ever talks to `app.pcc.localhost`; the SSR server proxies the OIDC auth dance and
 fetches page data server-to-server from core-api (internal-only). Plugins: `system` (host status),
-`iot` (read-only Home Assistant monitoring), and `calendar` (read + write CalDAV events — the first
-write-path plugin, mutations flow through the SSR-BFF).
+`iot` (read-only Home Assistant monitoring), `calendar` (read + write CalDAV events — the first
+write-path plugin, mutations flow through the SSR-BFF), and `tasks` (read + write CalDAV to-dos /
+VTODO, same Radicale, a separate collection).
 
 ## Stack & layout
 
@@ -26,6 +27,7 @@ libs/contracts         Shared TS types + typed API client (@pcc/contracts)
 plugins/system         SystemPlugin classlib  (id "system")
 plugins/iot            IotPlugin classlib     (id "iot", Home Assistant)
 plugins/calendar       CalendarPlugin classlib (id "calendar", CalDAV read+write; hand-rolled VEVENT)
+plugins/tasks          TasksPlugin classlib    (id "tasks", CalDAV read+write VTODO; /pcc/tasks/)
 tests/CoreApi.Tests    xUnit + Mvc.Testing integration/unit tests
 harness/keycloak       Pcc realm import (roles Admin/User, client pcc_api, testuser/Test123!)
 harness/radicale       Radicale CalDAV config + dev login (pcc/pcc-dev-caldav); internal-only
@@ -146,6 +148,9 @@ pnpm dlx @tanstack/intent@latest load <package>#<skill> # then follow the return
   override at core-api with `.env` `CALDAV_USER`/`CALDAV_PASSWORD` (then update `users` to match).
   `CalDavClient` `MKCALENDAR`s the collection on demand — Radicale answers **409 Conflict** (not 405)
   when it already exists, so both are treated as "exists". Unconfigured/unreachable → `502` (degrades).
+  `tasks` reuses the same Radicale with a **separate `/pcc/tasks/`** collection (VTODO). The dev
+  Radicale drops connections under concurrent load, so the live-stack **E2E runs serially**
+  (`workers: 1` in `tests/e2e/playwright.config.ts`).
 - **Calendar writes flow through the SSR-BFF**: the `/calendar` page calls `createServerFn({ method:
   'POST' })` mutations (`createCalendarEvent`/`update`/`delete` in `lib/server/api.ts`) which forward
   the cookie to core-api, then `router.invalidate()` re-runs the loader. The browser never calls the
