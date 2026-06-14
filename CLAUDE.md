@@ -9,8 +9,9 @@ host serves a plugin-based backend; a TanStack Start (React, SSR) web shell disc
 plugins from a manifest and renders their nav entries, dashboard tiles, and routes. The whole app
 sits **behind Keycloak login**. The **always-on SSR server is the public BFF tier** (SSR-BFF): the
 browser only ever talks to `app.pcc.localhost`; the SSR server proxies the OIDC auth dance and
-fetches page data server-to-server from core-api (internal-only). First plugins: `system` (host
-status) and `iot` (read-only Home Assistant monitoring).
+fetches page data server-to-server from core-api (internal-only). Plugins: `system` (host status),
+`iot` (read-only Home Assistant monitoring), and `calendar` (read + write CalDAV events — the first
+write-path plugin, mutations flow through the SSR-BFF).
 
 ## Stack & layout
 
@@ -24,11 +25,13 @@ libs/plugin-abstractions  .NET IPlugin + PluginManifest contract (Pcc.Plugins)
 libs/contracts         Shared TS types + typed API client (@pcc/contracts)
 plugins/system         SystemPlugin classlib  (id "system")
 plugins/iot            IotPlugin classlib     (id "iot", Home Assistant)
+plugins/calendar       CalendarPlugin classlib (id "calendar", CalDAV read+write; hand-rolled VEVENT)
 tests/CoreApi.Tests    xUnit + Mvc.Testing integration/unit tests
 harness/keycloak       Pcc realm import (roles Admin/User, client pcc_api, testuser/Test123!)
+harness/radicale       Radicale CalDAV config + dev login (pcc/pcc-dev-caldav); internal-only
 harness/traefik        Traefik file-provider routes (*.pcc.localhost)
 openspec/              Spec-driven change workflow (proposals → specs → tasks → archive)
-docker-compose.yml     Traefik + core-api + web + home-assistant + keycloak + postgres
+docker-compose.yml     Traefik + core-api + web + home-assistant + keycloak + postgres + radicale
 ```
 
 ## Commands
@@ -138,6 +141,17 @@ pnpm dlx @tanstack/intent@latest load <package>#<skill> # then follow the return
   standalone proxy route adds a `import type {} from '@tanstack/react-start'` so it typechecks alone.
 - **IoT needs a Home Assistant token** in `.env` (`HA_TOKEN`, gitignored); without it
   `/api/iot/entities` returns 502 by design (the dashboard tile degrades, page still renders).
+- **Calendar uses Radicale (CalDAV), internal-only** (`radicale:5232`, no Traefik route). Dev login
+  `pcc/pcc-dev-caldav` is committed in `harness/radicale/users` (like the Keycloak `testuser`);
+  override at core-api with `.env` `CALDAV_USER`/`CALDAV_PASSWORD` (then update `users` to match).
+  `CalDavClient` `MKCALENDAR`s the collection on demand — Radicale answers **409 Conflict** (not 405)
+  when it already exists, so both are treated as "exists". Unconfigured/unreachable → `502` (degrades).
+- **Calendar writes flow through the SSR-BFF**: the `/calendar` page calls `createServerFn({ method:
+  'POST' })` mutations (`createCalendarEvent`/`update`/`delete` in `lib/server/api.ts`) which forward
+  the cookie to core-api, then `router.invalidate()` re-runs the loader. The browser never calls the
+  API directly — the first write-path plugin establishes this pattern for `tasks`/`notes`/etc.
+- **iCalendar is hand-rolled** (`CalendarIcs`, VEVENT subset) — no `Ical.Net`. v1 covers UID/SUMMARY/
+  DTSTART/DTEND/all-day/LOCATION/DESCRIPTION + UTC; recurrence (RRULE) and timezones are non-goals.
 - **Public ingress is Traefik on `*.pcc.localhost`** (`app./keycloak./ha./portainer.`) — **no `api.`
   router**: core-api is internal-only, reached as `core-api:8080` on the compose network. The
   `mp_sid` cookie is app-scoped (`SameSite=Lax`). Browsers auto-resolve `*.localhost`; `curl` needs

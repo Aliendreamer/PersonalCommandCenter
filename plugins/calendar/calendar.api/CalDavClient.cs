@@ -121,8 +121,12 @@ public sealed class CalDavClient : ICalendarClient
     {
         using var request = new HttpRequestMessage(MkCalendar, CollectionUri);
         using var response = await _http.SendAsync(request, cancellationToken);
-        // 405 Method Not Allowed = the collection already exists; anything else 2xx is fine.
-        if (response.StatusCode != HttpStatusCode.MethodNotAllowed && !response.IsSuccessStatusCode)
+        // The collection already exists when MKCALENDAR is rejected with 405 (Method Not Allowed,
+        // per RFC 4791) or 409 (Conflict, as Radicale reports it); both are fine. Anything else
+        // non-2xx is a real failure.
+        if (response.StatusCode != HttpStatusCode.MethodNotAllowed
+            && response.StatusCode != HttpStatusCode.Conflict
+            && !response.IsSuccessStatusCode)
         {
             response.EnsureSuccessStatusCode();
         }

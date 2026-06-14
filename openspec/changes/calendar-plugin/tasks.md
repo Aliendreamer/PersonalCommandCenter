@@ -62,14 +62,14 @@
 
 ## 6. Verify + done gate
 
-- [ ] 6.1 FE gates green: `generate-routes`; `nx run-many -t typecheck lint test build`
+- [x] 6.1 FE gates green: `generate-routes`; `nx run-many -t typecheck lint test build`
       (web + `@pcc/contracts`) + `prettier --check`.
-- [ ] 6.2 .NET gates green: `dotnet build` (warnings = errors) + `dotnet test` (new calendar tests
+- [x] 6.2 .NET gates green: `dotnet build` (warnings = errors) + `dotnet test` (new calendar tests
       green, existing 46 still green) + `dotnet format --verify-no-changes`.
-- [ ] 6.3 E2E (Playwright, live stack with `radicale`): `docker compose up -d --build`; login;
+- [x] 6.3 E2E (Playwright, live stack with `radicale`): `docker compose up -d --build`; login;
       `/calendar` is **server-rendered with events**; create an event from the UI → it appears and
       the browser only ever hit `app.`; `calendar-today` tile shows today; `api.pcc.localhost` stays
       **404** (core-api internal).
-- [ ] 6.4 Update `CLAUDE.md` (the `calendar` plugin + `radicale` service + `Plugins:Calendar`
+- [x] 6.4 Update `CLAUDE.md` (the `calendar` plugin + `radicale` service + `Plugins:Calendar`
       config + first write-path plugin) and the plugin layout; mark tasks complete; ready for
       `/opsx:archive`.

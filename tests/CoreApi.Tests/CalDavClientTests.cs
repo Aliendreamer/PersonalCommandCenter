@@ -73,6 +73,23 @@ public class CalDavClientTests
     }
 
     [Fact]
+    public async Task Create_succeeds_when_the_collection_already_exists()
+    {
+        // Radicale answers MKCALENDAR on an existing collection with 409 Conflict; the PUT still 201s.
+        var handler = new StubHandler((req, _) => new HttpResponseMessage(
+            req.Method.Method == "MKCALENDAR" ? HttpStatusCode.Conflict : HttpStatusCode.Created));
+        var client = new CalDavClient(new HttpClient(handler), Microsoft.Extensions.Options.Options.Create(Options()));
+
+        var created = await client.CreateAsync(new CalendarEventInput(
+            "Demo",
+            new DateTimeOffset(2026, 6, 15, 9, 0, 0, TimeSpan.Zero),
+            new DateTimeOffset(2026, 6, 15, 10, 0, 0, TimeSpan.Zero)));
+
+        Assert.False(string.IsNullOrEmpty(created.Uid));
+        Assert.Contains(handler.Requests, r => r.Method == HttpMethod.Put);
+    }
+
+    [Fact]
     public async Task Delete_returns_false_on_404()
     {
         var handler = new StubHandler((req, _) => new HttpResponseMessage(HttpStatusCode.NotFound));
