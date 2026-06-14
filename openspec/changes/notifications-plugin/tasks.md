@@ -26,13 +26,13 @@
 
 ## 3. notifications plugin — endpoints (TDD)
 
-- [ ] 3.1 New `plugins/notifications/notifications.api` classlib implementing `IPlugin` (id
+- [x] 3.1 New `plugins/notifications/notifications.api` classlib implementing `IPlugin` (id
       `notifications`; nav "Notifications", `routeBase` `/notifications`, widget `notifications-unread`).
       Register in `CoreApi.csproj`, `Program.cs` `pluginAssemblies`, `PersonalCommandCenter.slnx`,
       Dockerfile; `Plugins:Notifications:Enabled` config. Lazy `Resolve<INotificationStore>()`.
-- [ ] 3.2 FastEndpoints under `api/notifications`: `GET` list (newest-first + unread count),
+- [x] 3.2 FastEndpoints under `api/notifications`: `GET` list (newest-first + unread count),
       `POST {id}/read`, `POST read-all`. Unknown id → `404`; require auth.
-- [ ] 3.3 (TDD) `CoreApi.Tests` integration tests (real `NotificationService` on InMemory EF, stub
+- [x] 3.3 (TDD) `CoreApi.Tests` integration tests (real `NotificationService` on InMemory EF, stub
       ntfy): list with unread count; mark one read → count drops + `404` unknown; mark all → count 0;
       requires auth; disabled plugin absent from `/api/plugins`.
 

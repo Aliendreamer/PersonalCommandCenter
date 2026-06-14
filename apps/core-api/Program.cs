@@ -1,17 +1,19 @@
 using System.Reflection;
 using System.Security.Claims;
+using System.Text.Json.Serialization;
 using CoreApi.Auth;
 using CoreApi.Data;
 using CoreApi.Notifications;
 using CoreApi.Plugins;
-using Pcc.Plugins;
 using FastEndpoints;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Pcc.Plugins;
 using Pcc.Plugins.Calendar;
 using Pcc.Plugins.Iot;
+using Pcc.Plugins.Notifications;
 using Pcc.Plugins.SystemPlugin;
 using Pcc.Plugins.Tasks;
 using Scalar.AspNetCore;
@@ -83,6 +85,7 @@ Assembly[] pluginAssemblies =
     typeof(IotPlugin).Assembly,
     typeof(CalendarPlugin).Assembly,
     typeof(TasksPlugin).Assembly,
+    typeof(NotificationsPlugin).Assembly,
 ];
 
 using var bootstrapLoggerFactory = LoggerFactory.Create(logging => logging.AddConsole());
@@ -125,6 +128,8 @@ app.UseFastEndpoints(c =>
     c.Endpoints.Filter = ep =>
         ep.EndpointType.Assembly == hostAssembly || enabledAssemblies.Contains(ep.EndpointType.Assembly);
     c.Endpoints.Configurator = ep => ep.PreProcessor<CurrentUserPreProcessor>(Order.Before);
+    // Serialize enums as strings (e.g. NotificationSeverity → "Info") to match the TS contracts.
+    c.Serializer.Options.Converters.Add(new JsonStringEnumConverter());
 });
 
 app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));

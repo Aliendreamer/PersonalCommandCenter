@@ -45,8 +45,12 @@ public static class TestFactoryExtensions
 {
     public static WebApplicationFactory<Program> Authed(
         this WebApplicationFactory<Program> factory,
-        Action<IServiceCollection>? extra = null) =>
-        factory.WithWebHostBuilder(b => b.ConfigureTestServices(services =>
+        Action<IServiceCollection>? extra = null)
+    {
+        // One database name per factory (NOT per scope) so seeding in one scope is visible to the
+        // request pipeline's scope — `Guid.NewGuid()` inside the options lambda would differ per scope.
+        var dbName = "authed-" + Guid.NewGuid();
+        return factory.WithWebHostBuilder(b => b.ConfigureTestServices(services =>
         {
             foreach (var d in services.Where(d =>
                 d.ServiceType == typeof(DbContextOptions<PccDbContext>)
@@ -57,7 +61,7 @@ public static class TestFactoryExtensions
                 services.Remove(d);
             }
 
-            services.AddDbContext<PccDbContext>(o => o.UseInMemoryDatabase("authed-" + Guid.NewGuid()));
+            services.AddDbContext<PccDbContext>(o => o.UseInMemoryDatabase(dbName));
             services.AddAuthentication(TestAuthHandler.SchemeName)
                 .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.SchemeName, _ => { });
             services.Configure<AuthenticationOptions>(o =>
@@ -67,6 +71,7 @@ public static class TestFactoryExtensions
             });
             extra?.Invoke(services);
         }));
+    }
 
     public static HttpClient AuthedClient(this WebApplicationFactory<Program> factory)
     {

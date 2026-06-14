@@ -16,6 +16,10 @@
   <Folder Name="/plugins/iot/iot.api/">
     <Project Path="plugins/iot/iot.api/IotPlugin.csproj" />
   </Folder>
+  <Folder Name="/plugins/notifications/" />
+  <Folder Name="/plugins/notifications/notifications.api/">
+    <Project Path="plugins/notifications/notifications.api/NotificationsPlugin.csproj" />
+  </Folder>
   <Folder Name="/plugins/system/" />
   <Folder Name="/plugins/system/system.api/">
     <Project Path="plugins/system/system.api/SystemPlugin.csproj" />

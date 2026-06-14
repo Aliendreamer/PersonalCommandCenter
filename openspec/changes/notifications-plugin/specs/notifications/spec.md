@@ -37,12 +37,12 @@ return `404`.
 #### Scenario: Mark one read
 
 - **WHEN** a client POSTs `/api/notifications/{id}/read` for an unread notification
-- **THEN** the response is `200`, the notification's `readAt` is set, and the unread count drops by one
+- **THEN** the response is `204`, the notification's `readAt` is set, and the unread count drops by one
 
 #### Scenario: Mark all read
 
 - **WHEN** a client POSTs `/api/notifications/read-all` with two unread notifications
-- **THEN** the response is `200` and a subsequent listing reports an unread count of `0`
+- **THEN** the response is `204` and a subsequent listing reports an unread count of `0`
 
 #### Scenario: Unknown id
 
