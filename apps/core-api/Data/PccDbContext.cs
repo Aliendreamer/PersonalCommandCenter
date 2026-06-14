@@ -7,6 +7,7 @@ public sealed class PccDbContext(DbContextOptions<PccDbContext> options) : DbCon
 {
     public DbSet<User> Users => Set<User>();
     public DbSet<UserSession> Sessions => Set<UserSession>();
+    public DbSet<Notification> Notifications => Set<Notification>();
 
     protected override void OnModelCreating(ModelBuilder model)
     {
@@ -15,6 +16,15 @@ public sealed class PccDbContext(DbContextOptions<PccDbContext> options) : DbCon
             e.HasKey(x => x.Id);
             e.HasIndex(x => x.Sub).IsUnique();
             e.Property(x => x.Sub).IsRequired();
+        });
+
+        model.Entity<Notification>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => x.CreatedAt);
+            e.Property(x => x.Source).IsRequired();
+            e.Property(x => x.Title).IsRequired();
+            e.Property(x => x.Severity).HasConversion<string>();
         });
 
         model.Entity<UserSession>(e =>

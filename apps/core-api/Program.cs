@@ -2,7 +2,9 @@ using System.Reflection;
 using System.Security.Claims;
 using CoreApi.Auth;
 using CoreApi.Data;
+using CoreApi.Notifications;
 using CoreApi.Plugins;
+using Pcc.Plugins;
 using FastEndpoints;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
@@ -37,6 +39,14 @@ builder.Services.AddHttpClient<IKeycloakClient, KeycloakClient>();
 builder.Services.AddScoped<ISessionService, SessionService>();
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 builder.Services.AddHostedService<SessionCleanupHostedService>();
+
+// Notification alert-bus — host infrastructure, registered regardless of the plugin's enabled flag
+// so any code can publish even when the notifications UI is off.
+builder.Services.Configure<NtfyOptions>(builder.Configuration.GetSection("Notifications:Ntfy"));
+builder.Services.AddHttpClient<INtfyClient, NtfyClient>();
+builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<INotificationPublisher>(sp => sp.GetRequiredService<NotificationService>());
+builder.Services.AddScoped<INotificationStore>(sp => sp.GetRequiredService<NotificationService>());
 
 // Persist DataProtection keys to a mounted volume so they survive container restarts
 // (Development/tests use the default ephemeral keystore).
@@ -92,6 +102,9 @@ if (!app.Environment.IsDevelopment())
 {
     using var scope = app.Services.CreateScope();
     await scope.ServiceProvider.GetRequiredService<PccDbContext>().Database.MigrateAsync();
+    // Seed one startup notification (exercises the bus + ntfy once per boot).
+    await scope.ServiceProvider.GetRequiredService<INotificationPublisher>()
+        .PublishAsync("system", NotificationSeverity.Info, "Command center online");
 }
 
 app.UseCors();

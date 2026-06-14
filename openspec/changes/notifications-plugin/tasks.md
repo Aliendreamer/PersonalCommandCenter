@@ -9,18 +9,18 @@
 
 ## 2. Host alert-bus — abstractions, entity, service (TDD)
 
-- [ ] 2.1 `libs/plugin-abstractions`: add `NotificationSeverity` (Info/Warning/Error), a plain
+- [x] 2.1 `libs/plugin-abstractions`: add `NotificationSeverity` (Info/Warning/Error), a plain
       `NotificationDto` record, `INotificationPublisher` (`PublishAsync(source, severity, title,
       message?)`), and `INotificationStore` (`ListAsync`, `UnreadCountAsync`, `MarkReadAsync(id)`,
       `MarkAllReadAsync`).
-- [ ] 2.2 core-api `Data`: a `Notification` EF entity (Id Guid, Source, Severity, Title, Message?,
+- [x] 2.2 core-api `Data`: a `Notification` EF entity (Id Guid, Source, Severity, Title, Message?,
       CreatedAt, ReadAt?) + `DbSet` on `PccDbContext` + an `AddNotifications` migration
       (`dotnet ef migrations add`).
-- [ ] 2.3 (TDD) Host `NotificationService : INotificationPublisher, INotificationStore` over
+- [x] 2.3 (TDD) Host `NotificationService : INotificationPublisher, INotificationStore` over
       `PccDbContext` + a named ntfy `HttpClient` (`NtfyOptions{BaseUrl,Topic}`): publish persists then
       best-effort POSTs to ntfy (swallow failures); list newest-first; unread count; mark one / all.
       Unit-test with InMemory EF + a stub ntfy handler (persist-even-when-ntfy-throws; mark read).
-- [ ] 2.4 `Program.cs`: register `NotificationService` (scoped) as both interfaces + the ntfy
+- [x] 2.4 `Program.cs`: register `NotificationService` (scoped) as both interfaces + the ntfy
       `HttpClient` + `NotificationsOptions`; after build, open a scope and publish one "Command center
       online" Info notification.
 
