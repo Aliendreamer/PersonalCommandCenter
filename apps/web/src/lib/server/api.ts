@@ -9,9 +9,12 @@ import {
   loadIotEntities,
   loadMe,
   loadPlugins,
+  loadNotifications,
   loadSystemStatus,
   loadTasks,
   postCalendarEvent,
+  postMarkAllNotificationsRead,
+  postMarkNotificationRead,
   postTask,
   putCalendarEvent,
   putTask,
@@ -72,6 +75,18 @@ export const updateTask = createServerFn({ method: 'POST' })
 export const deleteTask = createServerFn({ method: 'POST' })
   .validator((uid: string) => uid)
   .handler(({ data }) => removeTask(serverFetch(), data))
+
+export const getNotifications = createServerFn({ method: 'GET' }).handler(() =>
+  loadNotifications(serverFetch()),
+)
+
+export const markNotificationRead = createServerFn({ method: 'POST' })
+  .validator((id: string) => id)
+  .handler(({ data }) => postMarkNotificationRead(serverFetch(), data))
+
+export const markAllNotificationsRead = createServerFn({
+  method: 'POST',
+}).handler(() => postMarkAllNotificationsRead(serverFetch()))
 
 // Mutations: the RPC transport is POST regardless of the underlying core-api method; the handler
 // re-attaches the cookie and calls core-api with the right verb. The browser only talks to app.

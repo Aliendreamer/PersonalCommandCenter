@@ -2,6 +2,7 @@ import type {
   CalendarEvent,
   CalendarEventInput,
   IotEntity,
+  NotificationList,
   PluginManifest,
   SystemStatus,
   TodoInput,
@@ -22,6 +23,9 @@ export interface ApiClient {
   createTask(input: TodoInput): Promise<TodoItem>;
   updateTask(uid: string, input: TodoInput): Promise<TodoItem>;
   deleteTask(uid: string): Promise<void>;
+  getNotifications(): Promise<NotificationList>;
+  markNotificationRead(id: string): Promise<void>;
+  markAllNotificationsRead(): Promise<void>;
 }
 
 /**
@@ -67,6 +71,13 @@ export function createApiClient(baseUrl: string, fetchImpl: FetchLike = fetch): 
     updateTask: (uid, input) => sendJson<TodoItem>(`/api/tasks/${uid}`, 'PUT', input),
     deleteTask: async (uid) => {
       await request(`/api/tasks/${uid}`, { method: 'DELETE' });
+    },
+    getNotifications: () => getJson<NotificationList>('/api/notifications'),
+    markNotificationRead: async (id) => {
+      await request(`/api/notifications/${id}/read`, { method: 'POST' });
+    },
+    markAllNotificationsRead: async () => {
+      await request('/api/notifications/read-all', { method: 'POST' });
     },
   };
 }

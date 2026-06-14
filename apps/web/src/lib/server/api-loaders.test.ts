@@ -8,9 +8,12 @@ import {
   loadIotEntities,
   loadMe,
   loadPlugins,
+  loadNotifications,
   loadSystemStatus,
   loadTasks,
   postCalendarEvent,
+  postMarkAllNotificationsRead,
+  postMarkNotificationRead,
   postTask,
   putCalendarEvent,
   putTask,
@@ -204,6 +207,38 @@ describe('task mutations', () => {
 
     await expect(removeTask(fetchImpl, 'abc')).resolves.toBeNull()
     expect(fetchImpl.mock.calls[0][1].method).toBe('DELETE')
+  })
+})
+
+describe('notifications', () => {
+  it('loadNotifications hits the endpoint', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValue(ok({ notifications: [], unread: 0 }))
+    await loadNotifications(fetchImpl)
+    expect(fetchImpl).toHaveBeenCalledWith(
+      'http://core-api:8080/api/notifications',
+    )
+  })
+
+  it('postMarkNotificationRead POSTs to the read endpoint', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValue(new Response(null, { status: 204 }))
+    await postMarkNotificationRead(fetchImpl, 'abc')
+    const [url, init] = fetchImpl.mock.calls[0]
+    expect(url).toBe('http://core-api:8080/api/notifications/abc/read')
+    expect(init.method).toBe('POST')
+  })
+
+  it('postMarkAllNotificationsRead POSTs to read-all', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValue(new Response(null, { status: 204 }))
+    await postMarkAllNotificationsRead(fetchImpl)
+    expect(fetchImpl.mock.calls[0][0]).toBe(
+      'http://core-api:8080/api/notifications/read-all',
+    )
   })
 })
 

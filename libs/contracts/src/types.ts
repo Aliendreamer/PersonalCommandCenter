@@ -62,3 +62,22 @@ export interface TodoInput {
   completed?: boolean;
   description?: string | null;
 }
+
+export type NotificationSeverity = 'Info' | 'Warning' | 'Error';
+
+/** Mirrors the backend `Notification` from `GET /api/notifications`. */
+export interface Notification {
+  id: string;
+  source: string;
+  severity: NotificationSeverity;
+  title: string;
+  message?: string | null;
+  createdAt: string;
+  readAt?: string | null;
+}
+
+/** The `GET /api/notifications` response: the list plus the current unread count. */
+export interface NotificationList {
+  notifications: Notification[];
+  unread: number;
+}

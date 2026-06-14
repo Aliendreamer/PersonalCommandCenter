@@ -38,14 +38,14 @@
 
 ## 4. Contracts + web (read + mark-read, TDD)
 
-- [ ] 4.1 (TDD) `@pcc/contracts`: `Notification` type + `getNotifications`/`markRead`/`markAllRead`
+- [x] 4.1 (TDD) `@pcc/contracts`: `Notification` type + `getNotifications`/`markRead`/`markAllRead`
       client methods; client tests against a mock fetch.
-- [ ] 4.2 (TDD) `lib/server`: `loadNotifications` pure loader + `getNotifications` server fn;
+- [x] 4.2 (TDD) `lib/server`: `loadNotifications` pure loader + `getNotifications` server fn;
       `markNotificationRead`/`markAllNotificationsRead` POST server functions + pure helpers; unit-test
       the helpers (method/URL).
-- [ ] 4.3 `notifications-unread` tile — presentational (`{ unread?, error? }`): shows the unread
+- [x] 4.3 `notifications-unread` tile — presentational (`{ unread?, error? }`): shows the unread
       count (or "No notifications") and a degraded state on error; component test.
-- [ ] 4.4 `_authenticated/notifications` route: loader calls `getNotifications` (via `settle`); page
+- [x] 4.4 `_authenticated/notifications` route: loader calls `getNotifications` (via `settle`); page
       renders notifications **server-side** with per-item "mark read" + "mark all read" calling the
       mutations then `router.invalidate()`; dashboard renders the `notifications-unread` tile. A
       `NotificationList` presentational component + test. `generate-routes`.

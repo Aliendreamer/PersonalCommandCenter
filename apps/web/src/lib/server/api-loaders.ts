@@ -3,6 +3,7 @@ import type {
   CalendarEvent,
   CalendarEventInput,
   IotEntity,
+  NotificationList,
   PluginManifest,
   SystemStatus,
   TodoInput,
@@ -90,6 +91,11 @@ export const loadTasks = (
     all ? '/api/tasks?all=true' : '/api/tasks',
   )
 
+export const loadNotifications = (
+  fetchImpl: FetchLike,
+): Promise<NotificationList> =>
+  loadProtected<NotificationList>(fetchImpl, '/api/notifications')
+
 /**
  * Sends a protected mutation server-to-server. 401 → login redirect (revoked session); 404 → null
  * (unknown uid); 204/other 2xx → the parsed body or null; anything else throws.
@@ -150,6 +156,12 @@ export const putTask = (fetchImpl: FetchLike, uid: string, input: TodoInput) =>
 
 export const removeTask = (fetchImpl: FetchLike, uid: string) =>
   sendProtected<null>(fetchImpl, 'DELETE', `/api/tasks/${uid}`)
+
+export const postMarkNotificationRead = (fetchImpl: FetchLike, id: string) =>
+  sendProtected<null>(fetchImpl, 'POST', `/api/notifications/${id}/read`)
+
+export const postMarkAllNotificationsRead = (fetchImpl: FetchLike) =>
+  sendProtected<null>(fetchImpl, 'POST', '/api/notifications/read-all')
 
 /** A loaded value or a degraded marker. */
 export type Settled<T> =

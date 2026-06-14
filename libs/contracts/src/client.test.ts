@@ -113,4 +113,25 @@ describe('createApiClient', () => {
     expect(calls[0]?.init?.method).toBe('PUT');
     expect(JSON.parse(String(calls[0]?.init?.body)).completed).toBe(true);
   });
+
+  it('fetches notifications (list + unread)', async () => {
+    const body = { notifications: [], unread: 3 };
+    const client = createApiClient('http://api', jsonFetch(body));
+
+    await expect(client.getNotifications()).resolves.toEqual(body);
+  });
+
+  it('marks a notification read with a POST', async () => {
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    const fetchImpl = (async (url: string, init?: RequestInit) => {
+      calls.push({ url, init });
+      return new Response(null, { status: 204 });
+    }) as unknown as typeof fetch;
+    const client = createApiClient('http://api', fetchImpl);
+
+    await client.markNotificationRead('abc');
+
+    expect(calls[0]?.url).toBe('http://api/api/notifications/abc/read');
+    expect(calls[0]?.init?.method).toBe('POST');
+  });
 });
