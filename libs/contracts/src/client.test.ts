@@ -27,4 +27,58 @@ describe('createApiClient', () => {
 
     await expect(client.getIotEntities()).resolves.toEqual(entities);
   });
+
+  it('fetches calendar events, passing the days window', async () => {
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    const fetchImpl = (async (url: string, init?: RequestInit) => {
+      calls.push({ url, init });
+      return new Response(JSON.stringify([]), { status: 200 });
+    }) as unknown as typeof fetch;
+    const client = createApiClient('http://api', fetchImpl);
+
+    await client.getCalendarEvents(1);
+
+    expect(calls[0]?.url).toBe('http://api/api/calendar/events?days=1');
+  });
+
+  it('creates a calendar event with a POST + JSON body', async () => {
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    const created = {
+      uid: 'x',
+      title: 'Lunch',
+      start: '2026-06-15T12:00:00Z',
+      end: '2026-06-15T13:00:00Z',
+      allDay: false,
+    };
+    const fetchImpl = (async (url: string, init?: RequestInit) => {
+      calls.push({ url, init });
+      return new Response(JSON.stringify(created), { status: 201 });
+    }) as unknown as typeof fetch;
+    const client = createApiClient('http://api', fetchImpl);
+
+    await expect(
+      client.createCalendarEvent({
+        title: 'Lunch',
+        start: '2026-06-15T12:00:00Z',
+        end: '2026-06-15T13:00:00Z',
+      }),
+    ).resolves.toEqual(created);
+    expect(calls[0]?.url).toBe('http://api/api/calendar/events');
+    expect(calls[0]?.init?.method).toBe('POST');
+    expect(JSON.parse(String(calls[0]?.init?.body)).title).toBe('Lunch');
+  });
+
+  it('deletes a calendar event with a DELETE', async () => {
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    const fetchImpl = (async (url: string, init?: RequestInit) => {
+      calls.push({ url, init });
+      return new Response(null, { status: 204 });
+    }) as unknown as typeof fetch;
+    const client = createApiClient('http://api', fetchImpl);
+
+    await client.deleteCalendarEvent('abc');
+
+    expect(calls[0]?.url).toBe('http://api/api/calendar/events/abc');
+    expect(calls[0]?.init?.method).toBe('DELETE');
+  });
 });

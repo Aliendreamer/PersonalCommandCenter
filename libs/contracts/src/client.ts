@@ -1,4 +1,10 @@
-import type { IotEntity, PluginManifest, SystemStatus } from './types';
+import type {
+  CalendarEvent,
+  CalendarEventInput,
+  IotEntity,
+  PluginManifest,
+  SystemStatus,
+} from './types';
 
 type FetchLike = typeof fetch;
 
@@ -6,6 +12,10 @@ export interface ApiClient {
   getPlugins(): Promise<PluginManifest[]>;
   getSystemStatus(): Promise<SystemStatus>;
   getIotEntities(): Promise<IotEntity[]>;
+  getCalendarEvents(days?: number): Promise<CalendarEvent[]>;
+  createCalendarEvent(input: CalendarEventInput): Promise<CalendarEvent>;
+  updateCalendarEvent(uid: string, input: CalendarEventInput): Promise<CalendarEvent>;
+  deleteCalendarEvent(uid: string): Promise<void>;
 }
 
 /**
@@ -13,17 +23,38 @@ export interface ApiClient {
  * can supply their own fetch.
  */
 export function createApiClient(baseUrl: string, fetchImpl: FetchLike = fetch): ApiClient {
-  const getJson = async <T>(path: string): Promise<T> => {
-    const response = await fetchImpl(`${baseUrl}${path}`);
+  const request = async (path: string, init?: RequestInit): Promise<Response> => {
+    const response = await fetchImpl(`${baseUrl}${path}`, init);
     if (!response.ok) {
       throw new Error(`Request to ${path} failed with status ${response.status}`);
     }
-    return (await response.json()) as T;
+    return response;
   };
+
+  const getJson = async <T>(path: string): Promise<T> => (await request(path)).json() as Promise<T>;
+
+  const sendJson = async <T>(path: string, method: string, body: unknown): Promise<T> =>
+    (
+      await request(path, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+    ).json() as Promise<T>;
 
   return {
     getPlugins: () => getJson<PluginManifest[]>('/api/plugins'),
     getSystemStatus: () => getJson<SystemStatus>('/api/system/status'),
     getIotEntities: () => getJson<IotEntity[]>('/api/iot/entities'),
+    getCalendarEvents: (days) =>
+      getJson<CalendarEvent[]>(
+        days === undefined ? '/api/calendar/events' : `/api/calendar/events?days=${days}`,
+      ),
+    createCalendarEvent: (input) => sendJson<CalendarEvent>('/api/calendar/events', 'POST', input),
+    updateCalendarEvent: (uid, input) =>
+      sendJson<CalendarEvent>(`/api/calendar/events/${uid}`, 'PUT', input),
+    deleteCalendarEvent: async (uid) => {
+      await request(`/api/calendar/events/${uid}`, { method: 'DELETE' });
+    },
   };
 }

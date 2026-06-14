@@ -35,7 +35,7 @@
 
 ## 3. Contracts — shared types + client (TDD)
 
-- [ ] 3.1 (TDD) `@pcc/contracts`: add `CalendarEvent` (+ create/update input shapes) and client
+- [x] 3.1 (TDD) `@pcc/contracts`: add `CalendarEvent` (+ create/update input shapes) and client
       methods `getCalendarEvents` / `createCalendarEvent` / `updateCalendarEvent` /
       `deleteCalendarEvent`; client tests against a mock fetch.
 

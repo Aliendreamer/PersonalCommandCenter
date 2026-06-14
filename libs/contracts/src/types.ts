@@ -22,3 +22,25 @@ export interface IotEntity {
   state: string;
   unit?: string | null;
 }
+
+/** Mirrors the backend `CalendarEvent` returned by `GET /api/calendar/events`. */
+export interface CalendarEvent {
+  uid: string;
+  title: string;
+  /** ISO 8601 instant (UTC) or date for all-day events. */
+  start: string;
+  end: string;
+  allDay: boolean;
+  location?: string | null;
+  description?: string | null;
+}
+
+/** The writable fields of a calendar event (create/update); the server owns the `uid`. */
+export interface CalendarEventInput {
+  title: string;
+  start: string;
+  end: string;
+  allDay?: boolean;
+  location?: string | null;
+  description?: string | null;
+}
