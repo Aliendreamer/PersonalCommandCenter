@@ -1,10 +1,10 @@
 ## 1. Infra — ntfy service
 
-- [ ] 1.1 Add a `ntfy` service to `docker-compose.yml` (image `binwiederhier/ntfy`, `serve`; config/
+- [x] 1.1 Add a `ntfy` service to `docker-compose.yml` (image `binwiederhier/ntfy`, `serve`; config/
       cache volume; `NTFY_BASE_URL=http://ntfy.pcc.localhost`, `NTFY_BEHIND_PROXY=true`). Add a
       `ntfy.pcc.localhost` route to `harness/traefik/dynamic.yml` (→ `ntfy:80`). Internal publish at
       `http://ntfy:80`; external domain deferred.
-- [ ] 1.2 `docker compose config` valid; bring `ntfy` up and confirm a `POST /{topic}` is accepted
+- [x] 1.2 `docker compose config` valid; bring `ntfy` up and confirm a `POST /{topic}` is accepted
       and readable via its JSON poll API (smoke).
 
 ## 2. Host alert-bus — abstractions, entity, service (TDD)

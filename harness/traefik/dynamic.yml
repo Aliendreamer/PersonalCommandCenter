@@ -17,6 +17,10 @@ http:
       rule: 'Host(`ha.pcc.localhost`)'
       entryPoints: ['web']
       service: ha
+    ntfy:
+      rule: 'Host(`ntfy.pcc.localhost`)'
+      entryPoints: ['web']
+      service: ntfy
     portainer:
       rule: 'Host(`portainer.pcc.localhost`)'
       entryPoints: ['web']
@@ -34,6 +38,10 @@ http:
       loadBalancer:
         servers:
           - url: 'http://home-assistant:8123'
+    ntfy:
+      loadBalancer:
+        servers:
+          - url: 'http://ntfy:80'
     portainer:
       loadBalancer:
         serversTransport: insecure

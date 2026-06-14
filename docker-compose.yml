@@ -66,6 +66,9 @@ services:
       Plugins__Tasks__Collection: '/pcc/tasks/'
       Plugins__Tasks__Username: '${CALDAV_USER:-pcc}'
       Plugins__Tasks__Password: '${CALDAV_PASSWORD:-pcc-dev-caldav}'
+      Plugins__Notifications__Enabled: 'true'
+      Notifications__Ntfy__BaseUrl: 'http://ntfy:80'
+      Notifications__Ntfy__Topic: 'pcc'
       Web__Origins: 'http://app.pcc.localhost'
       ConnectionStrings__Postgres: 'Host=postgres;Database=pcc;Username=pcc;Password=${POSTGRES_PASSWORD:-pcc-dev}'
       Auth__Keycloak__Authority: 'http://keycloak.pcc.localhost/realms/Pcc'
@@ -83,6 +86,8 @@ services:
       home-assistant:
         condition: service_started
       radicale:
+        condition: service_started
+      ntfy:
         condition: service_started
     volumes:
       - pcc-dataprotection:/keys
@@ -111,6 +116,19 @@ services:
       - ./harness/radicale/config:/config/config:ro
       - ./harness/radicale/users:/config/users:ro
 
+  ntfy:
+    image: binwiederhier/ntfy:latest
+    command: serve
+    # core-api publishes to it as `http://ntfy:80`; the web UI is at ntfy.pcc.localhost (Traefik).
+    # External reachability (phone push from outside) is deferred — internal-only for now.
+    environment:
+      NTFY_BASE_URL: 'http://ntfy.pcc.localhost'
+      NTFY_BEHIND_PROXY: 'true'
+      NTFY_CACHE_FILE: '/var/lib/ntfy/cache.db'
+      NTFY_ATTACHMENT_CACHE_DIR: '/var/lib/ntfy/attachments'
+    volumes:
+      - ntfy-data:/var/lib/ntfy
+
   web:
     build:
       context: .
@@ -132,3 +150,4 @@ volumes:
   pcc-postgres:
   pcc-dataprotection:
   radicale-data:
+  ntfy-data:
