@@ -1,4 +1,5 @@
 import type { SearchResult } from '@pcc/contracts'
+import { safeHref } from '../lib/safe-href'
 
 export interface SearchResultListProps {
   results: SearchResult[]
@@ -34,9 +35,9 @@ export function SearchResultList({
       {results.map((r) => (
         <li key={r.url}>
           <a
-            href={r.url}
+            href={safeHref(r.url)}
             target="_blank"
-            rel="noreferrer"
+            rel="noreferrer noopener"
             className="text-sky-700 underline"
           >
             {r.title}

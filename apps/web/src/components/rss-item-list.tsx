@@ -1,4 +1,5 @@
 import type { RssItem } from '@pcc/contracts'
+import { safeHref } from '../lib/safe-href'
 
 export interface RssItemListProps {
   items: RssItem[]
@@ -31,9 +32,9 @@ export function RssItemList({ items, error }: RssItemListProps) {
       {items.map((item) => (
         <li key={item.link} className="px-3 py-2 text-sm">
           <a
-            href={item.link}
+            href={safeHref(item.link)}
             target="_blank"
-            rel="noreferrer"
+            rel="noreferrer noopener"
             className="text-sky-700 underline"
           >
             {item.title}
