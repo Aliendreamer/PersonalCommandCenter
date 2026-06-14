@@ -55,7 +55,10 @@
     "lightningcss",
     "runsettings",
     "slnx",
-    "unrs"
+    "unrs",
+    "webp",
+    "Dockerfiles",
+    "linguist"
   ],
   "ignorePaths": [
     "node_modules/**",
