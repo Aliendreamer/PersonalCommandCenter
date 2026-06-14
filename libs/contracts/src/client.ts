@@ -4,6 +4,8 @@ import type {
   IotEntity,
   PluginManifest,
   SystemStatus,
+  TodoInput,
+  TodoItem,
 } from './types';
 
 type FetchLike = typeof fetch;
@@ -16,6 +18,10 @@ export interface ApiClient {
   createCalendarEvent(input: CalendarEventInput): Promise<CalendarEvent>;
   updateCalendarEvent(uid: string, input: CalendarEventInput): Promise<CalendarEvent>;
   deleteCalendarEvent(uid: string): Promise<void>;
+  getTasks(all?: boolean): Promise<TodoItem[]>;
+  createTask(input: TodoInput): Promise<TodoItem>;
+  updateTask(uid: string, input: TodoInput): Promise<TodoItem>;
+  deleteTask(uid: string): Promise<void>;
 }
 
 /**
@@ -55,6 +61,12 @@ export function createApiClient(baseUrl: string, fetchImpl: FetchLike = fetch): 
       sendJson<CalendarEvent>(`/api/calendar/events/${uid}`, 'PUT', input),
     deleteCalendarEvent: async (uid) => {
       await request(`/api/calendar/events/${uid}`, { method: 'DELETE' });
+    },
+    getTasks: (all) => getJson<TodoItem[]>(all ? '/api/tasks?all=true' : '/api/tasks'),
+    createTask: (input) => sendJson<TodoItem>('/api/tasks', 'POST', input),
+    updateTask: (uid, input) => sendJson<TodoItem>(`/api/tasks/${uid}`, 'PUT', input),
+    deleteTask: async (uid) => {
+      await request(`/api/tasks/${uid}`, { method: 'DELETE' });
     },
   };
 }

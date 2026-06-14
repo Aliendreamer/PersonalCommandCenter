@@ -24,7 +24,7 @@
 
 ## 2. Contracts — shared types + client (TDD)
 
-- [ ] 2.1 (TDD) `@pcc/contracts`: add `TodoItem` (+ input shape) and client methods `getTasks` /
+- [x] 2.1 (TDD) `@pcc/contracts`: add `TodoItem` (+ input shape) and client methods `getTasks` /
       `createTask` / `updateTask` / `deleteTask`; client tests against a mock fetch.
 
 ## 3. Web — read path (SSR-with-data)

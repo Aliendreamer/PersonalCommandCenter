@@ -81,4 +81,36 @@ describe('createApiClient', () => {
     expect(calls[0]?.url).toBe('http://api/api/calendar/events/abc');
     expect(calls[0]?.init?.method).toBe('DELETE');
   });
+
+  it('fetches tasks, passing the all flag', async () => {
+    const calls: Array<{ url: string }> = [];
+    const fetchImpl = (async (url: string) => {
+      calls.push({ url });
+      return new Response(JSON.stringify([]), { status: 200 });
+    }) as unknown as typeof fetch;
+    const client = createApiClient('http://api', fetchImpl);
+
+    await client.getTasks();
+    await client.getTasks(true);
+
+    expect(calls[0]?.url).toBe('http://api/api/tasks');
+    expect(calls[1]?.url).toBe('http://api/api/tasks?all=true');
+  });
+
+  it('updates a task with a PUT + JSON body', async () => {
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    const updated = { uid: 't1', title: 'Done', completed: true };
+    const fetchImpl = (async (url: string, init?: RequestInit) => {
+      calls.push({ url, init });
+      return new Response(JSON.stringify(updated), { status: 200 });
+    }) as unknown as typeof fetch;
+    const client = createApiClient('http://api', fetchImpl);
+
+    await expect(client.updateTask('t1', { title: 'Done', completed: true })).resolves.toEqual(
+      updated,
+    );
+    expect(calls[0]?.url).toBe('http://api/api/tasks/t1');
+    expect(calls[0]?.init?.method).toBe('PUT');
+    expect(JSON.parse(String(calls[0]?.init?.body)).completed).toBe(true);
+  });
 });

@@ -44,3 +44,21 @@ export interface CalendarEventInput {
   location?: string | null;
   description?: string | null;
 }
+
+/** Mirrors the backend `TodoItem` returned by `GET /api/tasks`. */
+export interface TodoItem {
+  uid: string;
+  title: string;
+  /** ISO 8601 due instant/date, when set. */
+  due?: string | null;
+  completed: boolean;
+  description?: string | null;
+}
+
+/** The writable fields of a to-do (create/update); the server owns the `uid`. */
+export interface TodoInput {
+  title: string;
+  due?: string | null;
+  completed?: boolean;
+  description?: string | null;
+}
