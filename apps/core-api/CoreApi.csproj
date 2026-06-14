@@ -8,6 +8,7 @@
     <ProjectReference Include="..\..\plugins\tasks\tasks.api\TasksPlugin.csproj" />
     <ProjectReference Include="..\..\plugins\notifications\notifications.api\NotificationsPlugin.csproj" />
     <ProjectReference Include="..\..\plugins\search\search.api\SearchPlugin.csproj" />
+    <ProjectReference Include="..\..\plugins\weather\weather.api\WeatherPlugin.csproj" />
   </ItemGroup>
 
   <ItemGroup>

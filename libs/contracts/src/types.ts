@@ -89,3 +89,23 @@ export interface SearchResult {
   content?: string | null;
   engine?: string | null;
 }
+
+export interface WeatherCurrent {
+  temperatureC: number;
+  code: number;
+  condition: string;
+}
+
+export interface ForecastDay {
+  date: string;
+  code: number;
+  condition: string;
+  highC: number;
+  lowC: number;
+}
+
+/** Mirrors the backend `Weather` from `GET /api/weather`. */
+export interface Weather {
+  current: WeatherCurrent;
+  daily: ForecastDay[];
+}

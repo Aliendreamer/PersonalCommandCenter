@@ -17,6 +17,7 @@ using Pcc.Plugins.Notifications;
 using Pcc.Plugins.Search;
 using Pcc.Plugins.SystemPlugin;
 using Pcc.Plugins.Tasks;
+using Pcc.Plugins.Weather;
 using Scalar.AspNetCore;
 using ZiggyCreatures.Caching.Fusion;
 
@@ -88,6 +89,7 @@ Assembly[] pluginAssemblies =
     typeof(TasksPlugin).Assembly,
     typeof(NotificationsPlugin).Assembly,
     typeof(SearchPlugin).Assembly,
+    typeof(WeatherPlugin).Assembly,
 ];
 
 using var bootstrapLoggerFactory = LoggerFactory.Create(logging => logging.AddConsole());

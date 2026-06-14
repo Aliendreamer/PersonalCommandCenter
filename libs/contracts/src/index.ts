@@ -8,6 +8,9 @@ export type {
   PluginManifest,
   SearchResult,
   SystemStatus,
+  Weather,
+  WeatherCurrent,
+  ForecastDay,
   TodoInput,
   TodoItem,
 } from './types';

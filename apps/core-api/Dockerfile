@@ -12,6 +12,7 @@ COPY plugins/calendar/calendar.api/CalendarPlugin.csproj plugins/calendar/calend
 COPY plugins/tasks/tasks.api/TasksPlugin.csproj plugins/tasks/tasks.api/
 COPY plugins/notifications/notifications.api/NotificationsPlugin.csproj plugins/notifications/notifications.api/
 COPY plugins/search/search.api/SearchPlugin.csproj plugins/search/search.api/
+COPY plugins/weather/weather.api/WeatherPlugin.csproj plugins/weather/weather.api/
 RUN dotnet restore apps/core-api/CoreApi.csproj
 
 # Copy sources and publish.
@@ -23,6 +24,7 @@ COPY plugins/calendar/calendar.api/ plugins/calendar/calendar.api/
 COPY plugins/tasks/tasks.api/ plugins/tasks/tasks.api/
 COPY plugins/notifications/notifications.api/ plugins/notifications/notifications.api/
 COPY plugins/search/search.api/ plugins/search/search.api/
+COPY plugins/weather/weather.api/ plugins/weather/weather.api/
 RUN dotnet publish apps/core-api/CoreApi.csproj -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime

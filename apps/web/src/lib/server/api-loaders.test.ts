@@ -10,6 +10,7 @@ import {
   loadPlugins,
   loadNotifications,
   loadSearch,
+  loadWeather,
   loadSystemStatus,
   loadTasks,
   postCalendarEvent,
@@ -240,6 +241,14 @@ describe('notifications', () => {
     expect(fetchImpl.mock.calls[0][0]).toBe(
       'http://core-api:8080/api/notifications/read-all',
     )
+  })
+})
+
+describe('weather', () => {
+  it('loadWeather hits the endpoint', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(ok({ current: {}, daily: [] }))
+    await loadWeather(fetchImpl)
+    expect(fetchImpl).toHaveBeenCalledWith('http://core-api:8080/api/weather')
   })
 })
 

@@ -147,4 +147,11 @@ describe('createApiClient', () => {
 
     expect(calls[0]?.url).toBe('http://api/api/search?q=hello%20world');
   });
+
+  it('fetches weather', async () => {
+    const body = { current: { temperatureC: 12, code: 3, condition: 'Overcast' }, daily: [] };
+    const client = createApiClient('http://api', jsonFetch(body));
+
+    await expect(client.getWeather()).resolves.toEqual(body);
+  });
 });

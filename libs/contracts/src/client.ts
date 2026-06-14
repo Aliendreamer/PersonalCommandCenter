@@ -5,6 +5,7 @@ import type {
   NotificationList,
   PluginManifest,
   SearchResult,
+  Weather,
   SystemStatus,
   TodoInput,
   TodoItem,
@@ -28,6 +29,7 @@ export interface ApiClient {
   markNotificationRead(id: string): Promise<void>;
   markAllNotificationsRead(): Promise<void>;
   getSearch(q: string): Promise<SearchResult[]>;
+  getWeather(): Promise<Weather>;
 }
 
 /**
@@ -82,5 +84,6 @@ export function createApiClient(baseUrl: string, fetchImpl: FetchLike = fetch): 
       await request('/api/notifications/read-all', { method: 'POST' });
     },
     getSearch: (q) => getJson<SearchResult[]>(`/api/search?q=${encodeURIComponent(q)}`),
+    getWeather: () => getJson<Weather>('/api/weather'),
   };
 }

@@ -7,6 +7,7 @@ import type {
   PluginManifest,
   SearchResult,
   SystemStatus,
+  Weather,
   TodoInput,
   TodoItem,
 } from '@pcc/contracts'
@@ -105,6 +106,9 @@ export const loadSearch = (
     fetchImpl,
     `/api/search?q=${encodeURIComponent(q)}`,
   )
+
+export const loadWeather = (fetchImpl: FetchLike): Promise<Weather> =>
+  loadProtected<Weather>(fetchImpl, '/api/weather')
 
 /**
  * Sends a protected mutation server-to-server. 401 → login redirect (revoked session); 404 → null

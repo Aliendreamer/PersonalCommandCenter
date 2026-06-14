@@ -7,6 +7,7 @@ import {
   getPlugins,
   getSystemStatus,
   getTasks,
+  getWeather,
 } from '../../lib/server/api'
 import { settle } from '../../lib/server/api-loaders'
 import { PluginShell } from '../../components/plugin-shell'
@@ -16,12 +17,13 @@ import { CalendarTodayTile } from '../../components/calendar-today-tile'
 import { TasksOpenTile } from '../../components/tasks-open-tile'
 import { NotificationsUnreadTile } from '../../components/notifications-unread-tile'
 import { SearchBoxTile } from '../../components/search-box-tile'
+import { WeatherTodayTile } from '../../components/weather-today-tile'
 
 export const Route = createFileRoute('/_authenticated/')({
   // SSR-with-data: the dashboard renders fully populated. Each source is settled independently so
   // one plugin's outage (e.g. IoT 502 without an HA token) degrades only its tile.
   loader: async () => {
-    const [plugins, system, iot, calendar, tasks, notifications] =
+    const [plugins, system, iot, calendar, tasks, notifications, weather] =
       await Promise.all([
         settle(getPlugins()),
         settle(getSystemStatus()),
@@ -29,14 +31,15 @@ export const Route = createFileRoute('/_authenticated/')({
         settle(getCalendarEvents()),
         settle(getTasks()),
         settle(getNotifications()),
+        settle(getWeather()),
       ])
-    return { plugins, system, iot, calendar, tasks, notifications }
+    return { plugins, system, iot, calendar, tasks, notifications, weather }
   },
   component: Home,
 })
 
 function Home() {
-  const { plugins, system, iot, calendar, tasks, notifications } =
+  const { plugins, system, iot, calendar, tasks, notifications, weather } =
     Route.useLoaderData()
   const navigate = useNavigate()
   return (
@@ -71,6 +74,11 @@ function Home() {
             <SearchBoxTile
               onSearch={(q) => navigate({ to: '/search', search: { q } })}
             />
+          )
+        }
+        if (manifest.widgets.includes('weather-today')) {
+          return (
+            <WeatherTodayTile weather={weather.data} error={weather.error} />
           )
         }
         return null

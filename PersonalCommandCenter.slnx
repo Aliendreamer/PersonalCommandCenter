@@ -32,6 +32,10 @@
   <Folder Name="/plugins/tasks/tasks.api/">
     <Project Path="plugins/tasks/tasks.api/TasksPlugin.csproj" />
   </Folder>
+  <Folder Name="/plugins/weather/" />
+  <Folder Name="/plugins/weather/weather.api/">
+    <Project Path="plugins/weather/weather.api/WeatherPlugin.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/CoreApi.Tests/CoreApi.Tests.csproj" />
   </Folder>
