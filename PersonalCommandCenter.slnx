@@ -20,6 +20,10 @@
   <Folder Name="/plugins/notifications/notifications.api/">
     <Project Path="plugins/notifications/notifications.api/NotificationsPlugin.csproj" />
   </Folder>
+  <Folder Name="/plugins/search/" />
+  <Folder Name="/plugins/search/search.api/">
+    <Project Path="plugins/search/search.api/SearchPlugin.csproj" />
+  </Folder>
   <Folder Name="/plugins/system/" />
   <Folder Name="/plugins/system/system.api/">
     <Project Path="plugins/system/system.api/SystemPlugin.csproj" />

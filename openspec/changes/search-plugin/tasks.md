@@ -10,18 +10,18 @@
 
 ## 2. Backend — SearXNG client + `search` plugin (TDD)
 
-- [ ] 2.1 (TDD) Create `plugins/search/search.api` classlib; `ISearchClient` + a `SearchResult`
+- [x] 2.1 (TDD) Create `plugins/search/search.api` classlib; `ISearchClient` + a `SearchResult`
       model (`Title`, `Url`, `Content?`, `Engine?`). Implement `SearxngClient : ISearchClient` over a
       named `HttpClient` (`SearchOptions{BaseUrl}`): `SearchAsync(query)` → `GET {BaseUrl}/search?q=…
       &format=json`, parse `results[]`, map top N. Unit-test with a stub `HttpMessageHandler` (sends
       `q`+`format=json`; maps a sample SearXNG JSON payload).
-- [ ] 2.2 Implement `SearchPlugin : IPlugin` (id `search`; manifest nav "Search", `routeBase`
+- [x] 2.2 Implement `SearchPlugin : IPlugin` (id `search`; manifest nav "Search", `routeBase`
       `/search`, widget `search-box`; `Configure` registers `ISearchClient` + the named `HttpClient`
       + `SearchOptions`). Lazy `Resolve<T>()`.
-- [ ] 2.3 FastEndpoints `GET /api/search?q=…`: blank/whitespace `q` → `400`; map `ISearchClient`
+- [x] 2.3 FastEndpoints `GET /api/search?q=…`: blank/whitespace `q` → `400`; map `ISearchClient`
       failure/unconfigured → `502`; require auth. Register in `CoreApi.csproj`, `Program.cs`
       `pluginAssemblies`, `PersonalCommandCenter.slnx`, Dockerfile.
-- [ ] 2.4 (TDD) `CoreApi.Tests` integration tests (fake `ISearchClient`): returns mapped results;
+- [x] 2.4 (TDD) `CoreApi.Tests` integration tests (fake `ISearchClient`): returns mapped results;
       blank `q` → `400`; SearXNG failure → `502`; requires auth; disabled plugin absent from
       `/api/plugins`.
 

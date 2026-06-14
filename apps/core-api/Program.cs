@@ -14,6 +14,7 @@ using Pcc.Plugins;
 using Pcc.Plugins.Calendar;
 using Pcc.Plugins.Iot;
 using Pcc.Plugins.Notifications;
+using Pcc.Plugins.Search;
 using Pcc.Plugins.SystemPlugin;
 using Pcc.Plugins.Tasks;
 using Scalar.AspNetCore;
@@ -86,6 +87,7 @@ Assembly[] pluginAssemblies =
     typeof(CalendarPlugin).Assembly,
     typeof(TasksPlugin).Assembly,
     typeof(NotificationsPlugin).Assembly,
+    typeof(SearchPlugin).Assembly,
 ];
 
 using var bootstrapLoggerFactory = LoggerFactory.Create(logging => logging.AddConsole());
