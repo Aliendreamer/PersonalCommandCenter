@@ -11,24 +11,24 @@
 
 ## 2. Backend — CalDAV client + `calendar` plugin (TDD)
 
-- [ ] 2.1 (TDD) Create `plugins/calendar/calendar.api` classlib; add `ICalendarClient` + a
+- [x] 2.1 (TDD) Create `plugins/calendar/calendar.api` classlib; add `ICalendarClient` + a
       `CalendarEvent` model. Add `Ical.Net`. Unit-test the iCalendar mapping: parse `calendar-data`
       → `CalendarEvent` and build a VEVENT from a create request (round-trip incl. `allDay`).
-- [ ] 2.2 Implement `CalDavClient : ICalendarClient` over a named `HttpClient` (Basic auth +
+- [x] 2.2 Implement `CalDavClient : ICalendarClient` over a named `HttpClient` (Basic auth +
       `CalendarOptions` from config): `ListAsync(window)` via `REPORT` calendar-query,
       `CreateAsync`/`UpdateAsync` via `PUT {collection}/{uid}.ics`, `DeleteAsync` via `DELETE`.
       Unit-test request shaping with a stub `HttpMessageHandler` (method/URL/auth/body).
-- [ ] 2.3 Implement `CalendarPlugin : IPlugin` (id `calendar`; manifest nav "Calendar",
+- [x] 2.3 Implement `CalendarPlugin : IPlugin` (id `calendar`; manifest nav "Calendar",
       `routeBase` `/calendar`, widget `calendar-today`; `Configure` registers `ICalendarClient`,
       the named `HttpClient`, and `CalendarOptions`). Use lazy `Resolve<T>()` in endpoints.
-- [ ] 2.4 FastEndpoints endpoint classes under `api/calendar`: `GET events` (window/`days`),
+- [x] 2.4 FastEndpoints endpoint classes under `api/calendar`: `GET events` (window/`days`),
       `POST events` (validate `end >= start` → `400`), `PUT events/{uid}`, `DELETE events/{uid}`.
       Map `ICalendarClient` failure/unconfigured → `502`, unknown uid → `404`.
-- [ ] 2.5 Register the plugin in the three compile-time places — `CoreApi.csproj`
+- [x] 2.5 Register the plugin in the three compile-time places — `CoreApi.csproj`
       `<ProjectReference>`, `Program.cs` `pluginAssemblies`, `PersonalCommandCenter.slnx` — and add
       `Plugins:Calendar:{Enabled,BaseUrl,Collection,Username,Password,WindowDays}` to
       `appsettings`/compose env.
-- [ ] 2.6 (TDD) `CoreApi.Tests` integration tests (xUnit + Mvc.Testing, fake `ICalendarClient`):
+- [x] 2.6 (TDD) `CoreApi.Tests` integration tests (xUnit + Mvc.Testing, fake `ICalendarClient`):
       listing returns mapped events; create → `201` + `uid` + appears in a listing; `end < start`
       → `400`; update/delete happy paths + `404`; disabled plugin absent from `/api/plugins` and
       endpoints not served; CalDAV failure → `502`.

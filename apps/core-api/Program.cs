@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Pcc.Plugins.Calendar;
 using Pcc.Plugins.Iot;
 using Pcc.Plugins.SystemPlugin;
 using Scalar.AspNetCore;
@@ -65,7 +66,12 @@ builder.Services
 builder.Services.AddAuthorization();
 
 // --- Plugins: discover, activate enabled, expose manifests + FastEndpoints ---
-Assembly[] pluginAssemblies = [typeof(SystemStatusPlugin).Assembly, typeof(IotPlugin).Assembly];
+Assembly[] pluginAssemblies =
+[
+    typeof(SystemStatusPlugin).Assembly,
+    typeof(IotPlugin).Assembly,
+    typeof(CalendarPlugin).Assembly,
+];
 
 using var bootstrapLoggerFactory = LoggerFactory.Create(logging => logging.AddConsole());
 var bootstrapLogger = bootstrapLoggerFactory.CreateLogger("Plugins");

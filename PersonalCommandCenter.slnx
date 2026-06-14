@@ -8,6 +8,10 @@
     <Project Path="libs/plugin-abstractions/PluginAbstractions.csproj" />
   </Folder>
   <Folder Name="/plugins/" />
+  <Folder Name="/plugins/calendar/" />
+  <Folder Name="/plugins/calendar/calendar.api/">
+    <Project Path="plugins/calendar/calendar.api/CalendarPlugin.csproj" />
+  </Folder>
   <Folder Name="/plugins/iot/" />
   <Folder Name="/plugins/iot/iot.api/">
     <Project Path="plugins/iot/iot.api/IotPlugin.csproj" />

@@ -30,9 +30,13 @@ exist. Infra already running locally does **not** include CalDAV, so this change
 - **CalDAV server = Radicale** (vs Nextcloud). Radicale is a tiny pure-Python CalDAV/CardDAV server,
   trivially containerized with htpasswd auth and a file/volume store — matches the self-contained
   harness pattern. Nextcloud is far heavier and only justified once we also want files/notes.
-- **iCalendar handling = `Ical.Net`** (vs hand-rolling). VEVENT (DTSTART/DTEND/all-day/escaping/
-  folding) is fiddly; `Ical.Net` is the maintained .NET standard. One dependency on the `calendar.api`
-  classlib only. Hand-rolling is rejected as fragile under warnings-as-errors.
+- **iCalendar handling = a small hand-rolled `CalendarIcs`** (revised during apply, was `Ical.Net`).
+  The v1 surface is a narrow VEVENT subset (UID/SUMMARY/DTSTART/DTEND/LOCATION/DESCRIPTION, all-day
+  vs UTC-timed, RFC-5545 text escaping); recurrence/timezones are explicit non-goals. Ical.Net 5.x's
+  API proved an awkward fit under `TreatWarningsAsErrors` (obsolete-member traps, no local XML docs),
+  making the dependency a build-stability risk for so small a subset. The "fragility" objection to
+  hand-rolling is mitigated by exhaustive round-trip unit tests (escaping, all-day, parse from a
+  CalDAV multistatus sample). Revisit Ical.Net if/when recurrence (RRULE) lands.
 - **CalDAV interaction = a thin `CalDavClient` over a named `HttpClient`** behind `ICalendarClient`
   (so the host instantiates the endpoint at startup even when disabled, via lazy `Resolve<T>()`, and
   tests inject a fake). Operations against Radicale:
