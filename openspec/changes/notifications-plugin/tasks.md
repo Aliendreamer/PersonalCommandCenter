@@ -52,14 +52,14 @@
 
 ## 5. Verify + done gate
 
-- [ ] 5.1 FE gates green: `generate-routes`; `nx run-many -t typecheck lint test build`
+- [x] 5.1 FE gates green: `generate-routes`; `nx run-many -t typecheck lint test build`
       (web + `@pcc/contracts`) + `prettier --check`.
-- [ ] 5.2 .NET gates green: `dotnet build` (warnings = errors) + `dotnet test` + `dotnet format
+- [x] 5.2 .NET gates green: `dotnet build` (warnings = errors) + `dotnet test` + `dotnet format
       --verify-no-changes`.
-- [ ] 5.3 E2E (Playwright, live stack with `ntfy`): `docker compose up -d --build`; login;
+- [x] 5.3 E2E (Playwright, live stack with `ntfy`): `docker compose up -d --build`; login;
       `/notifications` is **server-rendered** and shows the startup "Command center online"
       notification; mark it read → the `notifications-unread` tile drops to 0; the browser only ever
       hit `app.`; `api.pcc.localhost` stays **404**. (ntfy receipt verified via its JSON poll API.)
-- [ ] 5.4 Update `CLAUDE.md` (the `notifications` plugin + alert-bus + `ntfy` service +
+- [x] 5.4 Update `CLAUDE.md` (the `notifications` plugin + alert-bus + `ntfy` service +
       `Notifications:Ntfy` config + the EF entity/migration) and the plugin layout; mark tasks
       complete; ready for `/opsx:archive`.

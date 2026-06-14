@@ -11,8 +11,9 @@ sits **behind Keycloak login**. The **always-on SSR server is the public BFF tie
 browser only ever talks to `app.pcc.localhost`; the SSR server proxies the OIDC auth dance and
 fetches page data server-to-server from core-api (internal-only). Plugins: `system` (host status),
 `iot` (read-only Home Assistant monitoring), `calendar` (read + write CalDAV events — the first
-write-path plugin, mutations flow through the SSR-BFF), and `tasks` (read + write CalDAV to-dos /
-VTODO, same Radicale, a separate collection).
+write-path plugin, mutations flow through the SSR-BFF), `tasks` (read + write CalDAV to-dos / VTODO,
+same Radicale, a separate collection), and `notifications` (an in-app alert-bus + notification
+center with best-effort **ntfy** push).
 
 ## Stack & layout
 
@@ -28,12 +29,13 @@ plugins/system         SystemPlugin classlib  (id "system")
 plugins/iot            IotPlugin classlib     (id "iot", Home Assistant)
 plugins/calendar       CalendarPlugin classlib (id "calendar", CalDAV read+write; hand-rolled VEVENT)
 plugins/tasks          TasksPlugin classlib    (id "tasks", CalDAV read+write VTODO; /pcc/tasks/)
+plugins/notifications  NotificationsPlugin classlib (id "notifications"); host owns the bus/store
 tests/CoreApi.Tests    xUnit + Mvc.Testing integration/unit tests
 harness/keycloak       Pcc realm import (roles Admin/User, client pcc_api, testuser/Test123!)
 harness/radicale       Radicale CalDAV config + dev login (pcc/pcc-dev-caldav); internal-only
 harness/traefik        Traefik file-provider routes (*.pcc.localhost)
 openspec/              Spec-driven change workflow (proposals → specs → tasks → archive)
-docker-compose.yml     Traefik + core-api + web + home-assistant + keycloak + postgres + radicale
+docker-compose.yml     Traefik + core-api + web + home-assistant + keycloak + postgres + radicale + ntfy
 ```
 
 ## Commands
@@ -157,6 +159,18 @@ pnpm dlx @tanstack/intent@latest load <package>#<skill> # then follow the return
   API directly — the first write-path plugin establishes this pattern for `tasks`/`notes`/etc.
 - **iCalendar is hand-rolled** (`CalendarIcs`, VEVENT subset) — no `Ical.Net`. v1 covers UID/SUMMARY/
   DTSTART/DTEND/all-day/LOCATION/DESCRIPTION + UTC; recurrence (RRULE) and timezones are non-goals.
+- **Notifications are a host-level alert-bus, not just a plugin.** `INotificationPublisher`/
+  `INotificationStore` live in `libs/plugin-abstractions`; the host `NotificationService` (over a
+  `Notification` EF entity + the `AddNotifications` migration) is registered **unconditionally** so
+  any code can publish even when the `notifications` plugin UI is off. Publish persists first, then
+  **best-effort** POSTs to **ntfy** (`Notifications:Ntfy:{BaseUrl,Topic}`; failures swallowed — the
+  DB row is the source of truth). ntfy is internal (`ntfy:80`, `ntfy.pcc.localhost` web UI); external
+  reachability/domain is deferred. The host seeds one "Command center online" notification on startup
+  (non-Development). Enum severities serialize as strings (`JsonStringEnumConverter`) to match the
+  TS contracts.
+- **Integration tests share one InMemory DB per factory.** `TestFactoryExtensions.Authed` hoists the
+  `UseInMemoryDatabase("authed-…")` name **out of the options lambda** — inside it, `Guid.NewGuid()`
+  ran per scope, so a seed in one scope was invisible to the request pipeline's scope.
 - **Public ingress is Traefik on `*.pcc.localhost`** (`app./keycloak./ha./portainer.`) — **no `api.`
   router**: core-api is internal-only, reached as `core-api:8080` on the compose network. The
   `mp_sid` cookie is app-scoped (`SameSite=Lax`). Browsers auto-resolve `*.localhost`; `curl` needs
