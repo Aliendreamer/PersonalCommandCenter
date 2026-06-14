@@ -166,4 +166,10 @@ describe('createApiClient', () => {
     const client = createApiClient('http://api', jsonFetch(body));
     await expect(client.getGoodreads()).resolves.toEqual(body);
   });
+
+  it('fetches uptime checks', async () => {
+    const body = [{ name: 'api', url: 'u', up: true, statusCode: 200, latencyMs: 12 }];
+    const client = createApiClient('http://api', jsonFetch(body));
+    await expect(client.getUptime()).resolves.toEqual(body);
+  });
 });

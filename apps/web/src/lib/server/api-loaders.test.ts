@@ -11,6 +11,7 @@ import {
   loadNotifications,
   loadGoodreads,
   loadRss,
+  loadUptime,
   loadSearch,
   loadWeather,
   loadSystemStatus,
@@ -259,6 +260,14 @@ describe('goodreads', () => {
     const fetchImpl = vi.fn().mockResolvedValue(ok([]))
     await loadGoodreads(fetchImpl)
     expect(fetchImpl).toHaveBeenCalledWith('http://core-api:8080/api/goodreads')
+  })
+})
+
+describe('uptime', () => {
+  it('loadUptime hits the endpoint', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(ok([]))
+    await loadUptime(fetchImpl)
+    expect(fetchImpl).toHaveBeenCalledWith('http://core-api:8080/api/uptime')
   })
 })
 

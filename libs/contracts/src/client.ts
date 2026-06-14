@@ -9,6 +9,7 @@ import type {
   SearchResult,
   Weather,
   SystemStatus,
+  UptimeCheck,
   TodoInput,
   TodoItem,
 } from './types';
@@ -34,6 +35,7 @@ export interface ApiClient {
   getWeather(): Promise<Weather>;
   getRss(): Promise<RssItem[]>;
   getGoodreads(): Promise<Book[]>;
+  getUptime(): Promise<UptimeCheck[]>;
 }
 
 /**
@@ -91,5 +93,6 @@ export function createApiClient(baseUrl: string, fetchImpl: FetchLike = fetch): 
     getWeather: () => getJson<Weather>('/api/weather'),
     getRss: () => getJson<RssItem[]>('/api/rss'),
     getGoodreads: () => getJson<Book[]>('/api/goodreads'),
+    getUptime: () => getJson<UptimeCheck[]>('/api/uptime'),
   };
 }

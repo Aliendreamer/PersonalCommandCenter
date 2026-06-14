@@ -9,6 +9,7 @@ import type {
   RssItem,
   SearchResult,
   SystemStatus,
+  UptimeCheck,
   Weather,
   TodoInput,
   TodoItem,
@@ -117,6 +118,9 @@ export const loadRss = (fetchImpl: FetchLike): Promise<RssItem[]> =>
 
 export const loadGoodreads = (fetchImpl: FetchLike): Promise<Book[]> =>
   loadProtected<Book[]>(fetchImpl, '/api/goodreads')
+
+export const loadUptime = (fetchImpl: FetchLike): Promise<UptimeCheck[]> =>
+  loadProtected<UptimeCheck[]>(fetchImpl, '/api/uptime')
 
 /**
  * Sends a protected mutation server-to-server. 401 → login redirect (revoked session); 404 → null

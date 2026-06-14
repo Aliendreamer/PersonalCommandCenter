@@ -112,6 +112,15 @@ export interface RssItem {
   source: string;
 }
 
+/** Mirrors the backend `UptimeCheck` from `GET /api/uptime`. */
+export interface UptimeCheck {
+  name: string;
+  url: string;
+  up: boolean;
+  statusCode?: number | null;
+  latencyMs: number;
+}
+
 /** Mirrors the backend `Book` from `GET /api/goodreads`. */
 export interface Book {
   title: string;

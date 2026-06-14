@@ -7,6 +7,7 @@ import { cookiesAreSecure, forwardCookieHeader } from './cookies'
 import {
   loadCalendarEvents,
   loadGoodreads,
+  loadUptime,
   loadIotEntities,
   loadMe,
   loadPlugins,
@@ -106,6 +107,10 @@ export const getRss = createServerFn({ method: 'GET' }).handler(() =>
 
 export const getGoodreads = createServerFn({ method: 'GET' }).handler(() =>
   loadGoodreads(serverFetch()),
+)
+
+export const getUptime = createServerFn({ method: 'GET' }).handler(() =>
+  loadUptime(serverFetch()),
 )
 
 // Mutations: the RPC transport is POST regardless of the underlying core-api method; the handler

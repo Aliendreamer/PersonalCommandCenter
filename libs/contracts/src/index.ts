@@ -10,6 +10,7 @@ export type {
   RssItem,
   SearchResult,
   SystemStatus,
+  UptimeCheck,
   Weather,
   WeatherCurrent,
   ForecastDay,

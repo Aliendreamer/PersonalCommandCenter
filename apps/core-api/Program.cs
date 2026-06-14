@@ -19,6 +19,7 @@ using Pcc.Plugins.Rss;
 using Pcc.Plugins.Search;
 using Pcc.Plugins.SystemPlugin;
 using Pcc.Plugins.Tasks;
+using Pcc.Plugins.Uptime;
 using Pcc.Plugins.Weather;
 using Scalar.AspNetCore;
 using ZiggyCreatures.Caching.Fusion;
@@ -94,6 +95,7 @@ Assembly[] pluginAssemblies =
     typeof(WeatherPlugin).Assembly,
     typeof(RssPlugin).Assembly,
     typeof(GoodreadsPlugin).Assembly,
+    typeof(UptimePlugin).Assembly,
 ];
 
 using var bootstrapLoggerFactory = LoggerFactory.Create(logging => logging.AddConsole());
