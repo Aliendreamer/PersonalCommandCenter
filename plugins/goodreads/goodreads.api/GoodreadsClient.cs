@@ -17,8 +17,12 @@ public sealed class GoodreadsClient(HttpClient http, IOptions<GoodreadsOptions> 
         }
 
         var url = $"{_options.BaseUrl.TrimEnd('/')}/review/list_rss/{_options.UserId}?shelf={Uri.EscapeDataString(_options.Shelf)}";
-        using var stream = await http.GetStreamAsync(new Uri(url), cancellationToken);
-        using var reader = XmlReader.Create(stream, new XmlReaderSettings { Async = false });
+        // Buffer the response fully before parsing: SyndicationFeed reads the XmlReader synchronously,
+        // and sync reads over a live HttpClient response stream are unreliable (they throw under the
+        // container runtime). Reading into memory first also frees the connection during the parse.
+        var bytes = await http.GetByteArrayAsync(new Uri(url), cancellationToken);
+        using var stream = new MemoryStream(bytes);
+        using var reader = XmlReader.Create(stream);
         var feed = SyndicationFeed.Load(reader);
 
         return feed.Items.Select(item => new Book(

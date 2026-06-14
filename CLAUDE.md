@@ -13,7 +13,10 @@ fetches page data server-to-server from core-api (internal-only). Plugins: `syst
 `iot` (read-only Home Assistant monitoring), `calendar` (read + write CalDAV events — the first
 write-path plugin, mutations flow through the SSR-BFF), `tasks` (read + write CalDAV to-dos / VTODO,
 same Radicale, a separate collection), `notifications` (an in-app alert-bus + notification center
-with best-effort **ntfy** push), and `search` (read-only metasearch via a self-hosted **SearXNG**).
+with best-effort **ntfy** push), `search` (read-only metasearch via a self-hosted **SearXNG**),
+`weather` (read-only forecast via keyless **Open-Meteo**), `rss` (read-only RSS/Atom aggregator),
+`goodreads` (read-only shelf via Goodreads **RSS**, the official API is retired), and `uptime`
+(read-only service health board — HTTP-pings configured targets, no new container).
 
 ## Stack & layout
 
@@ -31,6 +34,10 @@ plugins/calendar       CalendarPlugin classlib (id "calendar", CalDAV read+write
 plugins/tasks          TasksPlugin classlib    (id "tasks", CalDAV read+write VTODO; /pcc/tasks/)
 plugins/notifications  NotificationsPlugin classlib (id "notifications"); host owns the bus/store
 plugins/search         SearchPlugin classlib   (id "search", read-only SearXNG metasearch)
+plugins/weather        WeatherPlugin classlib  (id "weather", read-only Open-Meteo forecast, no key)
+plugins/rss            RssPlugin classlib      (id "rss", read-only RSS/Atom aggregator)
+plugins/goodreads      GoodreadsPlugin classlib (id "goodreads", read-only shelf via Goodreads RSS)
+plugins/uptime         UptimePlugin classlib   (id "uptime", read-only HTTP health board)
 tests/CoreApi.Tests    xUnit + Mvc.Testing integration/unit tests
 harness/keycloak       Pcc realm import (roles Admin/User, client pcc_api, testuser/Test123!)
 harness/radicale       Radicale CalDAV config + dev login (pcc/pcc-dev-caldav); internal-only
@@ -178,6 +185,24 @@ pnpm dlx @tanstack/intent@latest load <package>#<skill> # then follow the return
   `search.formats: [json]` and set `limiter: false`. Internal-only (`searxng:8080`,
   `searxng.pcc.localhost` UI). `/search?q=` is the app's **first query-param SSR loader** (`validateSearch`
   + `loaderDeps` on `q`; the loader skips the API when `q` is empty).
+- **Weather is keyless Open-Meteo** (`api.open-meteo.com`, no token, no container) — config is just
+  `Plugins:Weather:{Latitude,Longitude,ForecastDays}`. Maps WMO weather codes to text (`WmoCodes`).
+- **RSS/Goodreads parse with `System.ServiceModel.Syndication`, buffered first.** Both read the feed
+  into a `byte[]` (`GetByteArrayAsync`) and parse from a `MemoryStream` — **never** `XmlReader` over a
+  live `GetStreamAsync` response: `SyndicationFeed.Load` reads synchronously, and sync-over-async on
+  the HttpClient response stream **throws under the container runtime** (works on the host, 502s in
+  Docker). `rss` aggregates `Plugins:Rss:Feeds[]` newest-first (a single bad feed is skipped; all-bad
+  → 502). **Goodreads' official API is retired** (2020) → it reads the shelf **RSS**
+  (`/review/list_rss/{UserId}?shelf=`) and pulls custom `<author_name>`/`<book_large_image_url>`
+  element extensions; empty `UserId` → 502 (tile degrades). Public feeds like **hnrss.org rate-limit
+  (429)** aggressively — the rss E2E tolerates either items or the degraded notice.
+- **Uptime adds no container** — it HTTP-pings `Plugins:Uptime:Targets[{Name,Url}]` concurrently
+  (timeout-bounded), `Up` = status `< 400`; a **down target is data (200)**, only an empty target set
+  → 502. The dogfood targets are PCC's own services (core-api `/health`, keycloak). Docker-socket
+  container health is a deferred follow-up.
+- **External-link components must `safeHref`** (`apps/web/src/lib/safe-href.ts`): any tile/list
+  rendering a third-party URL (`rss`, `search`, `goodreads` covers + links) routes the href through
+  `safeHref` (http/https only, else `#`) + `rel="noreferrer noopener"` to block `javascript:`/`data:` XSS.
 - **Public ingress is Traefik on `*.pcc.localhost`** (`app./keycloak./ha./portainer.`) — **no `api.`
   router**: core-api is internal-only, reached as `core-api:8080` on the compose network. The
   `mp_sid` cookie is app-scoped (`SameSite=Lax`). Browsers auto-resolve `*.localhost`; `curl` needs

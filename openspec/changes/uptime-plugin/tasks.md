@@ -31,8 +31,8 @@
 
 - [x] 4.1 FE gates green: `generate-routes`; `nx run-many -t typecheck lint test build` + prettier.
 - [x] 4.2 .NET gates green: `dotnet build` + `dotnet test` + `dotnet format --verify-no-changes`.
-- [ ] 4.3 E2E (Playwright, live stack; configure a known-up target e.g. core-api `/health`): login;
+- [x] 4.3 E2E (Playwright, live stack; configure a known-up target e.g. core-api `/health`): login;
       `/uptime` server-rendered with statuses; the tile shows the up count; browser only hit `app.`;
       `api.` stays `404`.
-- [ ] 4.4 Update `CLAUDE.md` (the `uptime` plugin + `Plugins:Uptime` + the HTTP-checks/Docker-deferred
+- [x] 4.4 Update `CLAUDE.md` (the `uptime` plugin + `Plugins:Uptime` + the HTTP-checks/Docker-deferred
       note); mark complete; ready for `/opsx:archive`.

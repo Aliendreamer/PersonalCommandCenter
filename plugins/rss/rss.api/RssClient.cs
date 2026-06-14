@@ -35,8 +35,12 @@ public sealed class RssClient(HttpClient http, IOptions<RssOptions> options) : I
     {
         try
         {
-            using var stream = await http.GetStreamAsync(new Uri(feedUrl), cancellationToken);
-            using var reader = XmlReader.Create(stream, new XmlReaderSettings { Async = false });
+            // Buffer the response fully before parsing: SyndicationFeed reads the XmlReader
+            // synchronously, and sync reads over a live HttpClient response stream are unreliable
+            // (they throw under the container runtime). Buffering also frees the connection sooner.
+            var bytes = await http.GetByteArrayAsync(new Uri(feedUrl), cancellationToken);
+            using var stream = new MemoryStream(bytes);
+            using var reader = XmlReader.Create(stream);
             var feed = SyndicationFeed.Load(reader);
             var source = feed.Title?.Text ?? feedUrl;
 
