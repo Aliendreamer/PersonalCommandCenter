@@ -38,3 +38,9 @@ pnpm-lock.yaml                        linguist-generated=true -diff
 **/routeTree.gen.ts                   linguist-generated=true -diff
 **/Migrations/*.Designer.cs           linguist-generated=true -diff
 **/Migrations/*ModelSnapshot.cs       linguist-generated=true -diff
+
+# git-crypt encrypted files/directories.
+# -text is REQUIRED: it disables EOL (CRLF<->LF) normalization. git-crypt output
+# is binary ciphertext; without -text the global `* text=auto` rule mangles
+# CR bytes in the encrypted stream on commit and corrupts the files irrecoverably.
+config.conf  filter=git-crypt diff=git-crypt -text
