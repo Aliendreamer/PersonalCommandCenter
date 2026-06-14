@@ -3,6 +3,7 @@ import { getRequestHeader } from '@tanstack/react-start/server'
 
 import { cookiesAreSecure, forwardCookieHeader } from './cookies'
 import {
+  loadCalendarEvents,
   loadIotEntities,
   loadMe,
   loadPlugins,
@@ -41,4 +42,8 @@ export const getSystemStatus = createServerFn({ method: 'GET' }).handler(() =>
 
 export const getIotEntities = createServerFn({ method: 'GET' }).handler(() =>
   loadIotEntities(serverFetch()),
+)
+
+export const getCalendarEvents = createServerFn({ method: 'GET' }).handler(() =>
+  loadCalendarEvents(serverFetch()),
 )

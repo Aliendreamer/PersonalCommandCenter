@@ -41,12 +41,12 @@
 
 ## 4. Web — read path (SSR-with-data)
 
-- [ ] 4.1 (TDD) `lib/server`: a pure `loadCalendarEvents(fetchImpl)` (401 → redirect, other non-ok
+- [x] 4.1 (TDD) `lib/server`: a pure `loadCalendarEvents(fetchImpl)` (401 → redirect, other non-ok
       → throw) + the `getCalendarEvents` server function wrapping it with the cookie-forwarding
       `serverFetch`; unit-test the pure loader (mock fetch, assert URL + cookie forwarding).
-- [ ] 4.2 `calendar-today` tile — presentational (`{ events?, error? }`): renders today's events or
+- [x] 4.2 `calendar-today` tile — presentational (`{ events?, error? }`): renders today's events or
       an empty state, and a degraded "Calendar unavailable" on error; component test.
-- [ ] 4.3 `_authenticated/calendar` route: loader calls `getCalendarEvents` (via `settle`); the
+- [x] 4.3 `_authenticated/calendar` route: loader calls `getCalendarEvents` (via `settle`); the
       page renders the events **server-side**; the dashboard renders the `calendar-today` tile for
       the `calendar-today` widget. `pnpm --filter web generate-routes`.
 

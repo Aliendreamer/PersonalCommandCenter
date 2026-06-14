@@ -1,5 +1,10 @@
 import { isRedirect, redirect } from '@tanstack/react-router'
-import type { IotEntity, PluginManifest, SystemStatus } from '@pcc/contracts'
+import type {
+  CalendarEvent,
+  IotEntity,
+  PluginManifest,
+  SystemStatus,
+} from '@pcc/contracts'
 
 /** The authenticated identity returned by `GET /api/me`. */
 export interface Me {
@@ -61,6 +66,17 @@ export const loadSystemStatus = (fetchImpl: FetchLike): Promise<SystemStatus> =>
 
 export const loadIotEntities = (fetchImpl: FetchLike): Promise<IotEntity[]> =>
   loadProtected<IotEntity[]>(fetchImpl, '/api/iot/entities')
+
+export const loadCalendarEvents = (
+  fetchImpl: FetchLike,
+  days?: number,
+): Promise<CalendarEvent[]> =>
+  loadProtected<CalendarEvent[]>(
+    fetchImpl,
+    days === undefined
+      ? '/api/calendar/events'
+      : `/api/calendar/events?days=${days}`,
+  )
 
 /** A loaded value or a degraded marker. */
 export type Settled<T> =

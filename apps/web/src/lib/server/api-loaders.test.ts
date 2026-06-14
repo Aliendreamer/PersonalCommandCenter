@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { Me } from './api-loaders'
 import {
   hasRole,
+  loadCalendarEvents,
   loadIotEntities,
   loadMe,
   loadPlugins,
@@ -46,6 +47,20 @@ describe('protected loaders', () => {
     const fetchImpl = vi.fn().mockResolvedValue(ok([{ id: 'system' }]))
     await expect(loadPlugins(fetchImpl)).resolves.toEqual([{ id: 'system' }])
     expect(fetchImpl).toHaveBeenCalledWith('http://core-api:8080/api/plugins')
+  })
+
+  it('loadCalendarEvents hits the events endpoint and passes the days window', async () => {
+    const fetchImpl = vi.fn().mockImplementation(() => Promise.resolve(ok([])))
+    await loadCalendarEvents(fetchImpl)
+    await loadCalendarEvents(fetchImpl, 1)
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      1,
+      'http://core-api:8080/api/calendar/events',
+    )
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      2,
+      'http://core-api:8080/api/calendar/events?days=1',
+    )
   })
 
   it('loadSystemStatus + loadIotEntities hit their endpoints', async () => {
