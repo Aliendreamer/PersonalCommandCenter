@@ -44,12 +44,12 @@
 
 ## 5. Verify + done gate
 
-- [ ] 5.1 FE gates green: `generate-routes`; `nx run-many -t typecheck lint test build`
+- [x] 5.1 FE gates green: `generate-routes`; `nx run-many -t typecheck lint test build`
       (web + `@pcc/contracts`) + `prettier --check`.
-- [ ] 5.2 .NET gates green: `dotnet build` (warnings = errors) + `dotnet test` + `dotnet format
+- [x] 5.2 .NET gates green: `dotnet build` (warnings = errors) + `dotnet test` + `dotnet format
       --verify-no-changes`.
-- [ ] 5.3 E2E (Playwright, live stack with `searxng`): `docker compose up -d --build`; login;
+- [x] 5.3 E2E (Playwright, live stack with `searxng`): `docker compose up -d --build`; login;
       `/search` is server-rendered (box, no results for empty `q`); submit a query → results render
       **server-side**; the browser only ever hit `app.`; `api.pcc.localhost` stays **404**.
-- [ ] 5.4 Update `CLAUDE.md` (the `search` plugin + self-hosted `searxng` service + `Plugins:Search`
+- [x] 5.4 Update `CLAUDE.md` (the `search` plugin + self-hosted `searxng` service + `Plugins:Search`
       config) and the plugin layout; mark tasks complete; ready for `/opsx:archive`.

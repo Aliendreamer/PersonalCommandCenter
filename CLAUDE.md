@@ -12,8 +12,8 @@ browser only ever talks to `app.pcc.localhost`; the SSR server proxies the OIDC 
 fetches page data server-to-server from core-api (internal-only). Plugins: `system` (host status),
 `iot` (read-only Home Assistant monitoring), `calendar` (read + write CalDAV events — the first
 write-path plugin, mutations flow through the SSR-BFF), `tasks` (read + write CalDAV to-dos / VTODO,
-same Radicale, a separate collection), and `notifications` (an in-app alert-bus + notification
-center with best-effort **ntfy** push).
+same Radicale, a separate collection), `notifications` (an in-app alert-bus + notification center
+with best-effort **ntfy** push), and `search` (read-only metasearch via a self-hosted **SearXNG**).
 
 ## Stack & layout
 
@@ -30,12 +30,14 @@ plugins/iot            IotPlugin classlib     (id "iot", Home Assistant)
 plugins/calendar       CalendarPlugin classlib (id "calendar", CalDAV read+write; hand-rolled VEVENT)
 plugins/tasks          TasksPlugin classlib    (id "tasks", CalDAV read+write VTODO; /pcc/tasks/)
 plugins/notifications  NotificationsPlugin classlib (id "notifications"); host owns the bus/store
+plugins/search         SearchPlugin classlib   (id "search", read-only SearXNG metasearch)
 tests/CoreApi.Tests    xUnit + Mvc.Testing integration/unit tests
 harness/keycloak       Pcc realm import (roles Admin/User, client pcc_api, testuser/Test123!)
 harness/radicale       Radicale CalDAV config + dev login (pcc/pcc-dev-caldav); internal-only
+harness/searxng        SearXNG settings (JSON format on, limiter off, dev secret); internal-only
 harness/traefik        Traefik file-provider routes (*.pcc.localhost)
 openspec/              Spec-driven change workflow (proposals → specs → tasks → archive)
-docker-compose.yml     Traefik + core-api + web + home-assistant + keycloak + postgres + radicale + ntfy
+docker-compose.yml     Traefik + core-api + web + home-assistant + keycloak + postgres + radicale + ntfy + searxng
 ```
 
 ## Commands
@@ -171,6 +173,11 @@ pnpm dlx @tanstack/intent@latest load <package>#<skill> # then follow the return
 - **Integration tests share one InMemory DB per factory.** `TestFactoryExtensions.Authed` hoists the
   `UseInMemoryDatabase("authed-…")` name **out of the options lambda** — inside it, `Guid.NewGuid()`
   ran per scope, so a seed in one scope was invisible to the request pipeline's scope.
+- **Search self-hosts SearXNG** (`harness/searxng/settings.yml`): its JSON API is **off by default**
+  and the bot **limiter would block** core-api's server-to-server queries — the settings enable
+  `search.formats: [json]` and set `limiter: false`. Internal-only (`searxng:8080`,
+  `searxng.pcc.localhost` UI). `/search?q=` is the app's **first query-param SSR loader** (`validateSearch`
+  + `loaderDeps` on `q`; the loader skips the API when `q` is empty).
 - **Public ingress is Traefik on `*.pcc.localhost`** (`app./keycloak./ha./portainer.`) — **no `api.`
   router**: core-api is internal-only, reached as `core-api:8080` on the compose network. The
   `mp_sid` cookie is app-scoped (`SameSite=Lax`). Browsers auto-resolve `*.localhost`; `curl` needs
