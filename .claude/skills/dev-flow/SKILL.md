@@ -24,8 +24,9 @@ seen, all green. Evidence before claims.
 
 ## The Cycle
 
-1. **Brainstorm** (`superpowers:brainstorming`) — turn the idea into a design doc in
-   `docs/superpowers/specs/`. Get explicit approval before any code.
+1. **Brainstorm** — work the idea into a design with the user (approaches, trade-offs,
+   decisions). Get explicit approval before any code. The design is captured in the OpenSpec
+   change's `design.md` (next step) — **never** in loose `docs/` files.
 2. **Propose** (`/opsx:propose`) — create the OpenSpec change: proposal, design, tasks.
 3. **Apply with TDD** (`/opsx:apply`, `superpowers:test-driven-development`) — for each task:
    write the failing test first, watch it fail, write minimal code, watch it pass, refactor.
@@ -101,7 +102,7 @@ published (private workspace); nothing is pushed (no remote yet).
 - **Hybrid boundary:** device/IoT logic goes through Home Assistant; the UI never calls HA
   directly — only via core-api.
 - **Deploy via docker-compose**; adding infra (e.g. `home-assistant`) = another service.
-- Spec docs in `docs/superpowers/specs/`; OpenSpec changes in `openspec/changes/`.
+- All design + specs live in OpenSpec (`openspec/changes/<name>/`, then archived). No `docs/` spec files.
 
 ## Common Mistakes
 
