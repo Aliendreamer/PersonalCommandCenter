@@ -76,10 +76,8 @@ services:
     # The Keycloak issuer URL must resolve to the same host from inside this container.
     extra_hosts:
       - 'keycloak.pcc.localhost:host-gateway'
-    labels:
-      - traefik.enable=true
-      - 'traefik.http.routers.api.rule=Host(`api.pcc.localhost`)'
-      - traefik.http.services.api.loadbalancer.server.port=8080
+    # No Traefik route — core-api is internal-only (SSR-BFF). It's reachable solely as
+    # `core-api:8080` on the compose network, from the web SSR server.
 
   home-assistant:
     image: ghcr.io/home-assistant/home-assistant:stable

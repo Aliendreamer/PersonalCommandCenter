@@ -45,13 +45,15 @@
 
 ## 4. E2E verification + done gate
 
-- [ ] 4.1 `docker compose up -d --build` → `app.`/`keycloak.`/`core-api`(internal)/`postgres`/`ha`
-      healthy; realm imports; **assert `api.pcc.localhost` is NOT publicly routable** (curl `app.`
-      ok; `Host: api.pcc.localhost` → 404 via Traefik).
-- [ ] 4.2 Rewrite `tests/e2e/auth.spec.ts` for app-only ingress: browser hits only `app.pcc.localhost`;
-      login `testuser/Test123!`; **assert the dashboard is server-rendered with data** (tiles
-      populated, not "Loading…"); `/me` via `app.`; **revocation** (logout → reuse cookie → 401/redirect).
-- [ ] 4.3 Full gates green: .NET trio (unchanged — still 46 green) + FE typecheck/lint/test/build/
-      prettier + the E2E.
-- [ ] 4.4 Update `CLAUDE.md` (SSR-BFF ingress; `api.` internal; server functions; cookie re-homing).
-      Mark tasks complete; ready for `/opsx:archive`.
+- [x] 4.1 `docker compose up -d --build` → `app.`/`keycloak.`/`core-api`(internal)/`postgres`/`ha`
+      healthy; realm imports (fresh keycloak container). **Verified `api.pcc.localhost` is NOT
+      publicly routable** (`Host: api.pcc.localhost` → 404; `app./` → 307 guard redirect;
+      `app./api/auth/login` → 302 Keycloak + re-homed `mp_pkce`).
+- [x] 4.2 Rewrote `tests/e2e/auth.spec.ts` for app-only ingress: browser hits only `app.`; login
+      `testuser/Test123!`; **dashboard server-rendered with data** (raw SSR HTML carries `Hello,` +
+      `Healthy`, no "Loading…"); **revocation** (logout → present revoked cookie to the SSR guard →
+      302/307 to `/api/auth/login`); plus an `api.` → 404 test. Both pass, deterministically.
+- [x] 4.3 Full gates green: .NET trio (unchanged — **46** green, build 0 errors, format clean) + FE
+      typecheck/lint/test (**29**)/build/prettier + the **2** E2E tests.
+- [x] 4.4 Updated `CLAUDE.md` (SSR-BFF ingress; `api.` internal; server functions; cookie re-homing;
+      `COOKIE_SECURE`; server-route type augmentation). Tasks complete; ready for `/opsx:archive`.

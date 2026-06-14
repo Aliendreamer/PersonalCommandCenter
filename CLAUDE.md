@@ -7,8 +7,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **PersonalCommandCenter** — a personal command-center / dashboard. A .NET 10 **FastEndpoints**
 host serves a plugin-based backend; a TanStack Start (React, SSR) web shell discovers enabled
 plugins from a manifest and renders their nav entries, dashboard tiles, and routes. The whole app
-sits **behind Keycloak login** (BFF cookie-session auth). First plugins: `system` (host status)
-and `iot` (read-only Home Assistant monitoring).
+sits **behind Keycloak login**. The **always-on SSR server is the public BFF tier** (SSR-BFF): the
+browser only ever talks to `app.pcc.localhost`; the SSR server proxies the OIDC auth dance and
+fetches page data server-to-server from core-api (internal-only). First plugins: `system` (host
+status) and `iot` (read-only Home Assistant monitoring).
 
 ## Stack & layout
 
@@ -16,8 +18,8 @@ Polyglot monorepo: **pnpm workspace + Nx** for the TypeScript side, a **.slnx** 
 the .NET side. Package manager **pnpm@10.x**, **.NET SDK 10**.
 
 ```
-apps/core-api          .NET 10 FastEndpoints host (CoreApi.csproj); BFF auth (Auth/), EF (Data/); Scalar at /scalar
-apps/web               TanStack Start SSR shell (React); prod served by srvx; whole app behind login
+apps/core-api          .NET 10 FastEndpoints host (CoreApi.csproj); auth authority (Auth/), EF (Data/); Scalar at /scalar; internal-only
+apps/web               TanStack Start SSR shell + BFF tier (React); SSR server proxies /api/auth/* & fetches data server-side; prod served by srvx
 libs/plugin-abstractions  .NET IPlugin + PluginManifest contract (Pcc.Plugins)
 libs/contracts         Shared TS types + typed API client (@pcc/contracts)
 plugins/system         SystemPlugin classlib  (id "system")
@@ -46,10 +48,11 @@ pnpm build            # nx run-many -t build
 pnpm format:check     # prettier --check .         (`pnpm format` to fix)
 pnpm --filter web dev # vite dev server on :3000
 
-# Full stack — everything behind Traefik on http://*.pcc.localhost (only Traefik publishes :80)
-docker compose up -d --build              # app. / api. / keycloak. / ha. / portainer.pcc.localhost
+# Full stack — public ingress behind Traefik on http://*.pcc.localhost (only Traefik publishes :80)
+docker compose up -d --build              # app. / keycloak. / ha. / portainer.pcc.localhost
+# core-api is NOT routable (SSR-BFF) — reach it only as core-api:8080 on the compose network.
 # curl through Traefik (curl won't auto-resolve *.localhost like a browser does):
-#   curl -H "Host: api.pcc.localhost" http://127.0.0.1/health
+#   curl -H "Host: app.pcc.localhost" http://127.0.0.1/
 
 # Release (Nx, conventional commits; projects: web + @pcc/contracts, fixed versioning)
 pnpm release:dry
@@ -69,13 +72,24 @@ their manifests at `GET /api/plugins`. An `IPlugin` (`libs/plugin-abstractions`)
 a `PluginManifest` (nav label, route base, widget ids), and `Configure(services, config)`. A
 plugin's HTTP routes are **FastEndpoints endpoint classes** in its assembly (no `MapEndpoints`);
 `UseFastEndpoints` registers them with prefix `api` and a `Endpoints.Filter` that drops endpoints
-from disabled plugins' assemblies. The web shell fetches `/api/plugins` (client-side, credentialed,
-after the `/me` gate) and renders nav + tiles, degrading gracefully on failure (IoT → 502).
+from disabled plugins' assemblies. The web shell fetches `/api/plugins` **server-side** (a
+`createServerFn` called from a route loader, forwarding the session cookie) so pages render with
+data (SSR-with-data); each source is `settle()`d so one plugin's outage degrades only its tile.
 
-**Auth (BFF "World B"):** the API owns the Keycloak OIDC exchange + tokens; the browser holds only
-an opaque `HttpOnly` `mp_sid` cookie; a Postgres session store (`Auth/SessionService`) gives instant
-revocation. Endpoints `api/auth/login|callback|logout` + `api/me`; everything else requires a
-session. Auth is host-level (`apps/core-api/Auth/`), not a plugin. See `bff-auth-template.md`.
+**Auth (SSR-BFF):** core-api stays the auth **authority** (owns the Keycloak OIDC exchange + tokens;
+opaque `HttpOnly` `mp_sid` cookie; Postgres session store `Auth/SessionService` → instant
+revocation) but is **internal-only**. The browser talks solely to `app.pcc.localhost`; the SSR
+server is the public BFF:
+- `apps/web/src/routes/api/auth/$.ts` proxies `api/auth/login|callback|logout` to core-api,
+  **re-homing** each `Set-Cookie` (`apps/web/src/lib/server/cookies.ts`: strip `Domain`, app-scope;
+  `__Host-`+`Secure` in prod) and forwarding the cookie back (mapped to the API name) on the way in.
+- `apps/web/src/lib/server/api.ts` server functions (`getMe`/`getPlugins`/`getSystemStatus`/
+  `getIotEntities`) fetch core-api server-to-server; the `_authenticated` route's `beforeLoad` calls
+  `getMe()` and redirects anonymous requests to `/api/auth/login`, putting `me` in router context.
+
+core-api's auth code (`apps/core-api/Auth/`) is unchanged by the SSR-BFF cutover — only Keycloak
+`redirectUri` + `CallbackUri` config moved to `app.pcc.localhost/api/auth/callback`. See
+`bff-auth-template.md` and `openspec/changes/archive/ssr-bff-auth-v2/`.
 
 ### Adding a plugin (the non-obvious part)
 
@@ -115,19 +129,27 @@ pnpm dlx @tanstack/intent@latest load <package>#<skill> # then follow the return
 - **srvx `--static` is resolved relative to the server-entry directory**, not the cwd. The web
   prod command uses `-s ../client` (sibling of `dist/server`); `-s dist/client` silently
   disables static serving and every `/assets/*` 404s. (See `apps/web/Dockerfile`.)
-- **CORS** is locked to the web origin (`Web__Origins`, `http://app.pcc.localhost`) with
-  `AllowCredentials` (the session cookie rides along) — never `*`.
+- **SSR-BFF cookie re-homing** (`apps/web/src/lib/server/cookies.ts`): core-api sets `Domain`-scoped
+  `mp_sid`/`mp_pkce`; the SSR proxy strips `Domain` (app host-only) and forwards them back under the
+  API name. `__Host-`+`Secure` are added in prod, gated on **`COOKIE_SECURE=true`** (NOT `NODE_ENV` —
+  the prod build runs over plain HTTP locally, where `Secure` cookies would be dropped).
+- **TanStack server routes/functions** need the `server` route-option type augmentation in scope for
+  `tsc`; any module importing `@tanstack/react-start` (e.g. `lib/server/api.ts`) activates it. The
+  standalone proxy route adds a `import type {} from '@tanstack/react-start'` so it typechecks alone.
 - **IoT needs a Home Assistant token** in `.env` (`HA_TOKEN`, gitignored); without it
-  `/api/iot/entities` returns 502 by design.
-- **Everything is behind Traefik on `*.pcc.localhost`** (`app./api./keycloak./ha./portainer.`).
-  `app.` and `api.` share `pcc.localhost` so the `mp_sid` cookie is same-site (`SameSite=Lax`).
-  Browsers auto-resolve `*.localhost`; `curl` needs `-H "Host: …" http://127.0.0.1`.
+  `/api/iot/entities` returns 502 by design (the dashboard tile degrades, page still renders).
+- **Public ingress is Traefik on `*.pcc.localhost`** (`app./keycloak./ha./portainer.`) — **no `api.`
+  router**: core-api is internal-only, reached as `core-api:8080` on the compose network. The
+  `mp_sid` cookie is app-scoped (`SameSite=Lax`). Browsers auto-resolve `*.localhost`; `curl` needs
+  `-H "Host: …" http://127.0.0.1`. CORS on core-api is no longer the browser front line (the browser
+  is same-origin to `app.`), but `Web__Origins` stays locked to the app origin — never `*`.
 - **Traefik uses the file provider** (`harness/traefik/dynamic.yml`), not docker labels — its
   docker provider can't negotiate with this daemon (min API 1.40). Add new routes there.
 - **JwtBearer `RequireHttpsMetadata`** is derived from the Authority scheme; the local harness is
   HTTP (`http://keycloak.pcc.localhost`), so it's off — don't hardcode it true.
 - **EF migrations apply on startup** outside Development (`Database.MigrateAsync` in `Program.cs`);
   generate with `dotnet ef migrations add <Name> --project apps/core-api --output-dir Data/Migrations`.
-- **FE is whole-app-behind-login**: the browser calls `api.pcc.localhost` directly (credentialed,
-  no FE→API proxy); `AuthProvider` gates on `/api/me` client-side. `VITE_API_URL` is the API
-  **origin** (the contracts client appends `/api/...`).
+- **FE is whole-app-behind-login via the SSR-BFF**: the browser never calls core-api — it hits only
+  `app.pcc.localhost`. The `_authenticated` `beforeLoad` guard (server-side `getMe()`) gates every
+  route; there is no client `/me` probe. The SSR server reaches core-api via the **server-side**
+  `API_URL` env (`http://core-api:8080`); there is **no** `VITE_API_URL` baked into the client.
