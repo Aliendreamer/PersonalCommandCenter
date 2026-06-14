@@ -25,21 +25,23 @@
 
 ## 3. Server functions + guard + SSR-with-data migration (TDD)
 
-- [ ] 3.1 (TDD) `lib/server/api.ts` server functions `getMe`/`getPlugins`/`getSystemStatus`/
+- [x] 3.1 (TDD) `lib/server/api.ts` server functions `getMe`/`getPlugins`/`getSystemStatus`/
       `getIotEntities`: read the session cookie, fetch `core-api` over the internal network
       forwarding it, return typed data (`@pcc/contracts`); `getMe` 401 → `null`; data fns 401 →
-      `throw redirect()` to login. Tests mock the `core-api` fetch.
-- [ ] 3.2 `_authenticated` pathless layout route: `beforeLoad` → `getMe()` → router context `me`;
+      `throw redirect()` to login. Pure loaders live in `api-loaders.ts` (unit-tested with a mock
+      fetch); the server fns wrap them with a cookie-forwarding `serverFetch`.
+- [x] 3.2 `_authenticated` pathless layout route: `beforeLoad` → `getMe()` → router context `me`;
       `null` → `redirect()` to `/api/auth/login?returnTo=<path>`. Root route uses
-      `createRootRouteWithContext<{ me }>()`.
-- [ ] 3.3 Convert dashboard/index, system tile, iot-summary tile, and `/devices` to **route loaders**
-      that call the server functions (SSR renders with data); nav identity chip reads `me` from
-      router context.
-- [ ] 3.4 Remove `lib/api.ts` (browser client), the `AuthProvider` `/me` probe (replace `useAuth`
-      with router-context access), and `routes/api/$.ts`. Keep `forbidden.tsx`; point `login()`/
-      `logout()` helpers at `/api/auth/*` on `app.`.
-- [ ] 3.5 `pnpm --filter web generate-routes`; FE gates green: `nx affected -t typecheck lint test
-      build` + `prettier --check`.
+      `createRootRouteWithContext<{ me }>()`; router created with initial `context: { me: null }`.
+- [x] 3.3 Convert dashboard/index, system tile, iot-summary tile, and `/devices` to **route loaders**
+      that call the server functions (SSR renders with data; tiles are now presentational, data via
+      props; `settle()` degrades a single source without breaking the page); nav identity chip reads
+      `me` from `_authenticated` route context.
+- [x] 3.4 Removed `lib/api.ts` (browser client), `AuthProvider`/`auth-api.ts` (`/me` probe), and the
+      old top-level routes. `forbidden.tsx` kept (under `_authenticated/`); `login()`/`logout()`
+      helpers (`lib/auth/session.ts`) point at same-origin `/api/auth/*`.
+- [x] 3.5 `pnpm --filter web generate-routes`; FE gates green: `nx run-many -t typecheck lint test
+      build` (web + `@pcc/contracts`) + `prettier --check`. 29 web tests pass.
 
 ## 4. E2E verification + done gate
 

@@ -11,19 +11,15 @@ const entities: IotEntity[] = [
 afterEach(cleanup)
 
 describe('IotSummaryTile', () => {
-  it('shows device counts', async () => {
-    render(<IotSummaryTile fetchEntities={() => Promise.resolve(entities)} />)
+  it('shows device counts from the loader data', () => {
+    render(<IotSummaryTile entities={entities} />)
 
-    expect(await screen.findByText(/2 devices · 1 on/)).toBeDefined()
+    expect(screen.getByText(/2 devices · 1 on/)).toBeDefined()
   })
 
-  it('shows a degraded state on error', async () => {
-    render(
-      <IotSummaryTile
-        fetchEntities={() => Promise.reject(new Error('down'))}
-      />,
-    )
+  it('shows a degraded state when unavailable', () => {
+    render(<IotSummaryTile error />)
 
-    expect(await screen.findByText(/unavailable/i)).toBeDefined()
+    expect(screen.getByText(/unavailable/i)).toBeDefined()
   })
 })

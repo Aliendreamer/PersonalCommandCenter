@@ -1,11 +1,20 @@
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
+import {
+  HeadContent,
+  Scripts,
+  createRootRouteWithContext,
+} from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 
-import { AuthProvider } from '../lib/auth/AuthProvider'
+import type { Me } from '../lib/server/api-loaders'
 import appCss from '../styles.css?url'
 
-export const Route = createRootRoute({
+/** Router context. `me` is populated by the `_authenticated` guard's `beforeLoad`. */
+export interface RouterContext {
+  me: Me | null
+}
+
+export const Route = createRootRouteWithContext<RouterContext>()({
   head: () => ({
     meta: [
       {
@@ -16,7 +25,7 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'TanStack Start Starter',
+        title: 'Personal Command Center',
       },
     ],
     links: [
@@ -36,7 +45,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <AuthProvider>{children}</AuthProvider>
+        {children}
         <TanStackDevtools
           config={{
             position: 'bottom-right',

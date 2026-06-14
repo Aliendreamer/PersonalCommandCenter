@@ -1,43 +1,14 @@
-import { useEffect, useState } from 'react'
 import type { SystemStatus } from '@pcc/contracts'
-import { api } from '../lib/api'
-
-type TileState =
-  | { kind: 'loading' }
-  | { kind: 'ready'; status: SystemStatus }
-  | { kind: 'error' }
 
 export interface SystemTileProps {
-  /** Injectable for tests; defaults to the real core-api client. */
-  fetchStatus?: () => Promise<SystemStatus>
+  /** Provided by the route loader (SSR-with-data); absent when the source is degraded. */
+  status?: SystemStatus
+  error?: boolean
 }
 
-/** Dashboard tile showing live system status, with a degraded state on error. */
-export function SystemTile({
-  fetchStatus = api.getSystemStatus,
-}: SystemTileProps) {
-  const [state, setState] = useState<TileState>({ kind: 'loading' })
-
-  useEffect(() => {
-    let active = true
-    fetchStatus().then(
-      (status) => {
-        if (active) setState({ kind: 'ready', status })
-      },
-      () => {
-        if (active) setState({ kind: 'error' })
-      },
-    )
-    return () => {
-      active = false
-    }
-  }, [fetchStatus])
-
-  if (state.kind === 'loading') {
-    return <p className="text-sm text-gray-500">Loading…</p>
-  }
-
-  if (state.kind === 'error') {
+/** Dashboard tile showing system status, with a degraded state when unavailable. */
+export function SystemTile({ status, error }: SystemTileProps) {
+  if (error || !status) {
     return (
       <p role="status" className="text-sm text-amber-700">
         Status unavailable
@@ -45,7 +16,6 @@ export function SystemTile({
     )
   }
 
-  const { status } = state
   return (
     <dl className="text-sm">
       <div className="flex justify-between">

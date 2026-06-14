@@ -13,15 +13,21 @@ const status: SystemStatus = {
 afterEach(cleanup)
 
 describe('SystemTile', () => {
-  it('shows live status from the api', async () => {
-    render(<SystemTile fetchStatus={() => Promise.resolve(status)} />)
+  it('renders the status provided by the loader', () => {
+    render(<SystemTile status={status} />)
 
-    expect(await screen.findByText('box')).toBeDefined()
+    expect(screen.getByText('box')).toBeDefined()
   })
 
-  it('shows a degraded state when the status request fails', async () => {
-    render(<SystemTile fetchStatus={() => Promise.reject(new Error('down'))} />)
+  it('shows a degraded state when the source is unavailable', () => {
+    render(<SystemTile error />)
 
-    expect(await screen.findByText(/unavailable/i)).toBeDefined()
+    expect(screen.getByText(/unavailable/i)).toBeDefined()
+  })
+
+  it('shows a degraded state when no status is provided', () => {
+    render(<SystemTile />)
+
+    expect(screen.getByText(/unavailable/i)).toBeDefined()
   })
 })
