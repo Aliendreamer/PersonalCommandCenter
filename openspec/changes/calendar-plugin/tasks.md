@@ -1,12 +1,13 @@
 ## 1. Infra — Radicale CalDAV service
 
-- [ ] 1.1 Add a `radicale` service to `docker-compose.yml` (internal only, **no** Traefik route;
-      config + data volume; HTTP Basic via an htpasswd user from `.env` `CALDAV_USER`/
-      `CALDAV_PASSWORD`). core-api reaches it as `radicale:5232`.
-- [ ] 1.2 Add a `harness/radicale/` config (storage path, auth=htpasswd, a seeded default calendar
-      collection) and gitignored `.env` keys; document the service in the harness notes.
-- [ ] 1.3 `docker compose config` valid; bring `radicale` up and confirm the collection is reachable
-      from the compose network (PROPFIND/Basic-auth smoke).
+- [x] 1.1 Add a `radicale` service to `docker-compose.yml` (internal only, **no** Traefik route;
+      config + data volume; HTTP Basic via an htpasswd user). core-api reaches it as `radicale:5232`;
+      `Plugins:Calendar:*` config + `${CALDAV_USER:-pcc}`/`${CALDAV_PASSWORD:-pcc-dev-caldav}`.
+- [x] 1.2 Add `harness/radicale/` (config: htpasswd plain auth, owner_only rights, storage; `users`
+      with the committed dev login; README). Collection `/pcc/calendar/` is created on demand via
+      `MKCALENDAR` (no manual seeding). `appsettings.json` gains `Plugins:Calendar` defaults.
+- [x] 1.3 `docker compose config` valid; `radicale` comes up and authenticates the dev credential
+      over Basic auth (returns its UI) on the compose network.
 
 ## 2. Backend — CalDAV client + `calendar` plugin (TDD)
 

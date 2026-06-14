@@ -1,0 +1,17 @@
+# Radicale config for the local PCC harness (internal-only CalDAV on the compose network).
+# Not for production: plain-text htpasswd + a single dev user. Real deployments use bcrypt
+# and credentials from a secret store.
+
+[server]
+hosts = 0.0.0.0:5232
+
+[auth]
+type = htpasswd
+htpasswd_filename = /config/users
+htpasswd_encryption = plain
+
+[storage]
+filesystem_folder = /data/collections
+
+[rights]
+type = owner_only

@@ -55,6 +55,12 @@ services:
       Plugins__Iot__Enabled: 'true'
       Plugins__Iot__HomeAssistant__BaseUrl: 'http://home-assistant:8123'
       Plugins__Iot__HomeAssistant__Token: '${HA_TOKEN:-}'
+      Plugins__Calendar__Enabled: 'true'
+      Plugins__Calendar__BaseUrl: 'http://radicale:5232'
+      Plugins__Calendar__Collection: '/pcc/calendar/'
+      Plugins__Calendar__Username: '${CALDAV_USER:-pcc}'
+      Plugins__Calendar__Password: '${CALDAV_PASSWORD:-pcc-dev-caldav}'
+      Plugins__Calendar__WindowDays: '7'
       Web__Origins: 'http://app.pcc.localhost'
       ConnectionStrings__Postgres: 'Host=postgres;Database=pcc;Username=pcc;Password=${POSTGRES_PASSWORD:-pcc-dev}'
       Auth__Keycloak__Authority: 'http://keycloak.pcc.localhost/realms/Pcc'
@@ -70,6 +76,8 @@ services:
       keycloak:
         condition: service_started
       home-assistant:
+        condition: service_started
+      radicale:
         condition: service_started
     volumes:
       - pcc-dataprotection:/keys
@@ -89,6 +97,14 @@ services:
       - traefik.enable=true
       - 'traefik.http.routers.ha.rule=Host(`ha.pcc.localhost`)'
       - traefik.http.services.ha.loadbalancer.server.port=8123
+
+  radicale:
+    image: tomsquest/docker-radicale:latest
+    # Internal-only CalDAV (no Traefik route) — core-api reaches it as `radicale:5232`.
+    volumes:
+      - radicale-data:/data
+      - ./harness/radicale/config:/config/config:ro
+      - ./harness/radicale/users:/config/users:ro
 
   web:
     build:
@@ -110,3 +126,4 @@ volumes:
   ha-config:
   pcc-postgres:
   pcc-dataprotection:
+  radicale-data:
