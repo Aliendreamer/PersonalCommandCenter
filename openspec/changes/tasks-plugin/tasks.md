@@ -29,21 +29,21 @@
 
 ## 3. Web — read path (SSR-with-data)
 
-- [ ] 3.1 (TDD) `lib/server`: a pure `loadTasks(fetchImpl, all?)` (401 → redirect, other non-ok →
+- [x] 3.1 (TDD) `lib/server`: a pure `loadTasks(fetchImpl, all?)` (401 → redirect, other non-ok →
       throw) + the `getTasks` server function wrapping it with `serverFetch`; unit-test the loader
       (mock fetch, assert URL + `all` flag).
-- [ ] 3.2 `tasks-open` tile — presentational (`{ tasks?, error? }`): shows the open-task count (or
+- [x] 3.2 `tasks-open` tile — presentational (`{ tasks?, error? }`): shows the open-task count (or
       an "All clear" empty state) and a degraded state on error; component test.
-- [ ] 3.3 `_authenticated/tasks` route: loader calls `getTasks` (via `settle`); the page renders
+- [x] 3.3 `_authenticated/tasks` route: loader calls `getTasks` (via `settle`); the page renders
       tasks **server-side**; the dashboard renders the `tasks-open` tile for the `tasks-open`
       widget. `pnpm --filter web generate-routes`.
 
 ## 4. Web — write path (mutations through the SSR-BFF, TDD)
 
-- [ ] 4.1 (TDD) `lib/server`: `postTask`/`putTask`/`removeTask` pure helpers + `createTask`/
+- [x] 4.1 (TDD) `lib/server`: `postTask`/`putTask`/`removeTask` pure helpers + `createTask`/
       `updateTask`/`deleteTask` server functions (`createServerFn({ method: 'POST' })`) forwarding
       the cookie; unit-test the helpers (method, body, URL).
-- [ ] 4.2 `/tasks` page write UI: a create form, a per-task **complete checkbox** (calls `updateTask`
+- [x] 4.2 `/tasks` page write UI: a create form, a per-task **complete checkbox** (calls `updateTask`
       with `completed`), and edit/delete actions — each calling the mutations then
       `router.invalidate()`. Component tests for the form + the complete toggle.
 

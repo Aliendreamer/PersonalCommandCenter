@@ -5,6 +5,8 @@ import type {
   IotEntity,
   PluginManifest,
   SystemStatus,
+  TodoInput,
+  TodoItem,
 } from '@pcc/contracts'
 
 /** The authenticated identity returned by `GET /api/me`. */
@@ -79,6 +81,15 @@ export const loadCalendarEvents = (
       : `/api/calendar/events?days=${days}`,
   )
 
+export const loadTasks = (
+  fetchImpl: FetchLike,
+  all?: boolean,
+): Promise<TodoItem[]> =>
+  loadProtected<TodoItem[]>(
+    fetchImpl,
+    all ? '/api/tasks?all=true' : '/api/tasks',
+  )
+
 /**
  * Sends a protected mutation server-to-server. 401 → login redirect (revoked session); 404 → null
  * (unknown uid); 204/other 2xx → the parsed body or null; anything else throws.
@@ -130,6 +141,15 @@ export const putCalendarEvent = (
 
 export const removeCalendarEvent = (fetchImpl: FetchLike, uid: string) =>
   sendProtected<null>(fetchImpl, 'DELETE', `/api/calendar/events/${uid}`)
+
+export const postTask = (fetchImpl: FetchLike, input: TodoInput) =>
+  sendProtected<TodoItem>(fetchImpl, 'POST', '/api/tasks', input)
+
+export const putTask = (fetchImpl: FetchLike, uid: string, input: TodoInput) =>
+  sendProtected<TodoItem>(fetchImpl, 'PUT', `/api/tasks/${uid}`, input)
+
+export const removeTask = (fetchImpl: FetchLike, uid: string) =>
+  sendProtected<null>(fetchImpl, 'DELETE', `/api/tasks/${uid}`)
 
 /** A loaded value or a degraded marker. */
 export type Settled<T> =

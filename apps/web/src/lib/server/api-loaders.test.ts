@@ -9,9 +9,13 @@ import {
   loadMe,
   loadPlugins,
   loadSystemStatus,
+  loadTasks,
   postCalendarEvent,
+  postTask,
   putCalendarEvent,
+  putTask,
   removeCalendarEvent,
+  removeTask,
   settle,
 } from './api-loaders'
 
@@ -63,6 +67,20 @@ describe('protected loaders', () => {
     expect(fetchImpl).toHaveBeenNthCalledWith(
       2,
       'http://core-api:8080/api/calendar/events?days=1',
+    )
+  })
+
+  it('loadTasks hits the tasks endpoint and passes the all flag', async () => {
+    const fetchImpl = vi.fn().mockImplementation(() => Promise.resolve(ok([])))
+    await loadTasks(fetchImpl)
+    await loadTasks(fetchImpl, true)
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      1,
+      'http://core-api:8080/api/tasks',
+    )
+    expect(fetchImpl).toHaveBeenNthCalledWith(
+      2,
+      'http://core-api:8080/api/tasks?all=true',
     )
   })
 
@@ -150,6 +168,42 @@ describe('calendar mutations', () => {
     } catch (error) {
       expect(isRedirect(error)).toBe(true)
     }
+  })
+})
+
+describe('task mutations', () => {
+  it('postTask POSTs the body to /api/tasks', async () => {
+    const created = { uid: 't', title: 'Buy milk', completed: false }
+    const fetchImpl = vi.fn().mockResolvedValue(ok(created))
+
+    await expect(postTask(fetchImpl, { title: 'Buy milk' })).resolves.toEqual(
+      created,
+    )
+    const [url, init] = fetchImpl.mock.calls[0]
+    expect(url).toBe('http://core-api:8080/api/tasks')
+    expect(init.method).toBe('POST')
+    expect(JSON.parse(init.body).title).toBe('Buy milk')
+  })
+
+  it('putTask PUTs the completed flag to the uid', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValue(ok({ uid: 't', title: 'x', completed: true }))
+
+    await putTask(fetchImpl, 't', { title: 'x', completed: true })
+    const [url, init] = fetchImpl.mock.calls[0]
+    expect(url).toBe('http://core-api:8080/api/tasks/t')
+    expect(init.method).toBe('PUT')
+    expect(JSON.parse(init.body).completed).toBe(true)
+  })
+
+  it('removeTask DELETEs and resolves on 204', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValue(new Response(null, { status: 204 }))
+
+    await expect(removeTask(fetchImpl, 'abc')).resolves.toBeNull()
+    expect(fetchImpl.mock.calls[0][1].method).toBe('DELETE')
   })
 })
 

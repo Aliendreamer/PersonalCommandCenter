@@ -1,7 +1,7 @@
 import { createServerFn } from '@tanstack/react-start'
 import { getRequestHeader } from '@tanstack/react-start/server'
 
-import type { CalendarEventInput } from '@pcc/contracts'
+import type { CalendarEventInput, TodoInput } from '@pcc/contracts'
 
 import { cookiesAreSecure, forwardCookieHeader } from './cookies'
 import {
@@ -10,9 +10,13 @@ import {
   loadMe,
   loadPlugins,
   loadSystemStatus,
+  loadTasks,
   postCalendarEvent,
+  postTask,
   putCalendarEvent,
+  putTask,
   removeCalendarEvent,
+  removeTask,
 } from './api-loaders'
 
 /**
@@ -52,6 +56,22 @@ export const getIotEntities = createServerFn({ method: 'GET' }).handler(() =>
 export const getCalendarEvents = createServerFn({ method: 'GET' }).handler(() =>
   loadCalendarEvents(serverFetch()),
 )
+
+export const getTasks = createServerFn({ method: 'GET' }).handler(() =>
+  loadTasks(serverFetch()),
+)
+
+export const createTask = createServerFn({ method: 'POST' })
+  .validator((input: TodoInput) => input)
+  .handler(({ data }) => postTask(serverFetch(), data))
+
+export const updateTask = createServerFn({ method: 'POST' })
+  .validator((input: { uid: string; task: TodoInput }) => input)
+  .handler(({ data }) => putTask(serverFetch(), data.uid, data.task))
+
+export const deleteTask = createServerFn({ method: 'POST' })
+  .validator((uid: string) => uid)
+  .handler(({ data }) => removeTask(serverFetch(), data))
 
 // Mutations: the RPC transport is POST regardless of the underlying core-api method; the handler
 // re-attaches the cookie and calls core-api with the right verb. The browser only talks to app.
