@@ -1,6 +1,7 @@
 import { isRedirect, redirect } from '@tanstack/react-router'
 import type {
   CalendarEvent,
+  CalendarEventInput,
   IotEntity,
   PluginManifest,
   SystemStatus,
@@ -77,6 +78,58 @@ export const loadCalendarEvents = (
       ? '/api/calendar/events'
       : `/api/calendar/events?days=${days}`,
   )
+
+/**
+ * Sends a protected mutation server-to-server. 401 → login redirect (revoked session); 404 → null
+ * (unknown uid); 204/other 2xx → the parsed body or null; anything else throws.
+ */
+async function sendProtected<T>(
+  fetchImpl: FetchLike,
+  method: string,
+  path: string,
+  body?: unknown,
+): Promise<T | null> {
+  const res = await fetchImpl(`${apiBase()}${path}`, {
+    method,
+    headers:
+      body === undefined ? undefined : { 'Content-Type': 'application/json' },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  })
+  if (res.status === 401) {
+    throw redirect({ href: '/api/auth/login?returnTo=/' })
+  }
+  if (res.status === 404) {
+    return null
+  }
+  if (!res.ok) {
+    throw new Error(`${path} failed: ${res.status}`)
+  }
+  if (res.status === 204) {
+    return null
+  }
+  return (await res.json()) as T
+}
+
+export const postCalendarEvent = (
+  fetchImpl: FetchLike,
+  input: CalendarEventInput,
+) =>
+  sendProtected<CalendarEvent>(fetchImpl, 'POST', '/api/calendar/events', input)
+
+export const putCalendarEvent = (
+  fetchImpl: FetchLike,
+  uid: string,
+  input: CalendarEventInput,
+) =>
+  sendProtected<CalendarEvent>(
+    fetchImpl,
+    'PUT',
+    `/api/calendar/events/${uid}`,
+    input,
+  )
+
+export const removeCalendarEvent = (fetchImpl: FetchLike, uid: string) =>
+  sendProtected<null>(fetchImpl, 'DELETE', `/api/calendar/events/${uid}`)
 
 /** A loaded value or a degraded marker. */
 export type Settled<T> =

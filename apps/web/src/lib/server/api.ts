@@ -1,6 +1,8 @@
 import { createServerFn } from '@tanstack/react-start'
 import { getRequestHeader } from '@tanstack/react-start/server'
 
+import type { CalendarEventInput } from '@pcc/contracts'
+
 import { cookiesAreSecure, forwardCookieHeader } from './cookies'
 import {
   loadCalendarEvents,
@@ -8,6 +10,9 @@ import {
   loadMe,
   loadPlugins,
   loadSystemStatus,
+  postCalendarEvent,
+  putCalendarEvent,
+  removeCalendarEvent,
 } from './api-loaders'
 
 /**
@@ -47,3 +52,17 @@ export const getIotEntities = createServerFn({ method: 'GET' }).handler(() =>
 export const getCalendarEvents = createServerFn({ method: 'GET' }).handler(() =>
   loadCalendarEvents(serverFetch()),
 )
+
+// Mutations: the RPC transport is POST regardless of the underlying core-api method; the handler
+// re-attaches the cookie and calls core-api with the right verb. The browser only talks to app.
+export const createCalendarEvent = createServerFn({ method: 'POST' })
+  .validator((input: CalendarEventInput) => input)
+  .handler(({ data }) => postCalendarEvent(serverFetch(), data))
+
+export const updateCalendarEvent = createServerFn({ method: 'POST' })
+  .validator((input: { uid: string; event: CalendarEventInput }) => input)
+  .handler(({ data }) => putCalendarEvent(serverFetch(), data.uid, data.event))
+
+export const deleteCalendarEvent = createServerFn({ method: 'POST' })
+  .validator((uid: string) => uid)
+  .handler(({ data }) => removeCalendarEvent(serverFetch(), data))

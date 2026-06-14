@@ -52,11 +52,11 @@
 
 ## 5. Web — write path (mutations through the SSR-BFF, TDD)
 
-- [ ] 5.1 (TDD) `lib/server`: `createCalendarEvent`/`updateCalendarEvent`/`deleteCalendarEvent`
+- [x] 5.1 (TDD) `lib/server`: `createCalendarEvent`/`updateCalendarEvent`/`deleteCalendarEvent`
       server functions (`createServerFn({ method: 'POST' })`) forwarding the cookie to
       `POST/PUT/DELETE api/calendar/events`; unit-test the pure mutation helpers (mock fetch; assert
       method, body, and cookie forwarding).
-- [ ] 5.2 Calendar page write UI: a create form + per-event edit/delete actions that call the
+- [x] 5.2 Calendar page write UI: a create form + per-event edit/delete actions that call the
       mutation server functions and then `router.invalidate()` so the loader re-runs and the view
       refreshes; component tests for the form/validation behavior.
 

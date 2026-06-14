@@ -9,6 +9,9 @@ import {
   loadMe,
   loadPlugins,
   loadSystemStatus,
+  postCalendarEvent,
+  putCalendarEvent,
+  removeCalendarEvent,
   settle,
 } from './api-loaders'
 
@@ -94,6 +97,59 @@ describe('protected loaders', () => {
       .fn()
       .mockResolvedValue(new Response(null, { status: 502 }))
     await expect(loadIotEntities(fetchImpl)).rejects.toThrow(/502/)
+  })
+})
+
+describe('calendar mutations', () => {
+  const input = {
+    title: 'Lunch',
+    start: '2026-06-15T12:00:00Z',
+    end: '2026-06-15T13:00:00Z',
+  }
+
+  it('postCalendarEvent POSTs the JSON body and returns the created event', async () => {
+    const created = { uid: 'x', ...input, allDay: false }
+    const fetchImpl = vi.fn().mockResolvedValue(ok(created))
+
+    await expect(postCalendarEvent(fetchImpl, input)).resolves.toEqual(created)
+    const [url, init] = fetchImpl.mock.calls[0]
+    expect(url).toBe('http://core-api:8080/api/calendar/events')
+    expect(init.method).toBe('POST')
+    expect(JSON.parse(init.body).title).toBe('Lunch')
+  })
+
+  it('putCalendarEvent PUTs to the uid and returns null on 404', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValue(new Response(null, { status: 404 }))
+
+    await expect(putCalendarEvent(fetchImpl, 'nope', input)).resolves.toBeNull()
+    const [url, init] = fetchImpl.mock.calls[0]
+    expect(url).toBe('http://core-api:8080/api/calendar/events/nope')
+    expect(init.method).toBe('PUT')
+  })
+
+  it('removeCalendarEvent DELETEs and resolves on 204', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValue(new Response(null, { status: 204 }))
+
+    await expect(removeCalendarEvent(fetchImpl, 'abc')).resolves.toBeNull()
+    const [url, init] = fetchImpl.mock.calls[0]
+    expect(url).toBe('http://core-api:8080/api/calendar/events/abc')
+    expect(init.method).toBe('DELETE')
+  })
+
+  it('redirects to login on 401 (revoked session)', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValue(new Response(null, { status: 401 }))
+    try {
+      await postCalendarEvent(fetchImpl, input)
+      throw new Error('expected a redirect')
+    } catch (error) {
+      expect(isRedirect(error)).toBe(true)
+    }
   })
 })
 
