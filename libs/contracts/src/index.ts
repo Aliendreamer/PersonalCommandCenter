@@ -6,6 +6,7 @@ export type {
   NotificationList,
   NotificationSeverity,
   PluginManifest,
+  RssItem,
   SearchResult,
   SystemStatus,
   Weather,

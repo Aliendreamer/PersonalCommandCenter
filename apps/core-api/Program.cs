@@ -14,6 +14,7 @@ using Pcc.Plugins;
 using Pcc.Plugins.Calendar;
 using Pcc.Plugins.Iot;
 using Pcc.Plugins.Notifications;
+using Pcc.Plugins.Rss;
 using Pcc.Plugins.Search;
 using Pcc.Plugins.SystemPlugin;
 using Pcc.Plugins.Tasks;
@@ -90,6 +91,7 @@ Assembly[] pluginAssemblies =
     typeof(NotificationsPlugin).Assembly,
     typeof(SearchPlugin).Assembly,
     typeof(WeatherPlugin).Assembly,
+    typeof(RssPlugin).Assembly,
 ];
 
 using var bootstrapLoggerFactory = LoggerFactory.Create(logging => logging.AddConsole());

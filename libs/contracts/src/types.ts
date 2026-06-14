@@ -104,6 +104,14 @@ export interface ForecastDay {
   lowC: number;
 }
 
+/** Mirrors the backend `RssItem` from `GET /api/rss`. */
+export interface RssItem {
+  title: string;
+  link: string;
+  published: string;
+  source: string;
+}
+
 /** Mirrors the backend `Weather` from `GET /api/weather`. */
 export interface Weather {
   current: WeatherCurrent;

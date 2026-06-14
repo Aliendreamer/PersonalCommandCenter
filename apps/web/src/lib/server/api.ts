@@ -10,6 +10,7 @@ import {
   loadMe,
   loadPlugins,
   loadNotifications,
+  loadRss,
   loadSearch,
   loadWeather,
   loadSystemStatus,
@@ -96,6 +97,10 @@ export const getSearch = createServerFn({ method: 'GET' })
 
 export const getWeather = createServerFn({ method: 'GET' }).handler(() =>
   loadWeather(serverFetch()),
+)
+
+export const getRss = createServerFn({ method: 'GET' }).handler(() =>
+  loadRss(serverFetch()),
 )
 
 // Mutations: the RPC transport is POST regardless of the underlying core-api method; the handler

@@ -9,6 +9,7 @@ import {
   loadMe,
   loadPlugins,
   loadNotifications,
+  loadRss,
   loadSearch,
   loadWeather,
   loadSystemStatus,
@@ -241,6 +242,14 @@ describe('notifications', () => {
     expect(fetchImpl.mock.calls[0][0]).toBe(
       'http://core-api:8080/api/notifications/read-all',
     )
+  })
+})
+
+describe('rss', () => {
+  it('loadRss hits the endpoint', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(ok([]))
+    await loadRss(fetchImpl)
+    expect(fetchImpl).toHaveBeenCalledWith('http://core-api:8080/api/rss')
   })
 })
 

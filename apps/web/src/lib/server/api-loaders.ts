@@ -5,6 +5,7 @@ import type {
   IotEntity,
   NotificationList,
   PluginManifest,
+  RssItem,
   SearchResult,
   SystemStatus,
   Weather,
@@ -109,6 +110,9 @@ export const loadSearch = (
 
 export const loadWeather = (fetchImpl: FetchLike): Promise<Weather> =>
   loadProtected<Weather>(fetchImpl, '/api/weather')
+
+export const loadRss = (fetchImpl: FetchLike): Promise<RssItem[]> =>
+  loadProtected<RssItem[]>(fetchImpl, '/api/rss')
 
 /**
  * Sends a protected mutation server-to-server. 401 → login redirect (revoked session); 404 → null

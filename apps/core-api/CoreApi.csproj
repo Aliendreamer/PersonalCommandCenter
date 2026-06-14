@@ -9,6 +9,7 @@
     <ProjectReference Include="..\..\plugins\notifications\notifications.api\NotificationsPlugin.csproj" />
     <ProjectReference Include="..\..\plugins\search\search.api\SearchPlugin.csproj" />
     <ProjectReference Include="..\..\plugins\weather\weather.api\WeatherPlugin.csproj" />
+    <ProjectReference Include="..\..\plugins\rss\rss.api\RssPlugin.csproj" />
   </ItemGroup>
 
   <ItemGroup>

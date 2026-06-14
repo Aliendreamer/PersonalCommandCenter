@@ -154,4 +154,10 @@ describe('createApiClient', () => {
 
     await expect(client.getWeather()).resolves.toEqual(body);
   });
+
+  it('fetches rss items', async () => {
+    const body = [{ title: 'x', link: 'u', published: 't', source: 's' }];
+    const client = createApiClient('http://api', jsonFetch(body));
+    await expect(client.getRss()).resolves.toEqual(body);
+  });
 });

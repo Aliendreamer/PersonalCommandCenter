@@ -7,6 +7,7 @@ import {
   getPlugins,
   getSystemStatus,
   getTasks,
+  getRss,
   getWeather,
 } from '../../lib/server/api'
 import { settle } from '../../lib/server/api-loaders'
@@ -18,12 +19,13 @@ import { TasksOpenTile } from '../../components/tasks-open-tile'
 import { NotificationsUnreadTile } from '../../components/notifications-unread-tile'
 import { SearchBoxTile } from '../../components/search-box-tile'
 import { WeatherTodayTile } from '../../components/weather-today-tile'
+import { RssLatestTile } from '../../components/rss-latest-tile'
 
 export const Route = createFileRoute('/_authenticated/')({
   // SSR-with-data: the dashboard renders fully populated. Each source is settled independently so
   // one plugin's outage (e.g. IoT 502 without an HA token) degrades only its tile.
   loader: async () => {
-    const [plugins, system, iot, calendar, tasks, notifications, weather] =
+    const [plugins, system, iot, calendar, tasks, notifications, weather, rss] =
       await Promise.all([
         settle(getPlugins()),
         settle(getSystemStatus()),
@@ -32,14 +34,24 @@ export const Route = createFileRoute('/_authenticated/')({
         settle(getTasks()),
         settle(getNotifications()),
         settle(getWeather()),
+        settle(getRss()),
       ])
-    return { plugins, system, iot, calendar, tasks, notifications, weather }
+    return {
+      plugins,
+      system,
+      iot,
+      calendar,
+      tasks,
+      notifications,
+      weather,
+      rss,
+    }
   },
   component: Home,
 })
 
 function Home() {
-  const { plugins, system, iot, calendar, tasks, notifications, weather } =
+  const { plugins, system, iot, calendar, tasks, notifications, weather, rss } =
     Route.useLoaderData()
   const navigate = useNavigate()
   return (
@@ -80,6 +92,9 @@ function Home() {
           return (
             <WeatherTodayTile weather={weather.data} error={weather.error} />
           )
+        }
+        if (manifest.widgets.includes('rss-latest')) {
+          return <RssLatestTile items={rss.data} error={rss.error} />
         }
         return null
       }}
