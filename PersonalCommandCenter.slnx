@@ -20,6 +20,10 @@
   <Folder Name="/plugins/system/system.api/">
     <Project Path="plugins/system/system.api/SystemPlugin.csproj" />
   </Folder>
+  <Folder Name="/plugins/tasks/" />
+  <Folder Name="/plugins/tasks/tasks.api/">
+    <Project Path="plugins/tasks/tasks.api/TasksPlugin.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/CoreApi.Tests/CoreApi.Tests.csproj" />
   </Folder>

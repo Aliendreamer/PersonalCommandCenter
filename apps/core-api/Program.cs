@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using Pcc.Plugins.Calendar;
 using Pcc.Plugins.Iot;
 using Pcc.Plugins.SystemPlugin;
+using Pcc.Plugins.Tasks;
 using Scalar.AspNetCore;
 using ZiggyCreatures.Caching.Fusion;
 
@@ -71,6 +72,7 @@ Assembly[] pluginAssemblies =
     typeof(SystemStatusPlugin).Assembly,
     typeof(IotPlugin).Assembly,
     typeof(CalendarPlugin).Assembly,
+    typeof(TasksPlugin).Assembly,
 ];
 
 using var bootstrapLoggerFactory = LoggerFactory.Create(logging => logging.AddConsole());

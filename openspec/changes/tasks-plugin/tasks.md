@@ -1,24 +1,24 @@
 ## 1. Backend — VTODO CalDAV client + `tasks` plugin (TDD)
 
-- [ ] 1.1 (TDD) Create `plugins/tasks/tasks.api` classlib; add `ITaskClient` + a `TodoItem` model
+- [x] 1.1 (TDD) Create `plugins/tasks/tasks.api` classlib; add `ITaskClient` + a `TodoItem` model
       (`{ Uid, Title, Due?, Completed, Description? }`) + `TodoInput`. Hand-rolled `TaskIcs`
       (VTODO serialize/parse): UID, SUMMARY, optional DUE (date or UTC), STATUS + COMPLETED +
       PERCENT-COMPLETE, DESCRIPTION. Unit-test round-trip (with/without due; open vs completed).
-- [ ] 1.2 Implement `TaskDavClient : ITaskClient` over a named `HttpClient` (Basic auth +
+- [x] 1.2 Implement `TaskDavClient : ITaskClient` over a named `HttpClient` (Basic auth +
       `TaskOptions`): `ListAsync(includeCompleted)` via `REPORT` calendar-query (VTODO),
       `CreateAsync`/`UpdateAsync` via `PUT {uid}.ics`, `DeleteAsync` via `DELETE`, `MKCALENDAR`
       on demand (405/409 = exists). Unit-test request shaping with a stub `HttpMessageHandler`
       (incl. MKCALENDAR 409 → create still succeeds).
-- [ ] 1.3 Implement `TasksPlugin : IPlugin` (id `tasks`; manifest nav "Tasks", `routeBase` `/tasks`,
+- [x] 1.3 Implement `TasksPlugin : IPlugin` (id `tasks`; manifest nav "Tasks", `routeBase` `/tasks`,
       widget `tasks-open`; `Configure` registers `ITaskClient`, the named `HttpClient`, `TaskOptions`).
       Lazy `Resolve<T>()` in endpoints.
-- [ ] 1.4 FastEndpoints under `api/tasks`: `GET tasks` (`?all=true`), `POST tasks` (blank title →
+- [x] 1.4 FastEndpoints under `api/tasks`: `GET tasks` (`?all=true`), `POST tasks` (blank title →
       `400`), `PUT tasks/{uid}` (incl. `completed` toggle), `DELETE tasks/{uid}`. Map client
       failure → `502`, unknown uid → `404`.
-- [ ] 1.5 Register the plugin in `CoreApi.csproj`, `Program.cs` `pluginAssemblies`,
+- [x] 1.5 Register the plugin in `CoreApi.csproj`, `Program.cs` `pluginAssemblies`,
       `PersonalCommandCenter.slnx`; add `Plugins:Tasks:{Enabled,BaseUrl,Collection=/pcc/tasks/,
       Username,Password}` to `appsettings`/compose env; core-api `Dockerfile` copies the plugin.
-- [ ] 1.6 (TDD) `CoreApi.Tests` integration tests (fake `ITaskClient`): open-only by default +
+- [x] 1.6 (TDD) `CoreApi.Tests` integration tests (fake `ITaskClient`): open-only by default +
       `?all=true`; create → `201` + `uid`; blank title → `400`; toggle complete via `PUT`;
       delete + `404`; disabled plugin absent from `/api/plugins`; CalDAV failure → `502`.
 

@@ -5,6 +5,7 @@
     <ProjectReference Include="..\..\plugins\system\system.api\SystemPlugin.csproj" />
     <ProjectReference Include="..\..\plugins\iot\iot.api\IotPlugin.csproj" />
     <ProjectReference Include="..\..\plugins\calendar\calendar.api\CalendarPlugin.csproj" />
+    <ProjectReference Include="..\..\plugins\tasks\tasks.api\TasksPlugin.csproj" />
   </ItemGroup>
 
   <ItemGroup>
