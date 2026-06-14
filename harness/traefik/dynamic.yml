@@ -21,6 +21,10 @@ http:
       rule: 'Host(`ntfy.pcc.localhost`)'
       entryPoints: ['web']
       service: ntfy
+    searxng:
+      rule: 'Host(`searxng.pcc.localhost`)'
+      entryPoints: ['web']
+      service: searxng
     portainer:
       rule: 'Host(`portainer.pcc.localhost`)'
       entryPoints: ['web']
@@ -42,6 +46,10 @@ http:
       loadBalancer:
         servers:
           - url: 'http://ntfy:80'
+    searxng:
+      loadBalancer:
+        servers:
+          - url: 'http://searxng:8080'
     portainer:
       loadBalancer:
         serversTransport: insecure

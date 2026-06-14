@@ -1,11 +1,11 @@
 ## 1. Infra — self-hosted SearXNG
 
-- [ ] 1.1 Add a `searxng` service to `docker-compose.yml` (image `searxng/searxng`, internal; mount
+- [x] 1.1 Add a `searxng` service to `docker-compose.yml` (image `searxng/searxng`, internal; mount
       `harness/searxng/settings.yml`). Add `harness/searxng/settings.yml` (`use_default_settings`,
       dev `secret_key`, `server.limiter: false`, `search.formats: [html, json]`). Optional
       `searxng.pcc.localhost` Traefik route. core-api gets `Plugins:Search:{Enabled,BaseUrl=
       http://searxng:8080}` (compose env + appsettings).
-- [ ] 1.2 `docker compose config` valid; bring `searxng` up and confirm a JSON query
+- [x] 1.2 `docker compose config` valid; bring `searxng` up and confirm a JSON query
       (`/search?q=test&format=json`) returns `results` from the compose network (smoke).
 
 ## 2. Backend — SearXNG client + `search` plugin (TDD)

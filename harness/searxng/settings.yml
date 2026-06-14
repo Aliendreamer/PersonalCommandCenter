@@ -1,0 +1,16 @@
+# SearXNG config for the local PCC harness (internal-only metasearch on the compose network).
+# Enables the JSON API and disables the bot limiter so core-api can query it server-to-server.
+
+use_default_settings: true
+
+server:
+  # Local-only dev secret. A real deployment would use a generated secret from a secret store.
+  secret_key: 'pcc-dev-searxng-secret'
+  limiter: false
+  image_proxy: false
+
+search:
+  # The JSON format is off by default — core-api needs it for /search?format=json.
+  formats:
+    - html
+    - json

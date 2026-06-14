@@ -69,6 +69,8 @@ services:
       Plugins__Notifications__Enabled: 'true'
       Notifications__Ntfy__BaseUrl: 'http://ntfy:80'
       Notifications__Ntfy__Topic: 'pcc'
+      Plugins__Search__Enabled: 'true'
+      Plugins__Search__BaseUrl: 'http://searxng:8080'
       Web__Origins: 'http://app.pcc.localhost'
       ConnectionStrings__Postgres: 'Host=postgres;Database=pcc;Username=pcc;Password=${POSTGRES_PASSWORD:-pcc-dev}'
       Auth__Keycloak__Authority: 'http://keycloak.pcc.localhost/realms/Pcc'
@@ -88,6 +90,8 @@ services:
       radicale:
         condition: service_started
       ntfy:
+        condition: service_started
+      searxng:
         condition: service_started
     volumes:
       - pcc-dataprotection:/keys
@@ -115,6 +119,14 @@ services:
       - radicale-data:/data
       - ./harness/radicale/config:/config/config:ro
       - ./harness/radicale/users:/config/users:ro
+
+  searxng:
+    image: searxng/searxng:latest
+    # Internal metasearch — core-api reaches it as `http://searxng:8080`; UI at searxng.pcc.localhost.
+    volumes:
+      - ./harness/searxng/settings.yml:/etc/searxng/settings.yml:ro
+    environment:
+      SEARXNG_BASE_URL: 'http://searxng.pcc.localhost/'
 
   ntfy:
     image: binwiederhier/ntfy:latest
