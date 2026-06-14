@@ -1,0 +1,40 @@
+# Normalize line endings: store LF in the repo, normalize on commit. The stack is developed on
+# Linux/WSL2 and runs in Linux containers, so LF is the canonical line ending.
+* text=auto eol=lf
+
+# Scripts/configs that MUST stay LF (shell, Dockerfiles, container-consumed config).
+*.sh            text eol=lf
+Dockerfile      text eol=lf
+*.yml           text eol=lf
+*.yaml          text eol=lf
+
+# Windows-only scripts keep CRLF.
+*.cmd           text eol=crlf
+*.bat           text eol=crlf
+*.ps1           text eol=crlf
+
+# Language hints for better diffs / GitHub Linguist.
+*.cs            text diff=csharp
+*.ts            text
+*.tsx           text
+*.csproj        text
+*.slnx          text
+
+# Binary assets — never diff or normalize.
+*.png           binary
+*.jpg           binary
+*.jpeg          binary
+*.gif           binary
+*.ico           binary
+*.webp          binary
+*.pdf           binary
+*.woff          binary
+*.woff2         binary
+*.ttf           binary
+*.eot           binary
+
+# Generated/committed artifacts — collapse in diffs and exclude from language stats.
+pnpm-lock.yaml                        linguist-generated=true -diff
+**/routeTree.gen.ts                   linguist-generated=true -diff
+**/Migrations/*.Designer.cs           linguist-generated=true -diff
+**/Migrations/*ModelSnapshot.cs       linguist-generated=true -diff
