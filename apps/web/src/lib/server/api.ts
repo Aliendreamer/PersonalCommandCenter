@@ -10,6 +10,7 @@ import {
   loadMe,
   loadPlugins,
   loadNotifications,
+  loadSearch,
   loadSystemStatus,
   loadTasks,
   postCalendarEvent,
@@ -87,6 +88,10 @@ export const markNotificationRead = createServerFn({ method: 'POST' })
 export const markAllNotificationsRead = createServerFn({
   method: 'POST',
 }).handler(() => postMarkAllNotificationsRead(serverFetch()))
+
+export const getSearch = createServerFn({ method: 'GET' })
+  .validator((q: string) => q)
+  .handler(({ data }) => loadSearch(serverFetch(), data))
 
 // Mutations: the RPC transport is POST regardless of the underlying core-api method; the handler
 // re-attaches the cookie and calls core-api with the right verb. The browser only talks to app.

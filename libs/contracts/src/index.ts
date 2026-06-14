@@ -6,6 +6,7 @@ export type {
   NotificationList,
   NotificationSeverity,
   PluginManifest,
+  SearchResult,
   SystemStatus,
   TodoInput,
   TodoItem,

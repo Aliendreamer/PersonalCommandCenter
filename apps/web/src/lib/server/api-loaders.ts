@@ -5,6 +5,7 @@ import type {
   IotEntity,
   NotificationList,
   PluginManifest,
+  SearchResult,
   SystemStatus,
   TodoInput,
   TodoItem,
@@ -95,6 +96,15 @@ export const loadNotifications = (
   fetchImpl: FetchLike,
 ): Promise<NotificationList> =>
   loadProtected<NotificationList>(fetchImpl, '/api/notifications')
+
+export const loadSearch = (
+  fetchImpl: FetchLike,
+  q: string,
+): Promise<SearchResult[]> =>
+  loadProtected<SearchResult[]>(
+    fetchImpl,
+    `/api/search?q=${encodeURIComponent(q)}`,
+  )
 
 /**
  * Sends a protected mutation server-to-server. 401 → login redirect (revoked session); 404 → null

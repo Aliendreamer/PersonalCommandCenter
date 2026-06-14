@@ -9,6 +9,7 @@ import {
   loadMe,
   loadPlugins,
   loadNotifications,
+  loadSearch,
   loadSystemStatus,
   loadTasks,
   postCalendarEvent,
@@ -238,6 +239,16 @@ describe('notifications', () => {
     await postMarkAllNotificationsRead(fetchImpl)
     expect(fetchImpl.mock.calls[0][0]).toBe(
       'http://core-api:8080/api/notifications/read-all',
+    )
+  })
+})
+
+describe('search', () => {
+  it('loadSearch hits the endpoint, url-encoding the query', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(ok([]))
+    await loadSearch(fetchImpl, 'hello world')
+    expect(fetchImpl).toHaveBeenCalledWith(
+      'http://core-api:8080/api/search?q=hello%20world',
     )
   })
 })

@@ -27,17 +27,17 @@
 
 ## 3. Contracts — shared type + client (TDD)
 
-- [ ] 3.1 (TDD) `@pcc/contracts`: `SearchResult` type + a `getSearch(q)` client method (URL-encodes
+- [x] 3.1 (TDD) `@pcc/contracts`: `SearchResult` type + a `getSearch(q)` client method (URL-encodes
       `q`); client tests against a mock fetch.
 
 ## 4. Web — read path (query-driven SSR)
 
-- [ ] 4.1 (TDD) `lib/server`: `loadSearch(fetchImpl, q)` (URL-encodes `q`) + the `getSearch` server
+- [x] 4.1 (TDD) `lib/server`: `loadSearch(fetchImpl, q)` (URL-encodes `q`) + the `getSearch` server
       function (validator `q`) wrapping it with `serverFetch`; unit-test the loader (URL shaping).
-- [ ] 4.2 `SearchResultList` — presentational (`{ results, error? }`): renders the result list (title
+- [x] 4.2 `SearchResultList` — presentational (`{ results, error? }`): renders the result list (title
       links to url + snippet/engine) or a degraded "Search unavailable"; component test. A
       `search-box` tile (a form that navigates to `/search?q=`); component test.
-- [ ] 4.3 `_authenticated/search` route: a `q` search param + `loaderDeps`; the loader runs
+- [x] 4.3 `_authenticated/search` route: a `q` search param + `loaderDeps`; the loader runs
       `getSearch` (via `settle`) **only when `q` is present** (else `null`); the page renders a search
       form (navigates to `/search?q=`) + the `SearchResultList` **server-side**; the dashboard renders
       the `search-box` tile for the `search-box` widget. `pnpm --filter web generate-routes`.

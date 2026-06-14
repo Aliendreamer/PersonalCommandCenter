@@ -81,3 +81,11 @@ export interface NotificationList {
   notifications: Notification[];
   unread: number;
 }
+
+/** Mirrors the backend `SearchResult` from `GET /api/search`. */
+export interface SearchResult {
+  title: string;
+  url: string;
+  content?: string | null;
+  engine?: string | null;
+}

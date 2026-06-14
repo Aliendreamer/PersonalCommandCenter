@@ -134,4 +134,17 @@ describe('createApiClient', () => {
     expect(calls[0]?.url).toBe('http://api/api/notifications/abc/read');
     expect(calls[0]?.init?.method).toBe('POST');
   });
+
+  it('searches, url-encoding the query', async () => {
+    const calls: Array<{ url: string }> = [];
+    const fetchImpl = (async (url: string) => {
+      calls.push({ url });
+      return new Response(JSON.stringify([]), { status: 200 });
+    }) as unknown as typeof fetch;
+    const client = createApiClient('http://api', fetchImpl);
+
+    await client.getSearch('hello world');
+
+    expect(calls[0]?.url).toBe('http://api/api/search?q=hello%20world');
+  });
 });

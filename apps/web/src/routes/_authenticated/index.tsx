@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 
 import {
   getCalendarEvents,
@@ -15,6 +15,7 @@ import { IotSummaryTile } from '../../components/iot-summary-tile'
 import { CalendarTodayTile } from '../../components/calendar-today-tile'
 import { TasksOpenTile } from '../../components/tasks-open-tile'
 import { NotificationsUnreadTile } from '../../components/notifications-unread-tile'
+import { SearchBoxTile } from '../../components/search-box-tile'
 
 export const Route = createFileRoute('/_authenticated/')({
   // SSR-with-data: the dashboard renders fully populated. Each source is settled independently so
@@ -37,6 +38,7 @@ export const Route = createFileRoute('/_authenticated/')({
 function Home() {
   const { plugins, system, iot, calendar, tasks, notifications } =
     Route.useLoaderData()
+  const navigate = useNavigate()
   return (
     <PluginShell
       manifests={plugins.data ?? []}
@@ -61,6 +63,13 @@ function Home() {
             <NotificationsUnreadTile
               unread={notifications.data?.unread}
               error={notifications.error}
+            />
+          )
+        }
+        if (manifest.widgets.includes('search-box')) {
+          return (
+            <SearchBoxTile
+              onSearch={(q) => navigate({ to: '/search', search: { q } })}
             />
           )
         }

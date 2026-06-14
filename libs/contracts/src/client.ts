@@ -4,6 +4,7 @@ import type {
   IotEntity,
   NotificationList,
   PluginManifest,
+  SearchResult,
   SystemStatus,
   TodoInput,
   TodoItem,
@@ -26,6 +27,7 @@ export interface ApiClient {
   getNotifications(): Promise<NotificationList>;
   markNotificationRead(id: string): Promise<void>;
   markAllNotificationsRead(): Promise<void>;
+  getSearch(q: string): Promise<SearchResult[]>;
 }
 
 /**
@@ -79,5 +81,6 @@ export function createApiClient(baseUrl: string, fetchImpl: FetchLike = fetch): 
     markAllNotificationsRead: async () => {
       await request('/api/notifications/read-all', { method: 'POST' });
     },
+    getSearch: (q) => getJson<SearchResult[]>(`/api/search?q=${encodeURIComponent(q)}`),
   };
 }
