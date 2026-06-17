@@ -10,6 +10,7 @@ import {
   loadPlugins,
   loadNotifications,
   loadGoodreads,
+  loadModels,
   loadRss,
   loadUptime,
   loadSearch,
@@ -260,6 +261,14 @@ describe('goodreads', () => {
     const fetchImpl = vi.fn().mockResolvedValue(ok([]))
     await loadGoodreads(fetchImpl)
     expect(fetchImpl).toHaveBeenCalledWith('http://core-api:8080/api/goodreads')
+  })
+})
+
+describe('models', () => {
+  it('loadModels hits the endpoint', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(ok({}))
+    await loadModels(fetchImpl)
+    expect(fetchImpl).toHaveBeenCalledWith('http://core-api:8080/api/models')
   })
 })
 

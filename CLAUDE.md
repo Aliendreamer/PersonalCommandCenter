@@ -15,8 +15,9 @@ write-path plugin, mutations flow through the SSR-BFF), `tasks` (read + write Ca
 same Radicale, a separate collection), `notifications` (an in-app alert-bus + notification center
 with best-effort **ntfy** push), `search` (read-only metasearch via a self-hosted **SearXNG**),
 `weather` (read-only forecast via keyless **Open-Meteo**), `rss` (read-only RSS/Atom aggregator),
-`goodreads` (read-only shelf via Goodreads **RSS**, the official API is retired), and `uptime`
-(read-only service health board — HTTP-pings configured targets, no new container).
+`goodreads` (read-only shelf via Goodreads **RSS**, the official API is retired), `uptime`
+(read-only service health board — HTTP-pings configured targets, no new container), and `models`
+(read-only Ollama inventory + GPU telemetry via an nvidia exporter).
 
 ## Stack & layout
 
@@ -38,6 +39,7 @@ plugins/weather        WeatherPlugin classlib  (id "weather", read-only Open-Met
 plugins/rss            RssPlugin classlib      (id "rss", read-only RSS/Atom aggregator)
 plugins/goodreads      GoodreadsPlugin classlib (id "goodreads", read-only shelf via Goodreads RSS)
 plugins/uptime         UptimePlugin classlib   (id "uptime", read-only HTTP health board)
+plugins/models         ModelsPlugin classlib   (id "models", read-only Ollama inventory + GPU telemetry)
 tests/CoreApi.Tests    xUnit + Mvc.Testing integration/unit tests
 harness/keycloak       Pcc realm import (roles Admin/User, client pcc_api, testuser/Test123!)
 harness/radicale       Radicale CalDAV config + dev login (pcc/pcc-dev-caldav); internal-only
@@ -200,6 +202,14 @@ pnpm dlx @tanstack/intent@latest load <package>#<skill> # then follow the return
   (timeout-bounded), `Up` = status `< 400`; a **down target is data (200)**, only an empty target set
   → 502. The dogfood targets are PCC's own services (core-api `/health`, keycloak). Docker-socket
   container health is a deferred follow-up.
+- **Models reads two upstreams with asymmetric degradation** (`Plugins:Models:{Ollama:{BaseUrl},
+  Gpu:{ExporterUrl}}`). Ollama is primary: `/api/tags`+`/api/ps`+`/api/version` parsed (snake_case
+  `JsonNamingPolicy`); unreachable → **502**. The GPU exporter is secondary: `ModelsClient` parses the
+  nvidia exporter's **Prometheus text** (`nvidia_smi_gpu_info{name}`, `..._utilization_gpu_ratio`,
+  `..._temperature_gpu`, `..._memory_{used,total}_bytes`) — exporter down/unconfigured → `gpus: []`
+  with models intact (**never** 502). The `gpu-exporter` (`utkuozdemir/nvidia_gpu_exporter`, no
+  `:latest` tag — pin a version) is plugin-specific telemetry, runs with the `nvidia` runtime + the
+  WSL2 `/usr/lib/wsl` mount, internal-only, and is also scraped by Prometheus for Grafana.
 - **External-link components must `safeHref`** (`apps/web/src/lib/safe-href.ts`): any tile/list
   rendering a third-party URL (`rss`, `search`, `goodreads` covers + links) routes the href through
   `safeHref` (http/https only, else `#`) + `rel="noreferrer noopener"` to block `javascript:`/`data:` XSS.

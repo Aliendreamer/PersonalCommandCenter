@@ -48,6 +48,10 @@
   <Folder Name="/plugins/uptime/uptime.api/">
     <Project Path="plugins/uptime/uptime.api/UptimePlugin.csproj" />
   </Folder>
+  <Folder Name="/plugins/models/" />
+  <Folder Name="/plugins/models/models.api/">
+    <Project Path="plugins/models/models.api/ModelsPlugin.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/CoreApi.Tests/CoreApi.Tests.csproj" />
   </Folder>

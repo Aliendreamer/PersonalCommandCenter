@@ -172,4 +172,15 @@ describe('createApiClient', () => {
     const client = createApiClient('http://api', jsonFetch(body));
     await expect(client.getUptime()).resolves.toEqual(body);
   });
+
+  it('fetches models status', async () => {
+    const body = {
+      version: '0.30.9',
+      installed: [{ name: 'llama3:latest', sizeBytes: 1 }],
+      running: [],
+      gpus: [],
+    };
+    const client = createApiClient('http://api', jsonFetch(body));
+    await expect(client.getModels()).resolves.toEqual(body);
+  });
 });

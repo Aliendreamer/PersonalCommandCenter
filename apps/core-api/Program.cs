@@ -18,6 +18,7 @@ using Pcc.Plugins;
 using Pcc.Plugins.Calendar;
 using Pcc.Plugins.Goodreads;
 using Pcc.Plugins.Iot;
+using Pcc.Plugins.Models;
 using Pcc.Plugins.Notifications;
 using Pcc.Plugins.Rss;
 using Pcc.Plugins.Search;
@@ -100,6 +101,7 @@ Assembly[] pluginAssemblies =
     typeof(RssPlugin).Assembly,
     typeof(GoodreadsPlugin).Assembly,
     typeof(UptimePlugin).Assembly,
+    typeof(ModelsPlugin).Assembly,
 ];
 
 using var bootstrapLoggerFactory = LoggerFactory.Create(logging => logging.AddConsole());

@@ -11,6 +11,7 @@ import {
   getRss,
   getWeather,
   getUptime,
+  getModels,
 } from '../../lib/server/api'
 import { settle } from '../../lib/server/api-loaders'
 import { PluginShell } from '../../components/plugin-shell'
@@ -24,6 +25,7 @@ import { WeatherTodayTile } from '../../components/weather-today-tile'
 import { RssLatestTile } from '../../components/rss-latest-tile'
 import { GoodreadsReadingTile } from '../../components/goodreads-reading-tile'
 import { UptimeStatusTile } from '../../components/uptime-status-tile'
+import { ModelsStatusTile } from '../../components/models-status-tile'
 
 export const Route = createFileRoute('/_authenticated/')({
   // SSR-with-data: the dashboard renders fully populated. Each source is settled independently so
@@ -40,6 +42,7 @@ export const Route = createFileRoute('/_authenticated/')({
       rss,
       goodreads,
       uptime,
+      models,
     ] = await Promise.all([
       settle(getPlugins()),
       settle(getSystemStatus()),
@@ -51,6 +54,7 @@ export const Route = createFileRoute('/_authenticated/')({
       settle(getRss()),
       settle(getGoodreads()),
       settle(getUptime()),
+      settle(getModels()),
     ])
     return {
       plugins,
@@ -63,6 +67,7 @@ export const Route = createFileRoute('/_authenticated/')({
       rss,
       goodreads,
       uptime,
+      models,
     }
   },
   component: Home,
@@ -80,6 +85,7 @@ function Home() {
     rss,
     goodreads,
     uptime,
+    models,
   } = Route.useLoaderData()
   const navigate = useNavigate()
   return (
@@ -134,6 +140,9 @@ function Home() {
         }
         if (manifest.widgets.includes('uptime-status')) {
           return <UptimeStatusTile checks={uptime.data} error={uptime.error} />
+        }
+        if (manifest.widgets.includes('models-status')) {
+          return <ModelsStatusTile status={models.data} error={models.error} />
         }
         return null
       }}

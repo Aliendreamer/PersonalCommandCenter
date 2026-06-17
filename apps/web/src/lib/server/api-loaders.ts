@@ -8,6 +8,7 @@ import type {
   PluginManifest,
   RssItem,
   SearchResult,
+  ModelsStatus,
   SystemStatus,
   UptimeCheck,
   Weather,
@@ -121,6 +122,9 @@ export const loadGoodreads = (fetchImpl: FetchLike): Promise<Book[]> =>
 
 export const loadUptime = (fetchImpl: FetchLike): Promise<UptimeCheck[]> =>
   loadProtected<UptimeCheck[]>(fetchImpl, '/api/uptime')
+
+export const loadModels = (fetchImpl: FetchLike): Promise<ModelsStatus> =>
+  loadProtected<ModelsStatus>(fetchImpl, '/api/models')
 
 /**
  * Sends a protected mutation server-to-server. 401 → login redirect (revoked session); 404 → null

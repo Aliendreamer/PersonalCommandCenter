@@ -113,6 +113,35 @@ export interface RssItem {
 }
 
 /** Mirrors the backend `UptimeCheck` from `GET /api/uptime`. */
+/** Mirrors the backend `ModelsStatus` from `GET /api/models`. */
+export interface InstalledModel {
+  name: string;
+  sizeBytes: number;
+  family?: string | null;
+  parameterSize?: string | null;
+  quantization?: string | null;
+}
+
+export interface RunningModel {
+  name: string;
+  sizeVramBytes: number;
+}
+
+export interface GpuStat {
+  name: string;
+  utilizationPct: number;
+  temperatureC: number;
+  memoryUsedMb: number;
+  memoryTotalMb: number;
+}
+
+export interface ModelsStatus {
+  version: string;
+  installed: InstalledModel[];
+  running: RunningModel[];
+  gpus: GpuStat[];
+}
+
 export interface UptimeCheck {
   name: string;
   url: string;

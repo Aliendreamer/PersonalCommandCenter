@@ -8,6 +8,7 @@ import type {
   RssItem,
   SearchResult,
   Weather,
+  ModelsStatus,
   SystemStatus,
   UptimeCheck,
   TodoInput,
@@ -36,6 +37,7 @@ export interface ApiClient {
   getRss(): Promise<RssItem[]>;
   getGoodreads(): Promise<Book[]>;
   getUptime(): Promise<UptimeCheck[]>;
+  getModels(): Promise<ModelsStatus>;
 }
 
 /**
@@ -94,5 +96,6 @@ export function createApiClient(baseUrl: string, fetchImpl: FetchLike = fetch): 
     getRss: () => getJson<RssItem[]>('/api/rss'),
     getGoodreads: () => getJson<Book[]>('/api/goodreads'),
     getUptime: () => getJson<UptimeCheck[]>('/api/uptime'),
+    getModels: () => getJson<ModelsStatus>('/api/models'),
   };
 }

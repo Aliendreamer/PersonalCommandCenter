@@ -16,6 +16,7 @@ COPY plugins/weather/weather.api/WeatherPlugin.csproj plugins/weather/weather.ap
 COPY plugins/rss/rss.api/RssPlugin.csproj plugins/rss/rss.api/
 COPY plugins/goodreads/goodreads.api/GoodreadsPlugin.csproj plugins/goodreads/goodreads.api/
 COPY plugins/uptime/uptime.api/UptimePlugin.csproj plugins/uptime/uptime.api/
+COPY plugins/models/models.api/ModelsPlugin.csproj plugins/models/models.api/
 RUN dotnet restore apps/core-api/CoreApi.csproj
 
 # Copy sources and publish.
@@ -31,6 +32,7 @@ COPY plugins/weather/weather.api/ plugins/weather/weather.api/
 COPY plugins/rss/rss.api/ plugins/rss/rss.api/
 COPY plugins/goodreads/goodreads.api/ plugins/goodreads/goodreads.api/
 COPY plugins/uptime/uptime.api/ plugins/uptime/uptime.api/
+COPY plugins/models/models.api/ plugins/models/models.api/
 RUN dotnet publish apps/core-api/CoreApi.csproj -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
