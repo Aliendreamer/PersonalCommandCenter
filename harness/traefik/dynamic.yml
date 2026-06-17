@@ -1,6 +1,6 @@
 # All routing is defined here (file provider) rather than via docker labels — Traefik's docker
 # provider can't negotiate with this Docker daemon (min API 1.40). Services are addressed by
-# their compose-internal DNS names; the standalone Portainer via the host gateway.
+# their compose-internal DNS names (Portainer is now folded into compose, no host gateway).
 http:
   routers:
     # NOTE: no api.pcc.localhost route — core-api is internal only (SSR-BFF). The web SSR server
@@ -29,6 +29,18 @@ http:
       rule: 'Host(`portainer.pcc.localhost`)'
       entryPoints: ['web']
       service: portainer
+    ollama:
+      rule: 'Host(`ollama.pcc.localhost`)'
+      entryPoints: ['web']
+      service: ollama
+    qdrant:
+      rule: 'Host(`qdrant.pcc.localhost`)'
+      entryPoints: ['web']
+      service: qdrant
+    wakapi:
+      rule: 'Host(`wakapi.pcc.localhost`)'
+      entryPoints: ['web']
+      service: wakapi
   services:
     app:
       loadBalancer:
@@ -52,9 +64,17 @@ http:
           - url: 'http://searxng:8080'
     portainer:
       loadBalancer:
-        serversTransport: insecure
         servers:
-          - url: 'https://host.docker.internal:9443'
-  serversTransports:
-    insecure:
-      insecureSkipVerify: true
+          - url: 'http://portainer:9000'
+    ollama:
+      loadBalancer:
+        servers:
+          - url: 'http://ollama:11434'
+    qdrant:
+      loadBalancer:
+        servers:
+          - url: 'http://qdrant:6333'
+    wakapi:
+      loadBalancer:
+        servers:
+          - url: 'http://wakapi:3000'

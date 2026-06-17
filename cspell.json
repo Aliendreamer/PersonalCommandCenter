@@ -58,7 +58,15 @@
     "unrs",
     "webp",
     "Dockerfiles",
-    "linguist"
+    "linguist",
+    "ollama",
+    "qdrant",
+    "wakapi",
+    "portainer",
+    "searxng",
+    "appendonly",
+    "WAKAPI",
+    "muety"
   ],
   "ignorePaths": [
     "node_modules/**",

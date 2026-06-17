@@ -154,6 +154,53 @@ services:
     volumes:
       - ntfy-data:/var/lib/ntfy
 
+  # --- Base-infra shared stack (leading compose; router-only, no host ports except Redis-TCP) ---
+  ollama:
+    image: ollama/ollama:latest
+    # GPU-accelerated local LLM. Reached via ollama.pcc.localhost (Traefik); no host port.
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    volumes:
+      - ollama-data:/root/.ollama
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    # Vector DB. REST via qdrant.pcc.localhost (Traefik); gRPC 6334 in-compose only; no host port.
+    volumes:
+      - qdrant-data:/qdrant/storage
+
+  redis:
+    image: redis:7-alpine
+    command: ['redis-server', '--appendonly', 'yes']
+    # The ONE host-port exception — Redis is TCP and can't ride the HTTP router. localhost:6379.
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis-data:/data
+
+  portainer:
+    image: portainer/portainer-ce:lts
+    # Folded in (standalone retired). UI via portainer.pcc.localhost (Traefik); no host port.
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer-data:/data
+
+  wakapi:
+    image: ghcr.io/muety/wakapi:latest
+    # WakaTime-compatible coding-activity tracker. Reached via wakapi.pcc.localhost; no host port.
+    # VS Code WakaTime points api_url at http://wakapi.pcc.localhost/api.
+    environment:
+      WAKAPI_PASSWORD_SALT: '${WAKAPI_PASSWORD_SALT:-pcc-dev-salt}'
+      WAKAPI_LISTEN_IPV4: '0.0.0.0'
+      WAKAPI_BASE_URL: 'http://wakapi.pcc.localhost'
+    volumes:
+      - wakapi-data:/data
+
   web:
     build:
       context: .
@@ -176,3 +223,8 @@ volumes:
   pcc-dataprotection:
   radicale-data:
   ntfy-data:
+  ollama-data:
+  qdrant-data:
+  redis-data:
+  portainer-data:
+  wakapi-data:

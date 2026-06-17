@@ -44,7 +44,7 @@ harness/radicale       Radicale CalDAV config + dev login (pcc/pcc-dev-caldav); 
 harness/searxng        SearXNG settings (JSON format on, limiter off, dev secret); internal-only
 harness/traefik        Traefik file-provider routes (*.pcc.localhost)
 openspec/              Spec-driven change workflow (proposals → specs → tasks → archive)
-docker-compose.yml     Traefik + core-api + web + home-assistant + keycloak + postgres + radicale + ntfy + searxng
+docker-compose.yml     Traefik + core-api + web + home-assistant + keycloak + postgres + radicale + ntfy + searxng + base-infra (ollama/qdrant/redis/portainer/wakapi)
 ```
 
 ## Commands
@@ -210,6 +210,15 @@ pnpm dlx @tanstack/intent@latest load <package>#<skill> # then follow the return
   is same-origin to `app.`), but `Web__Origins` stays locked to the app origin — never `*`.
 - **Traefik uses the file provider** (`harness/traefik/dynamic.yml`), not docker labels — its
   docker provider can't negotiate with this daemon (min API 1.40). Add new routes there.
+- **PCC compose is the leading/canonical infra hub** — it self-hosts a **shared base-infra stack**
+  (`ollama` with GPU, `qdrant`, `redis`, `portainer`, `wakapi`) the user's *other* projects share
+  (no duplicate instances). **Access is router-only** (`ollama./qdrant./wakapi./portainer.pcc.localhost`)
+  — **no per-service host ports**, the one exception being **Redis** (TCP → `localhost:6379`). These
+  base services are **not** behind the app's Keycloak login (raw infra; dev-defaults, no auth). Ollama
+  gets the GPU via `deploy.resources.reservations.devices` (NVIDIA `nvidia` runtime; drop it to fall
+  back to CPU). Wakapi = WakaTime-compatible coding-activity tracker (VS Code → `api_url
+  http://wakapi.pcc.localhost/api`). Endpoint reference lives in `DOCKER_SETUP.md`. See
+  `openspec/changes/archive/*-base-infra/`.
 - **JwtBearer `RequireHttpsMetadata`** is derived from the Authority scheme; the local harness is
   HTTP (`http://keycloak.pcc.localhost`), so it's off — don't hardcode it true.
 - **EF migrations apply on startup** outside Development (`Database.MigrateAsync` in `Program.cs`);
