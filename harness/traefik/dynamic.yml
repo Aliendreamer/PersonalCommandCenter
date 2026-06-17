@@ -45,6 +45,18 @@ http:
       rule: 'Host(`pgadmin.pcc.localhost`)'
       entryPoints: ['web']
       service: pgadmin
+    grafana:
+      rule: 'Host(`grafana.pcc.localhost`)'
+      entryPoints: ['web']
+      service: grafana
+    prometheus:
+      rule: 'Host(`prometheus.pcc.localhost`)'
+      entryPoints: ['web']
+      service: prometheus
+    tempo:
+      rule: 'Host(`tempo.pcc.localhost`)'
+      entryPoints: ['web']
+      service: tempo
   services:
     app:
       loadBalancer:
@@ -86,3 +98,15 @@ http:
       loadBalancer:
         servers:
           - url: 'http://pgadmin:80'
+    grafana:
+      loadBalancer:
+        servers:
+          - url: 'http://grafana:3000'
+    prometheus:
+      loadBalancer:
+        servers:
+          - url: 'http://prometheus:9090'
+    tempo:
+      loadBalancer:
+        servers:
+          - url: 'http://tempo:3200'

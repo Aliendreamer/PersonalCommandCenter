@@ -215,6 +215,69 @@ services:
     depends_on:
       - postgres
 
+  # --- Observability: OTLP collector -> Tempo (traces) + Prometheus (metrics) -> Grafana ---
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: ['--config=/etc/otelcol-contrib/config.yaml']
+    # OTLP in on host 4317 (gRPC) / 4318 (HTTP) so PCC AND other projects can send telemetry here.
+    ports:
+      - '4317:4317'
+      - '4318:4318'
+    volumes:
+      - ./harness/otel/config.yaml:/etc/otelcol-contrib/config.yaml:ro
+    depends_on:
+      - tempo
+
+  tempo:
+    image: grafana/tempo:latest
+    command: ['-config.file=/etc/tempo.yaml']
+    # Trace store. Reached via tempo.pcc.localhost (Traefik); no host port.
+    volumes:
+      - ./harness/tempo/tempo.yaml:/etc/tempo.yaml:ro
+      - tempo-data:/var/tempo
+
+  prometheus:
+    image: prom/prometheus:latest
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    # Metrics store. Reached via prometheus.pcc.localhost (Traefik); no host port.
+    volumes:
+      - ./harness/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+
+  grafana:
+    image: grafana/grafana:latest
+    # Dashboards. Reached via grafana.pcc.localhost (Traefik); no host port.
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: '${GRAFANA_ADMIN_PASSWORD:-pcc-grafana-dev}'
+      GF_USERS_ALLOW_SIGN_UP: 'false'
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./harness/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+      - tempo
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    # Per-container metrics, scraped by Prometheus (internal).
+    privileged: true
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    # Host metrics, scraped by Prometheus (internal). Plain ro bind — WSL2 rejects rslave on /.
+    command:
+      - '--path.rootfs=/host'
+    volumes:
+      - /:/host:ro
+
   web:
     build:
       context: .
@@ -243,3 +306,6 @@ volumes:
   portainer-data:
   wakapi-data:
   pgadmin-data:
+  tempo-data:
+  prometheus-data:
+  grafana-data:
