@@ -201,6 +201,20 @@ services:
     volumes:
       - wakapi-data:/data
 
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    # Postgres admin console. Reached via pgadmin.pcc.localhost (Traefik); no host port.
+    # Pre-wired to the PCC Postgres via servers.json (the user supplies the DB password on connect).
+    environment:
+      PGADMIN_DEFAULT_EMAIL: '${PGADMIN_EMAIL:-admin@pcc.dev}'
+      PGADMIN_DEFAULT_PASSWORD: '${PGADMIN_PASSWORD:-admin}'
+      PGADMIN_DISABLE_POSTFIX: 'True'
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+      - ./harness/pgadmin/servers.json:/pgadmin4/servers.json:ro
+    depends_on:
+      - postgres
+
   web:
     build:
       context: .
@@ -228,3 +242,4 @@ volumes:
   redis-data:
   portainer-data:
   wakapi-data:
+  pgadmin-data:

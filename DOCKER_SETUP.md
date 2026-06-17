@@ -31,6 +31,7 @@ Traefik (the `proxy` service) is the **only** published HTTP port (`:80`). It ro
 | `ollama.pcc.localhost`    | Ollama (GPU)   | `ollama:11434`        |
 | `qdrant.pcc.localhost`    | Qdrant (REST)  | `qdrant:6333`         |
 | `portainer.pcc.localhost` | Portainer      | `portainer:9000`      |
+| `pgadmin.pcc.localhost`   | pgAdmin        | `pgadmin:80`          |
 | `wakapi.pcc.localhost`    | Wakapi         | `wakapi:3000`         |
 | `searxng.pcc.localhost`   | SearXNG        | `searxng:8080`        |
 | `ntfy.pcc.localhost`      | ntfy           | `ntfy:80`             |

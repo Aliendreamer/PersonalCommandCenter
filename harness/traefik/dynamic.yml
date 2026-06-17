@@ -41,6 +41,10 @@ http:
       rule: 'Host(`wakapi.pcc.localhost`)'
       entryPoints: ['web']
       service: wakapi
+    pgadmin:
+      rule: 'Host(`pgadmin.pcc.localhost`)'
+      entryPoints: ['web']
+      service: pgadmin
   services:
     app:
       loadBalancer:
@@ -78,3 +82,7 @@ http:
       loadBalancer:
         servers:
           - url: 'http://wakapi:3000'
+    pgadmin:
+      loadBalancer:
+        servers:
+          - url: 'http://pgadmin:80'
