@@ -26,14 +26,14 @@ export function TaskList({
 }: TaskListProps) {
   if (error) {
     return (
-      <p role="status" className="text-sm text-amber-700">
+      <p role="status" className="text-sm text-warning">
         Tasks unavailable
       </p>
     )
   }
 
   if (tasks.length === 0) {
-    return <p className="text-sm text-gray-500">No tasks</p>
+    return <p className="text-sm text-muted-foreground">No tasks</p>
   }
 
   return (
@@ -54,14 +54,14 @@ export function TaskList({
             <span
               className={
                 task.completed
-                  ? 'truncate text-gray-400 line-through'
+                  ? 'truncate text-muted-foreground line-through'
                   : 'truncate'
               }
             >
               {task.title}
             </span>
             {task.due && (
-              <span className="shrink-0 text-gray-500">
+              <span className="shrink-0 text-muted-foreground">
                 {dueLabel(task.due)}
               </span>
             )}
@@ -81,7 +81,7 @@ export function TaskList({
                 <button
                   type="button"
                   onClick={() => onDelete(task)}
-                  className="text-red-700 underline"
+                  className="text-danger underline"
                 >
                   Delete
                 </button>

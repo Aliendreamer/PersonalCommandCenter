@@ -9,7 +9,7 @@ export interface IotDeviceListProps {
 export function IotDeviceList({ entities, error }: IotDeviceListProps) {
   if (error) {
     return (
-      <p role="status" className="text-sm text-amber-700">
+      <p role="status" className="text-sm text-warning">
         Devices unavailable
       </p>
     )
@@ -34,7 +34,7 @@ export function IotDeviceList({ entities, error }: IotDeviceListProps) {
                 className="flex justify-between px-3 py-2 text-sm"
               >
                 <span>{entity.name}</span>
-                <span className="text-gray-600">
+                <span className="text-muted-foreground">
                   {entity.state}
                   {entity.unit ? ` ${entity.unit}` : ''}
                 </span>

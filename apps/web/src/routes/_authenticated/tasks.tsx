@@ -60,7 +60,7 @@ function TasksPage() {
           <button
             type="button"
             onClick={() => setCreating(true)}
-            className="rounded bg-gray-900 px-3 py-1 text-sm text-white"
+            className="rounded bg-foreground px-3 py-1 text-sm text-background"
           >
             Add task
           </button>

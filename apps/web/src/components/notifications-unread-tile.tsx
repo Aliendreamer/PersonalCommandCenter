@@ -11,14 +11,14 @@ export function NotificationsUnreadTile({
 }: NotificationsUnreadTileProps) {
   if (error || unread === undefined) {
     return (
-      <p role="status" className="text-sm text-amber-700">
+      <p role="status" className="text-sm text-warning">
         Notifications unavailable
       </p>
     )
   }
 
   if (unread === 0) {
-    return <p className="text-sm text-gray-500">All caught up</p>
+    return <p className="text-sm text-muted-foreground">All caught up</p>
   }
 
   return <p className="text-sm">{unread} unread</p>

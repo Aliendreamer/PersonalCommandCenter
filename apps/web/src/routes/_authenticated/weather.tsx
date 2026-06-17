@@ -16,14 +16,14 @@ function WeatherPage() {
     <div className="p-6">
       <h1 className="mb-4 text-2xl font-semibold">Weather</h1>
       {result.error || !weather ? (
-        <p role="status" className="text-sm text-amber-700">
+        <p role="status" className="text-sm text-warning">
           Weather unavailable
         </p>
       ) : (
         <>
           <p className="mb-6 text-3xl font-semibold">
             {Math.round(weather.current.temperatureC)}°C{' '}
-            <span className="text-base font-normal text-gray-500">
+            <span className="text-base font-normal text-muted-foreground">
               {weather.current.condition}
             </span>
           </p>
@@ -38,7 +38,7 @@ function WeatherPage() {
                     weekday: 'short',
                   })}
                 </span>
-                <span className="text-gray-500">{day.condition}</span>
+                <span className="text-muted-foreground">{day.condition}</span>
                 <span>
                   {Math.round(day.highC)}° / {Math.round(day.lowC)}°
                 </span>

@@ -1,5 +1,64 @@
 @import 'tailwindcss';
 
+/* Class-based dark mode (toggled on <html>), not the prefers-color-scheme media query. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Semantic design tokens — light values. The dark overrides are in `.dark` below. */
+:root {
+  --background: #ffffff;
+  --foreground: #0f172a; /* slate-900 */
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --muted: #f1f5f9; /* slate-100 */
+  --muted-foreground: #64748b; /* slate-500 */
+  --border: #e2e8f0; /* slate-200 */
+  --accent: #0369a1; /* sky-700 — links / interactive */
+  --accent-foreground: #ffffff;
+  --warning: #b45309; /* amber-700 */
+  --danger: #b91c1c; /* red-700 */
+  --success: #15803d; /* green-700 */
+}
+
+.dark {
+  --background: #0b1220; /* near slate-950 */
+  --foreground: #e2e8f0; /* slate-200 */
+  --card: #111a2e; /* slate-900-ish */
+  --card-foreground: #e2e8f0;
+  --muted: #1e293b; /* slate-800 */
+  --muted-foreground: #94a3b8; /* slate-400 */
+  --border: #1e293b; /* slate-800 */
+  --accent: #38bdf8; /* sky-400 */
+  --accent-foreground: #082f49;
+  --warning: #fbbf24; /* amber-400 */
+  --danger: #f87171; /* red-400 */
+  --success: #4ade80; /* green-400 */
+}
+
+/* Expose the tokens to Tailwind so utilities resolve from the CSS variables (and flip with .dark). */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+}
+
+/* Default every border/divide to the themed border token (so bare `border` themes itself). */
+@layer base {
+  *,
+  ::after,
+  ::before {
+    border-color: var(--border);
+  }
+}
+
 * {
   box-sizing: border-box;
 }
@@ -12,4 +71,6 @@ body,
 
 body {
   margin: 0;
+  background: var(--background);
+  color: var(--foreground);
 }

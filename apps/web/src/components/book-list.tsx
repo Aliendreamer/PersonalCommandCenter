@@ -10,14 +10,14 @@ export interface BookListProps {
 export function BookList({ books, error }: BookListProps) {
   if (error) {
     return (
-      <p role="status" className="text-sm text-amber-700">
+      <p role="status" className="text-sm text-warning">
         Reading list unavailable
       </p>
     )
   }
 
   if (books.length === 0) {
-    return <p className="text-sm text-gray-500">No books</p>
+    return <p className="text-sm text-muted-foreground">No books</p>
   }
 
   return (
@@ -36,12 +36,12 @@ export function BookList({ books, error }: BookListProps) {
               href={safeHref(book.link)}
               target="_blank"
               rel="noreferrer noopener"
-              className="font-medium text-sky-700 underline"
+              className="font-medium text-accent underline"
             >
               {book.title}
             </a>
             {book.author ? (
-              <p className="text-xs text-gray-400">{book.author}</p>
+              <p className="text-xs text-muted-foreground">{book.author}</p>
             ) : null}
           </div>
         </li>

@@ -10,7 +10,7 @@ export interface SystemTileProps {
 export function SystemTile({ status, error }: SystemTileProps) {
   if (error || !status) {
     return (
-      <p role="status" className="text-sm text-amber-700">
+      <p role="status" className="text-sm text-warning">
         Status unavailable
       </p>
     )

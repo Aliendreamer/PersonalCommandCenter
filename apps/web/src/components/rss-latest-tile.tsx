@@ -9,21 +9,21 @@ export interface RssLatestTileProps {
 export function RssLatestTile({ items, error }: RssLatestTileProps) {
   if (error || !items) {
     return (
-      <p role="status" className="text-sm text-amber-700">
+      <p role="status" className="text-sm text-warning">
         Feeds unavailable
       </p>
     )
   }
 
   if (items.length === 0) {
-    return <p className="text-sm text-gray-500">No items</p>
+    return <p className="text-sm text-muted-foreground">No items</p>
   }
 
   const latest = items[0]
   return (
     <div className="text-sm">
       <p className="truncate font-medium">{latest.title}</p>
-      <p className="text-xs text-gray-400">
+      <p className="text-xs text-muted-foreground">
         {latest.source} · {items.length} items
       </p>
     </div>

@@ -9,14 +9,14 @@ export interface UptimeListProps {
 export function UptimeList({ checks, error }: UptimeListProps) {
   if (error) {
     return (
-      <p role="status" className="text-sm text-amber-700">
+      <p role="status" className="text-sm text-warning">
         Uptime unavailable
       </p>
     )
   }
 
   if (checks.length === 0) {
-    return <p className="text-sm text-gray-500">No targets</p>
+    return <p className="text-sm text-muted-foreground">No targets</p>
   }
 
   return (
@@ -28,15 +28,19 @@ export function UptimeList({ checks, error }: UptimeListProps) {
         >
           <div className="min-w-0">
             <p className="truncate font-medium">{check.name}</p>
-            <p className="truncate text-xs text-gray-400">{check.url}</p>
+            <p className="truncate text-xs text-muted-foreground">
+              {check.url}
+            </p>
           </div>
           <div className="flex flex-none items-center gap-2">
-            <span className="text-xs text-gray-400">{check.latencyMs} ms</span>
+            <span className="text-xs text-muted-foreground">
+              {check.latencyMs} ms
+            </span>
             <span
               className={
                 check.up
-                  ? 'rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700'
-                  : 'rounded bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700'
+                  ? 'rounded bg-success/10 px-2 py-0.5 text-xs font-medium text-success'
+                  : 'rounded bg-danger/10 px-2 py-0.5 text-xs font-medium text-danger'
               }
             >
               {check.up ? 'up' : 'down'}

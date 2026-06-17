@@ -10,7 +10,7 @@ export interface IotSummaryTileProps {
 export function IotSummaryTile({ entities, error }: IotSummaryTileProps) {
   if (error || !entities) {
     return (
-      <p role="status" className="text-sm text-amber-700">
+      <p role="status" className="text-sm text-warning">
         Devices unavailable
       </p>
     )

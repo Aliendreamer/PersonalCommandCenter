@@ -12,21 +12,21 @@ export function GoodreadsReadingTile({
 }: GoodreadsReadingTileProps) {
   if (error || !books) {
     return (
-      <p role="status" className="text-sm text-amber-700">
+      <p role="status" className="text-sm text-warning">
         Reading list unavailable
       </p>
     )
   }
 
   if (books.length === 0) {
-    return <p className="text-sm text-gray-500">No books</p>
+    return <p className="text-sm text-muted-foreground">No books</p>
   }
 
   const current = books[0]
   return (
     <div className="text-sm">
       <p className="truncate font-medium">{current.title}</p>
-      <p className="text-xs text-gray-400">
+      <p className="text-xs text-muted-foreground">
         {current.author ? `${current.author} · ` : ''}
         {books.length} on shelf
       </p>

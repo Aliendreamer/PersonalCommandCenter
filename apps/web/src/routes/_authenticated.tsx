@@ -2,6 +2,7 @@ import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
 
 import { getMe } from '../lib/server/api'
 import { logout } from '../lib/auth/session'
+import { ThemeToggle } from '../components/theme-toggle'
 
 /**
  * Whole-app auth gate. `beforeLoad` runs server-side on SSR (and via RPC on client navigation):
@@ -28,8 +29,9 @@ function AuthenticatedLayout() {
       <div className="fixed right-3 top-2 z-50 flex items-center gap-3 text-xs">
         <span>Hello, {me.email ?? me.subject}</span>
         {me.roles.length > 0 ? (
-          <span className="text-gray-500">{me.roles.join(', ')}</span>
+          <span className="text-muted-foreground">{me.roles.join(', ')}</span>
         ) : null}
+        <ThemeToggle />
         <button type="button" onClick={logout} className="underline">
           Logout
         </button>

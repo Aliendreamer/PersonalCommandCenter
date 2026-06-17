@@ -16,18 +16,20 @@ export function SearchResultList({
 }: SearchResultListProps) {
   if (error) {
     return (
-      <p role="status" className="text-sm text-amber-700">
+      <p role="status" className="text-sm text-warning">
         Search unavailable
       </p>
     )
   }
 
   if (idle) {
-    return <p className="text-sm text-gray-500">Enter a query to search.</p>
+    return (
+      <p className="text-sm text-muted-foreground">Enter a query to search.</p>
+    )
   }
 
   if (results.length === 0) {
-    return <p className="text-sm text-gray-500">No results</p>
+    return <p className="text-sm text-muted-foreground">No results</p>
   }
 
   return (
@@ -38,12 +40,14 @@ export function SearchResultList({
             href={safeHref(r.url)}
             target="_blank"
             rel="noreferrer noopener"
-            className="text-sky-700 underline"
+            className="text-accent underline"
           >
             {r.title}
           </a>
-          {r.content && <p className="text-sm text-gray-600">{r.content}</p>}
-          <p className="truncate text-xs text-gray-400">
+          {r.content && (
+            <p className="text-sm text-muted-foreground">{r.content}</p>
+          )}
+          <p className="truncate text-xs text-muted-foreground">
             {r.url}
             {r.engine ? ` · ${r.engine}` : ''}
           </p>

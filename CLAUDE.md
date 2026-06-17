@@ -227,3 +227,12 @@ pnpm dlx @tanstack/intent@latest load <package>#<skill> # then follow the return
   `app.pcc.localhost`. The `_authenticated` `beforeLoad` guard (server-side `getMe()`) gates every
   route; there is no client `/me` probe. The SSR server reaches core-api via the **server-side**
   `API_URL` env (`http://core-api:8080`); there is **no** `VITE_API_URL` baked into the client.
+- **Theming is semantic tokens, not `dark:` variants** (`apps/web/src/styles.css`): Tailwind v4
+  `@theme inline` maps `--color-*` utilities to CSS variables defined in `:root` (light) / `.dark`
+  (dark), so toggling the `.dark` class on `<html>` re-themes everything. Components use semantic
+  utilities (`bg-background`, `text-muted-foreground`, `text-warning/danger/success`, `text-accent`,
+  borders via a base-layer `border-color: var(--border)`) — **never** hardcoded `gray/amber/...-NNN`.
+  Theme choice lives in a non-HttpOnly `pcc_theme` cookie (`light|dark|system`, default system); a
+  blocking inline `<head>` script in `__root.tsx` applies the class **before first paint** (no flash),
+  and `<html>` carries `suppressHydrationWarning`. The `ThemeToggle` (header) writes the cookie + flips
+  the class live (`apps/web/src/lib/theme.ts` holds the pure `resolveTheme`).

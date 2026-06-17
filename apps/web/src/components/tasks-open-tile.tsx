@@ -14,7 +14,7 @@ function isOverdue(task: TodoItem): boolean {
 export function TasksOpenTile({ tasks, error }: TasksOpenTileProps) {
   if (error || !tasks) {
     return (
-      <p role="status" className="text-sm text-amber-700">
+      <p role="status" className="text-sm text-warning">
         Tasks unavailable
       </p>
     )
@@ -22,7 +22,7 @@ export function TasksOpenTile({ tasks, error }: TasksOpenTileProps) {
 
   const open = tasks.filter((task) => !task.completed)
   if (open.length === 0) {
-    return <p className="text-sm text-gray-500">All clear</p>
+    return <p className="text-sm text-muted-foreground">All clear</p>
   }
 
   const overdue = open.filter(isOverdue).length

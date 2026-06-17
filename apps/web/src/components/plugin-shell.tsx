@@ -33,7 +33,7 @@ export function PluginShell({
         {error ? (
           <div
             role="alert"
-            className="mb-4 rounded border border-amber-400 bg-amber-50 p-3"
+            className="mb-4 rounded border border-warning/40 bg-warning/10 p-3"
           >
             Some data could not be loaded: {error}
           </div>

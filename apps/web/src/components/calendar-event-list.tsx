@@ -35,14 +35,14 @@ export function CalendarEventList({
 }: CalendarEventListProps) {
   if (error) {
     return (
-      <p role="status" className="text-sm text-amber-700">
+      <p role="status" className="text-sm text-warning">
         Calendar unavailable
       </p>
     )
   }
 
   if (events.length === 0) {
-    return <p className="text-sm text-gray-500">No upcoming events</p>
+    return <p className="text-sm text-muted-foreground">No upcoming events</p>
   }
 
   const byDay = new Map<string, CalendarEvent[]>()
@@ -70,7 +70,9 @@ export function CalendarEventList({
                 className="flex items-center justify-between gap-3 px-3 py-2 text-sm"
               >
                 <span className="truncate">
-                  <span className="text-gray-500">{timeLabel(event)}</span>{' '}
+                  <span className="text-muted-foreground">
+                    {timeLabel(event)}
+                  </span>{' '}
                   {event.title}
                 </span>
                 {(onEdit || onDelete) && (
@@ -88,7 +90,7 @@ export function CalendarEventList({
                       <button
                         type="button"
                         onClick={() => onDelete(event)}
-                        className="text-red-700 underline"
+                        className="text-danger underline"
                       >
                         Delete
                       </button>

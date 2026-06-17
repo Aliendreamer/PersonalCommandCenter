@@ -17,14 +17,14 @@ function when(iso: string): string {
 export function RssItemList({ items, error }: RssItemListProps) {
   if (error) {
     return (
-      <p role="status" className="text-sm text-amber-700">
+      <p role="status" className="text-sm text-warning">
         Feeds unavailable
       </p>
     )
   }
 
   if (items.length === 0) {
-    return <p className="text-sm text-gray-500">No items</p>
+    return <p className="text-sm text-muted-foreground">No items</p>
   }
 
   return (
@@ -35,11 +35,11 @@ export function RssItemList({ items, error }: RssItemListProps) {
             href={safeHref(item.link)}
             target="_blank"
             rel="noreferrer noopener"
-            className="text-sky-700 underline"
+            className="text-accent underline"
           >
             {item.title}
           </a>
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-muted-foreground">
             {item.source}
             {when(item.published) ? ` · ${when(item.published)}` : ''}
           </p>

@@ -7,9 +7,9 @@ export interface NotificationListProps {
 }
 
 const severityClass: Record<Notification['severity'], string> = {
-  Info: 'text-sky-700',
-  Warning: 'text-amber-700',
-  Error: 'text-red-700',
+  Info: 'text-accent',
+  Warning: 'text-warning',
+  Error: 'text-danger',
 }
 
 function when(iso: string): string {
@@ -29,14 +29,14 @@ export function NotificationList({
 }: NotificationListProps) {
   if (error) {
     return (
-      <p role="status" className="text-sm text-amber-700">
+      <p role="status" className="text-sm text-warning">
         Notifications unavailable
       </p>
     )
   }
 
   if (notifications.length === 0) {
-    return <p className="text-sm text-gray-500">No notifications</p>
+    return <p className="text-sm text-muted-foreground">No notifications</p>
   }
 
   return (
@@ -55,12 +55,16 @@ export function NotificationList({
                 >
                   {n.severity}
                 </span>
-                <span className={unread ? 'font-semibold' : 'text-gray-500'}>
+                <span
+                  className={unread ? 'font-semibold' : 'text-muted-foreground'}
+                >
                   {n.title}
                 </span>
               </div>
-              {n.message && <p className="text-gray-600">{n.message}</p>}
-              <p className="text-xs text-gray-400">
+              {n.message && (
+                <p className="text-muted-foreground">{n.message}</p>
+              )}
+              <p className="text-xs text-muted-foreground">
                 {n.source} · {when(n.createdAt)}
               </p>
             </div>

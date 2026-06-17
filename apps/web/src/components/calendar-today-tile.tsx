@@ -24,7 +24,7 @@ function formatTime(event: CalendarEvent): string {
 export function CalendarTodayTile({ events, error }: CalendarTodayTileProps) {
   if (error || !events) {
     return (
-      <p role="status" className="text-sm text-amber-700">
+      <p role="status" className="text-sm text-warning">
         Calendar unavailable
       </p>
     )
@@ -32,7 +32,7 @@ export function CalendarTodayTile({ events, error }: CalendarTodayTileProps) {
 
   const today = events.filter((event) => isToday(event.start))
   if (today.length === 0) {
-    return <p className="text-sm text-gray-500">Nothing today</p>
+    return <p className="text-sm text-muted-foreground">Nothing today</p>
   }
 
   return (
@@ -40,7 +40,9 @@ export function CalendarTodayTile({ events, error }: CalendarTodayTileProps) {
       {today.map((event) => (
         <li key={event.uid} className="flex justify-between gap-2">
           <span className="truncate">{event.title}</span>
-          <span className="shrink-0 text-gray-500">{formatTime(event)}</span>
+          <span className="shrink-0 text-muted-foreground">
+            {formatTime(event)}
+          </span>
         </li>
       ))}
     </ul>

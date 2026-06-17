@@ -38,10 +38,16 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   shellComponent: RootDocument,
 })
 
+// Resolves `pcc_theme` (cookie) or the OS preference and sets the `dark` class before paint.
+const THEME_INIT_SCRIPT = `(function(){try{var m=document.cookie.match(/(?:^|; )pcc_theme=([^;]+)/);var p=m?m[1]:'system';var d=p==='dark'||(p!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);var e=document.documentElement;e.classList.toggle('dark',d);e.dataset.theme=d?'dark':'light';}catch(e){}})();`
+
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Blocking pre-paint theme init — applies .dark from the cookie (or OS pref) before
+            the body renders, so there is no flash of the wrong theme. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <HeadContent />
       </head>
       <body>

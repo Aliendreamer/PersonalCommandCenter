@@ -55,7 +55,7 @@ function CalendarPage() {
           <button
             type="button"
             onClick={() => setEditor({ mode: 'create' })}
-            className="rounded bg-gray-900 px-3 py-1 text-sm text-white"
+            className="rounded bg-foreground px-3 py-1 text-sm text-background"
           >
             New event
           </button>
