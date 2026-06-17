@@ -72,14 +72,18 @@ CPU. Pull a model once: `docker compose exec ollama ollama pull <model>`.
 
 ### Wakapi (send heartbeats from VS Code)
 
-1. Open `http://wakapi.pcc.localhost`, create an account, copy your **API key**.
+1. Open `http://wakapi.pcc.localhost` (browser), create an account, copy your **API key**.
 2. In the VS Code WakaTime extension (or `~/.wakatime.cfg`):
 
    ```ini
    [settings]
-   api_url = http://wakapi.pcc.localhost/api
+   api_url = http://localhost:3030/api
    api_key = <your-wakapi-api-key>
    ```
+
+   Use **`localhost:3030`**, not the `*.pcc.localhost` route: the WakaTime CLI (Go) doesn't resolve
+   `*.pcc.localhost` in WSL, so Wakapi is also published on host port `3030` for the agent. The browser
+   UI still works at `wakapi.pcc.localhost`.
 
 3. Code for a bit; heartbeats appear on the Wakapi dashboard.
 

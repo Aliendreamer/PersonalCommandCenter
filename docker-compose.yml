@@ -196,8 +196,11 @@ services:
 
   wakapi:
     image: ghcr.io/muety/wakapi:latest
-    # WakaTime-compatible coding-activity tracker. Reached via wakapi.pcc.localhost; no host port.
-    # VS Code WakaTime points api_url at http://wakapi.pcc.localhost/api.
+    # WakaTime-compatible coding-activity tracker. Reached via wakapi.pcc.localhost AND on host
+    # localhost:3030 — the WakaTime CLI (Go, in WSL) needs a plain localhost host:port because it
+    # doesn't resolve *.pcc.localhost. Editor api_url -> http://localhost:3030/api.
+    ports:
+      - '3030:3000'
     environment:
       WAKAPI_PASSWORD_SALT: '${WAKAPI_PASSWORD_SALT:-pcc-dev-salt}'
       WAKAPI_LISTEN_IPV4: '0.0.0.0'
