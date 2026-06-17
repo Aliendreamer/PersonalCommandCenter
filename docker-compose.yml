@@ -51,6 +51,7 @@ services:
       dockerfile: apps/core-api/Dockerfile
     environment:
       ASPNETCORE_HTTP_PORTS: '8080'
+      OTEL_EXPORTER_OTLP_ENDPOINT: '${OTEL_EXPORTER_OTLP_ENDPOINT:-http://otel-collector:4317}'
       Plugins__System__Enabled: 'true'
       Plugins__Iot__Enabled: 'true'
       Plugins__Iot__HomeAssistant__BaseUrl: 'http://home-assistant:8123'

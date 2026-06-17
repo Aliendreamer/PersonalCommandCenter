@@ -30,24 +30,24 @@
 
 - [x] 4.1 `harness/grafana/provisioning/datasources/*.yaml`: Prometheus + Tempo datasources (with
       trace↔metric correlation). Admin password from `${GRAFANA_ADMIN_PASSWORD:-...}` (config.conf).
-- [ ] 4.2 `harness/grafana/provisioning/dashboards/*` + starter dashboards (host/node, containers/
+- [x] 4.2 `harness/grafana/provisioning/dashboards/*` + starter dashboards (host/node, containers/
       cAdvisor, ASP.NET) pinned by JSON or community IDs.
 
 ## 5. core-api instrumentation (use the dotnet OTel skill)
 
-- [ ] 5.1 Add OpenTelemetry packages to `apps/core-api` (Extensions.Hosting, Instrumentation.AspNetCore,
+- [x] 5.1 Add OpenTelemetry packages to `apps/core-api` (Extensions.Hosting, Instrumentation.AspNetCore,
       Instrumentation.Http, Exporter.OpenTelemetryProtocol, runtime metrics). Wire tracing + metrics in
       `Program.cs`: resource `service.name=core-api`, OTLP endpoint
       `${OTEL_EXPORTER_OTLP_ENDPOINT:-http://otel-collector:4317}`; exporter failures non-fatal.
-- [ ] 5.2 (test) Integration check that the OTel services are registered and the app still starts +
+- [x] 5.2 (test) Integration check that the OTel services are registered and the app still starts +
       serves with the collector absent. Keep warnings-as-errors clean.
 
 ## 6. Verify + done gate
 
-- [ ] 6.1 .NET gates: `dotnet build` + `dotnet test` + `dotnet format --verify-no-changes`.
+- [x] 6.1 .NET gates: `dotnet build` + `dotnet test` + `dotnet format --verify-no-changes`.
 - [x] 6.2 `docker compose --env-file config.conf up -d --build` the new services + core-api; live smoke:
       `grafana./prometheus./tempo.pcc.localhost` serve; Prometheus targets (cadvisor/node-exporter/
       collector) `up`; a core-api request yields a `core-api` trace in Tempo (via Grafana); OTLP
       `localhost:4318/v1/traces` accepts a test span.
-- [ ] 6.3 Update `DOCKER_SETUP.md` (Grafana/Prometheus/Tempo routes + OTLP `4317/4318` + the
+- [x] 6.3 Update `DOCKER_SETUP.md` (Grafana/Prometheus/Tempo routes + OTLP `4317/4318` + the
       `--env-file config.conf` flow) and `CLAUDE.md`. Mark complete; ready for `/opsx:archive`.

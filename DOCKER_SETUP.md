@@ -32,6 +32,9 @@ Traefik (the `proxy` service) is the **only** published HTTP port (`:80`). It ro
 | `qdrant.pcc.localhost`    | Qdrant (REST)  | `qdrant:6333`         |
 | `portainer.pcc.localhost` | Portainer      | `portainer:9000`      |
 | `pgadmin.pcc.localhost`   | pgAdmin        | `pgadmin:80`          |
+| `grafana.pcc.localhost`   | Grafana        | `grafana:3000`        |
+| `prometheus.pcc.localhost`| Prometheus     | `prometheus:9090`     |
+| `tempo.pcc.localhost`     | Tempo (traces) | `tempo:3200`          |
 | `wakapi.pcc.localhost`    | Wakapi         | `wakapi:3000`         |
 | `searxng.pcc.localhost`   | SearXNG        | `searxng:8080`        |
 | `ntfy.pcc.localhost`      | ntfy           | `ntfy:80`             |
@@ -85,6 +88,19 @@ CPU. Pull a model once: `docker compose exec ollama ollama pull <model>`.
 - Redis: connect to `localhost:6379` (e.g. `redis://localhost:6379`).
 - Qdrant: point clients at `http://qdrant.pcc.localhost` (REST). gRPC needs a TCP route or host port
   (not configured by default).
+
+### Observability (traces + metrics)
+
+OpenTelemetry stack in the hub: apps send **OTLP** to the collector, which fans out traces → Tempo and
+metrics → Prometheus; **Grafana** (`grafana.pcc.localhost`, login `admin` / `GRAFANA_ADMIN_PASSWORD`)
+reads both (datasources pre-provisioned). cAdvisor + node-exporter give per-container + host metrics.
+
+- **Send telemetry from another project** → point its OTLP exporter at `http://localhost:4317` (gRPC)
+  or `http://localhost:4318` (HTTP). PCC's collector is the shared, canonical one.
+- **core-api** is instrumented (ASP.NET + HttpClient + runtime) and exports to `otel-collector:4317`
+  (`OTEL_EXPORTER_OTLP_ENDPOINT`); its request traces show up in Tempo via Grafana.
+- **Dashboards**: datasources are provisioned; import community boards in Grafana by ID — e.g.
+  **1860** (Node Exporter), **14282** (cAdvisor), **19924/19925** (ASP.NET Core / OTel).
 
 ## Security posture (dev box)
 

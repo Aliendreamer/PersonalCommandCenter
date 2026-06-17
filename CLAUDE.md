@@ -44,7 +44,7 @@ harness/radicale       Radicale CalDAV config + dev login (pcc/pcc-dev-caldav); 
 harness/searxng        SearXNG settings (JSON format on, limiter off, dev secret); internal-only
 harness/traefik        Traefik file-provider routes (*.pcc.localhost)
 openspec/              Spec-driven change workflow (proposals → specs → tasks → archive)
-docker-compose.yml     Traefik + core-api + web + home-assistant + keycloak + postgres + radicale + ntfy + searxng + base-infra (ollama/qdrant/redis/portainer/wakapi/pgadmin)
+docker-compose.yml     Traefik + core-api + web + home-assistant + keycloak + postgres + radicale + ntfy + searxng + base-infra (ollama/qdrant/redis/portainer/wakapi/pgadmin) + observability (otel-collector/tempo/prometheus/grafana/cadvisor/node-exporter)
 ```
 
 ## Commands
@@ -219,6 +219,15 @@ pnpm dlx @tanstack/intent@latest load <package>#<skill> # then follow the return
   back to CPU). Wakapi = WakaTime-compatible coding-activity tracker (VS Code → `api_url
   http://wakapi.pcc.localhost/api`). Endpoint reference lives in `DOCKER_SETUP.md`. See
   `openspec/changes/archive/*-base-infra/`.
+- **Observability is OpenTelemetry → Tempo/Prometheus → Grafana** (hub). Apps send **OTLP** to
+  `otel-collector` (host `4317` gRPC / `4318` HTTP — published so *other* projects can ship telemetry
+  to the one shared collector); it fans out traces → Tempo, metrics → Prometheus; `cadvisor` +
+  `node-exporter` add per-container/host metrics. Grafana (`grafana.pcc.localhost`) has Prometheus +
+  Tempo datasources provisioned (`harness/grafana/provisioning`). **core-api is instrumented**
+  (`AddOpenTelemetry()` in `Program.cs`: ASP.NET + HttpClient + runtime, OTLP via
+  `OTEL_EXPORTER_OTLP_ENDPOINT` default `http://otel-collector:4317`; `/health` filtered from traces;
+  exporter failures non-fatal). node-exporter uses a plain `ro` `/` bind (WSL2 rejects `rslave`). The
+  collector self-metrics endpoint changed schema in v0.154 — don't set `service.telemetry.metrics.address`.
 - **JwtBearer `RequireHttpsMetadata`** is derived from the Authority scheme; the local harness is
   HTTP (`http://keycloak.pcc.localhost`), so it's off — don't hardcode it true.
 - **EF migrations apply on startup** outside Development (`Database.MigrateAsync` in `Program.cs`);

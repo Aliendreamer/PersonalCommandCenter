@@ -10,6 +10,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using OpenTelemetry;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Pcc.Plugins;
 using Pcc.Plugins.Calendar;
 using Pcc.Plugins.Goodreads;
@@ -107,6 +111,21 @@ registry.ActivateEnabled(available, builder.Services, builder.Configuration, boo
 builder.Services.AddSingleton(registry);
 
 builder.Services.AddFastEndpoints(o => o.Assemblies = pluginAssemblies);
+
+// OpenTelemetry: traces + metrics (ASP.NET Core + HttpClient + .NET runtime) exported via OTLP to the
+// collector (OTEL_EXPORTER_OTLP_ENDPOINT, default http://otel-collector:4317). Exporter failures are
+// non-fatal — core-api still serves when the collector is unreachable.
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource.AddService("core-api"))
+    .WithTracing(tracing => tracing
+        .AddAspNetCoreInstrumentation(options =>
+            options.Filter = ctx => !ctx.Request.Path.StartsWithSegments("/health"))
+        .AddHttpClientInstrumentation())
+    .WithMetrics(metrics => metrics
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddRuntimeInstrumentation())
+    .UseOtlpExporter();
 
 var app = builder.Build();
 
