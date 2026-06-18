@@ -42,15 +42,10 @@ function AuthenticatedLayout() {
         <Group justify="flex-end" gap="md" align="center">
           <Group gap={6} align="center">
             <CircleUser size={18} aria-hidden />
-            {/* Show the email when known; never surface the raw subject GUID. */}
+            {/* Show the email when known; never surface the raw subject GUID or internal roles. */}
             <Text span fz="sm">
               {me.email ?? 'Account'}
             </Text>
-            {me.roles.length > 0 ? (
-              <Text span fz="xs" c="dimmed">
-                ({me.roles.join(', ')})
-              </Text>
-            ) : null}
           </Group>
           <ThemeToggle />
           <Anchor component="button" type="button" fz="sm" onClick={logout}>
