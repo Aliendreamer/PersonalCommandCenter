@@ -9,6 +9,7 @@ import type {
   RssItem,
   SearchResult,
   ModelsStatus,
+  CodingStatus,
   SystemStatus,
   UptimeCheck,
   Weather,
@@ -125,6 +126,9 @@ export const loadUptime = (fetchImpl: FetchLike): Promise<UptimeCheck[]> =>
 
 export const loadModels = (fetchImpl: FetchLike): Promise<ModelsStatus> =>
   loadProtected<ModelsStatus>(fetchImpl, '/api/models')
+
+export const loadCoding = (fetchImpl: FetchLike): Promise<CodingStatus> =>
+  loadProtected<CodingStatus>(fetchImpl, '/api/coding')
 
 /**
  * Sends a protected mutation server-to-server. 401 → login redirect (revoked session); 404 → null

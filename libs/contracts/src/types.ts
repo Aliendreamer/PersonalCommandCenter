@@ -150,6 +150,25 @@ export interface UptimeCheck {
   latencyMs: number;
 }
 
+/** Mirrors the backend `CodingStatus` from `GET /api/coding`. Raw seconds; the web layer formats. */
+export interface CodingDay {
+  date: string;
+  seconds: number;
+}
+
+export interface CodingBucket {
+  name: string;
+  seconds: number;
+}
+
+export interface CodingStatus {
+  weekSeconds: number;
+  todaySeconds: number;
+  days: CodingDay[];
+  projects: CodingBucket[];
+  languages: CodingBucket[];
+}
+
 /** Mirrors the backend `Book` from `GET /api/goodreads`. */
 export interface Book {
   title: string;

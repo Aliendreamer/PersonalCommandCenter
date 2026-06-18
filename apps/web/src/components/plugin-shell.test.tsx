@@ -32,4 +32,33 @@ describe('PluginShell', () => {
 
     expect(screen.getByRole('alert')).toBeDefined()
   })
+
+  it('reflects per-tile health on the status dot', () => {
+    render(
+      <PluginShell manifests={[systemManifest]} tileHealth={() => 'down'} />,
+    )
+
+    expect(
+      screen.getByTestId('health-system').getAttribute('data-health'),
+    ).toBe('down')
+  })
+
+  it('defaults tile health to ok when none is supplied', () => {
+    render(<PluginShell manifests={[systemManifest]} />)
+
+    expect(
+      screen.getByTestId('health-system').getAttribute('data-health'),
+    ).toBe('ok')
+  })
+
+  it('renders the hero slot above the grid', () => {
+    render(
+      <PluginShell
+        manifests={[systemManifest]}
+        hero={<div data-testid="hero-slot">hero</div>}
+      />,
+    )
+
+    expect(screen.getByTestId('hero-slot')).toBeDefined()
+  })
 })

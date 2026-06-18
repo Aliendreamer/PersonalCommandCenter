@@ -25,42 +25,50 @@
 
 ## 3. Contracts + server function
 
-- [ ] 3.1 Add `CodingStatus` (+ nested types) to `@pcc/contracts` and a typed client method
-- [ ] 3.2 Add `getCoding()` server function in `lib/server/api.ts` (server-to-server, forwards cookie)
+- [x] 3.1 Add `CodingStatus` (+ nested types) to `@pcc/contracts` and a typed client method (+ test)
+- [x] 3.2 Add `getCoding()` server function in `lib/server/api.ts` + `loadCoding` loader
 
 ## 4. Health derivation (TDD)
 
-- [ ] 4.1 Write `lib/health.test.ts`: `deriveHealth` → `down` on error, `degraded` on partial/empty-
+- [x] 4.1 Write `lib/health.test.ts`: `deriveHealth` → `down` on error, `degraded` on partial/empty-
   from-source, `ok` otherwise incl. valid zero-activity — watch it fail
-- [ ] 4.2 Implement `lib/health.ts` (`deriveHealth`, `'ok'|'degraded'|'down'`, color/dot mapping) green
-- [ ] 4.3 Add health colors to `lib/theme.ts` (green/yellow/red); sky stays primary
+- [x] 4.2 Implement `lib/health.ts` (`deriveHealth`, `healthColor`, `healthCount`) green
+- [x] 4.3 Health colors use Mantine's built-in `green`/`yellow`/`red` via `healthColor` (no `theme.ts`
+  override needed; `theme.ts` only defines the `sky` primary, which stays)
 
 ## 5. Status-board shell (TDD)
 
-- [ ] 5.1 Write `dashboard-hero.test.tsx`: renders date/time + greeting; shows `N/total` from a passed
+- [x] 5.1 Write `dashboard-hero.test.tsx`: renders date/time + greeting; shows `N/total` from a passed
   health array — watch it fail
-- [ ] 5.2 Implement `components/dashboard-hero.tsx` (presentation-only, client-side time) until green
-- [ ] 5.3 Update `plugin-shell.test`/add coverage: fixed layout, per-tile accent + status dot from a
-  health prop, lucide icon + active nav highlight — watch fail
-- [ ] 5.4 Restyle `components/plugin-shell.tsx`: hero slot, uniform card anatomy (left accent + header
-  icon/title/dot), polished nav (icon map + active highlight) until green
+- [x] 5.2 Implement `components/dashboard-hero.tsx` (presentation-only, client-side live clock) green
+- [x] 5.3 Update `plugin-shell.test`: per-tile accent + status dot from a health prop, hero slot
+  (nav active-highlight dropped — the nav renders only on the home dashboard, where no plugin route
+  is active, and `useLocation` would break the router-less component test)
+- [x] 5.4 Restyle `components/plugin-shell.tsx`: hero slot, uniform card anatomy (left accent + header
+  lucide icon/title/status-dot), nav lucide icons until green
 
 ## 6. Coding tile + page (TDD)
 
-- [ ] 6.1 Write `coding-status-tile.test.tsx`: headline week total + secondary today; degraded notice
+- [x] 6.1 Write `coding-status-tile.test.tsx`: headline week total + secondary today; degraded notice
   on error — watch fail
-- [ ] 6.2 Implement `components/coding-status-tile.tsx` (formats seconds → `18h 04m`) until green
-- [ ] 6.3 Write a route/page test for `/coding`: week total, per-day strip, projects + languages
-- [ ] 6.4 Implement `routes/_authenticated/coding.tsx` (loader uses `getCoding`, settle) until green
+- [x] 6.2 Implement `components/coding-status-tile.tsx` (+ `lib/duration.ts` `formatDuration`) green
+- [x] 6.3 Write `coding-view.test.tsx`: week total, per-day strip, projects + languages
+- [x] 6.4 Implement `components/coding-view.tsx` + `routes/_authenticated/coding.tsx` (settle) green
 
 ## 7. Wire the board together
 
-- [ ] 7.1 Update `routes/_authenticated/index.tsx`: add `getCoding` to the settled loader; compute one
-  health per tile; pass healths to the hero and dots to tiles; add the `coding-status` tile branch
+- [x] 7.1 Update `routes/_authenticated/index.tsx`: add `getCoding` to the settled loader; compute one
+  health per tile (`settledFor`+`deriveHealth`); pass healths to the hero and `tileHealth` to the
+  shell; add the `coding-status` tile branch
 
 ## 8. E2E + gates
 
-- [ ] 8.1 Add/extend an E2E asserting the board renders the hero, the coding tile, and health states
-- [ ] 8.2 Run all gates green: `dotnet build` (warnaserror) · `dotnet format --verify-no-changes` ·
-  `dotnet test`; `nx run-many -t typecheck lint test build` · `pnpm format:check` — read output
+- [x] 8.1 Add a `coding.spec.ts` E2E asserting the board renders the hero (Status summary + count),
+  the coding tile + health dot, and the `/coding` page — passed against the live rebuilt stack;
+  screenshot confirmed real Wakapi data ("4h 26m this week") + the design (icons, accents, symmetry)
+- [x] 8.2 Run all gates green: `dotnet build` (0 err) · `dotnet format` (0) · `dotnet test` (144);
+  `nx` typecheck · lint · test (114) · build · `prettier --check .` — all green, output read
 - [ ] 8.3 Tick the OpenSpec tasks, request review, then archive the change
+
+Note: the core-api **Dockerfile** is a 5th compile-time wiring place (it COPYs each plugin csproj +
+source explicitly) — added the two `coding` COPY lines so the container build includes the plugin.

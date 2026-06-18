@@ -1,7 +1,9 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import type { PluginManifest } from '@pcc/contracts'
 
 import {
   getCalendarEvents,
+  getCoding,
   getIotEntities,
   getNotifications,
   getPlugins,
@@ -14,7 +16,10 @@ import {
   getModels,
 } from '../../lib/server/api'
 import { settle } from '../../lib/server/api-loaders'
+import type { Settled } from '../../lib/server/api-loaders'
+import { deriveHealth } from '../../lib/health'
 import { PluginShell } from '../../components/plugin-shell'
+import { DashboardHero } from '../../components/dashboard-hero'
 import { SystemTile } from '../../components/system-tile'
 import { IotSummaryTile } from '../../components/iot-summary-tile'
 import { CalendarTodayTile } from '../../components/calendar-today-tile'
@@ -26,6 +31,7 @@ import { RssLatestTile } from '../../components/rss-latest-tile'
 import { GoodreadsReadingTile } from '../../components/goodreads-reading-tile'
 import { UptimeStatusTile } from '../../components/uptime-status-tile'
 import { ModelsStatusTile } from '../../components/models-status-tile'
+import { CodingStatusTile } from '../../components/coding-status-tile'
 
 export const Route = createFileRoute('/_authenticated/')({
   // SSR-with-data: the dashboard renders fully populated. Each source is settled independently so
@@ -43,6 +49,7 @@ export const Route = createFileRoute('/_authenticated/')({
       goodreads,
       uptime,
       models,
+      coding,
     ] = await Promise.all([
       settle(getPlugins()),
       settle(getSystemStatus()),
@@ -55,6 +62,7 @@ export const Route = createFileRoute('/_authenticated/')({
       settle(getGoodreads()),
       settle(getUptime()),
       settle(getModels()),
+      settle(getCoding()),
     ])
     return {
       plugins,
@@ -68,6 +76,7 @@ export const Route = createFileRoute('/_authenticated/')({
       goodreads,
       uptime,
       models,
+      coding,
     }
   },
   component: Home,
@@ -86,12 +95,39 @@ function Home() {
     goodreads,
     uptime,
     models,
+    coding,
   } = Route.useLoaderData()
   const navigate = useNavigate()
+
+  // Map each manifest to its settled load result, so the hero count and per-tile status dot are
+  // derived from a single source. The search tile has no data source — it is always healthy.
+  const okSource: Settled<true> = { data: true }
+  const settledFor = (manifest: PluginManifest): Settled<unknown> => {
+    if (manifest.widgets.includes('system-status')) return system
+    if (manifest.widgets.includes('iot-summary')) return iot
+    if (manifest.widgets.includes('calendar-today')) return calendar
+    if (manifest.widgets.includes('tasks-open')) return tasks
+    if (manifest.widgets.includes('notifications-unread')) return notifications
+    if (manifest.widgets.includes('weather-today')) return weather
+    if (manifest.widgets.includes('rss-latest')) return rss
+    if (manifest.widgets.includes('goodreads-reading')) return goodreads
+    if (manifest.widgets.includes('uptime-status')) return uptime
+    if (manifest.widgets.includes('models-status')) return models
+    if (manifest.widgets.includes('coding-status')) return coding
+    return okSource
+  }
+
+  const manifests = plugins.data ?? []
+  const tileHealth = (manifest: PluginManifest) =>
+    deriveHealth(settledFor(manifest))
+  const healths = manifests.map(tileHealth)
+
   return (
     <PluginShell
-      manifests={plugins.data ?? []}
+      manifests={manifests}
       error={plugins.error ? 'plugins unavailable' : undefined}
+      hero={<DashboardHero healths={healths} />}
+      tileHealth={tileHealth}
       renderTile={(manifest) => {
         if (manifest.widgets.includes('system-status')) {
           return <SystemTile status={system.data} error={system.error} />
@@ -143,6 +179,9 @@ function Home() {
         }
         if (manifest.widgets.includes('models-status')) {
           return <ModelsStatusTile status={models.data} error={models.error} />
+        }
+        if (manifest.widgets.includes('coding-status')) {
+          return <CodingStatusTile status={coding.data} error={coding.error} />
         }
         return null
       }}

@@ -183,4 +183,16 @@ describe('createApiClient', () => {
     const client = createApiClient('http://api', jsonFetch(body));
     await expect(client.getModels()).resolves.toEqual(body);
   });
+
+  it('fetches coding status', async () => {
+    const body = {
+      weekSeconds: 1612,
+      todaySeconds: 200,
+      days: [{ date: '2026-06-18', seconds: 200 }],
+      projects: [{ name: 'PersonalCommandCenter', seconds: 1532 }],
+      languages: [{ name: 'C#', seconds: 200 }],
+    };
+    const client = createApiClient('http://api', jsonFetch(body));
+    await expect(client.getCoding()).resolves.toEqual(body);
+  });
 });

@@ -6,6 +6,7 @@ import type { CalendarEventInput, TodoInput } from '@pcc/contracts'
 import { cookiesAreSecure, forwardCookieHeader } from './cookies'
 import {
   loadCalendarEvents,
+  loadCoding,
   loadGoodreads,
   loadModels,
   loadUptime,
@@ -116,6 +117,10 @@ export const getUptime = createServerFn({ method: 'GET' }).handler(() =>
 
 export const getModels = createServerFn({ method: 'GET' }).handler(() =>
   loadModels(serverFetch()),
+)
+
+export const getCoding = createServerFn({ method: 'GET' }).handler(() =>
+  loadCoding(serverFetch()),
 )
 
 // Mutations: the RPC transport is POST regardless of the underlying core-api method; the handler
