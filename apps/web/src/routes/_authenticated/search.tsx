@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
+import { Box, Button, Group, TextInput, Title } from '@mantine/core'
 
 import { getSearch } from '../../lib/server/api'
 import { settle } from '../../lib/server/api-loaders'
@@ -25,29 +26,27 @@ function SearchPage() {
   const [input, setInput] = useState(q ?? '')
 
   return (
-    <div className="p-6">
-      <h1 className="mb-4 text-2xl font-semibold">Search</h1>
+    <Box p="lg">
+      <Title order={1} mb="md">
+        Search
+      </Title>
       <form
-        className="mb-6 flex max-w-xl gap-2"
         onSubmit={(e) => {
           e.preventDefault()
           const trimmed = input.trim()
           navigate({ search: trimmed ? { q: trimmed } : {} })
         }}
       >
-        <input
-          aria-label="Search the web"
-          placeholder="Search the web…"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          className="flex-1 rounded border px-3 py-2"
-        />
-        <button
-          type="submit"
-          className="rounded bg-foreground px-4 py-2 text-background"
-        >
-          Search
-        </button>
+        <Group gap="sm" maw={576} mb="lg" wrap="nowrap">
+          <TextInput
+            aria-label="Search the web"
+            placeholder="Search the web…"
+            value={input}
+            onChange={(e) => setInput(e.currentTarget.value)}
+            style={{ flex: 1 }}
+          />
+          <Button type="submit">Search</Button>
+        </Group>
       </form>
 
       <SearchResultList
@@ -55,6 +54,6 @@ function SearchPage() {
         error={result?.error ? 'unreachable' : undefined}
         idle={!q}
       />
-    </div>
+    </Box>
   )
 }

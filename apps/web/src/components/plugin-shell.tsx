@@ -1,4 +1,14 @@
 import type { ReactNode } from 'react'
+import {
+  Alert,
+  Anchor,
+  Box,
+  Group,
+  Paper,
+  SimpleGrid,
+  Stack,
+  Title,
+} from '@mantine/core'
 import type { PluginManifest } from '@pcc/contracts'
 
 export interface PluginShellProps {
@@ -19,38 +29,49 @@ export function PluginShell({
   renderTile,
 }: PluginShellProps) {
   return (
-    <div className="flex min-h-screen">
-      <nav className="w-48 shrink-0 border-r p-4" aria-label="Plugins">
-        <ul>
+    <Group align="stretch" gap={0} wrap="nowrap" mih="100vh">
+      <Box
+        component="nav"
+        aria-label="Plugins"
+        w={192}
+        p="md"
+        style={{
+          flex: 'none',
+          borderRight: '1px solid var(--mantine-color-default-border)',
+        }}
+      >
+        <Stack gap="xs">
           {manifests.map((manifest) => (
-            <li key={manifest.id}>
-              <a href={manifest.routeBase}>{manifest.navLabel}</a>
-            </li>
+            <Anchor key={manifest.id} href={manifest.routeBase} size="sm">
+              {manifest.navLabel}
+            </Anchor>
           ))}
-        </ul>
-      </nav>
-      <main className="flex-1 p-6">
+        </Stack>
+      </Box>
+      <Box component="main" flex={1} p="lg">
         {error ? (
-          <div
-            role="alert"
-            className="mb-4 rounded border border-warning/40 bg-warning/10 p-3"
-          >
+          <Alert role="alert" color="yellow" mb="md">
             Some data could not be loaded: {error}
-          </div>
+          </Alert>
         ) : null}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
           {manifests.map((manifest) => (
-            <section
+            <Paper
               key={manifest.id}
+              component="section"
               data-testid={`tile-${manifest.id}`}
-              className="rounded border p-4"
+              withBorder
+              radius="md"
+              p="md"
             >
-              <h2 className="mb-2 font-semibold">{manifest.navLabel}</h2>
+              <Title order={3} size="h5" mb="xs">
+                {manifest.navLabel}
+              </Title>
               {renderTile?.(manifest)}
-            </section>
+            </Paper>
           ))}
-        </div>
-      </main>
-    </div>
+        </SimpleGrid>
+      </Box>
+    </Group>
   )
 }

@@ -1,3 +1,4 @@
+import { Anchor, Box, Stack, Text } from '@mantine/core'
 import type { SearchResult } from '@pcc/contracts'
 import { safeHref } from '../lib/safe-href'
 
@@ -16,43 +17,50 @@ export function SearchResultList({
 }: SearchResultListProps) {
   if (error) {
     return (
-      <p role="status" className="text-sm text-warning">
+      <Text role="status" size="sm" c="yellow.7">
         Search unavailable
-      </p>
+      </Text>
     )
   }
 
   if (idle) {
     return (
-      <p className="text-sm text-muted-foreground">Enter a query to search.</p>
+      <Text size="sm" c="dimmed">
+        Enter a query to search.
+      </Text>
     )
   }
 
   if (results.length === 0) {
-    return <p className="text-sm text-muted-foreground">No results</p>
+    return (
+      <Text size="sm" c="dimmed">
+        No results
+      </Text>
+    )
   }
 
   return (
-    <ul className="space-y-4">
+    <Stack component="ul" gap="md" m={0} p={0} style={{ listStyle: 'none' }}>
       {results.map((r) => (
-        <li key={r.url}>
-          <a
+        <Box component="li" key={r.url}>
+          <Anchor
             href={safeHref(r.url)}
             target="_blank"
             rel="noreferrer noopener"
-            className="text-accent underline"
           >
             {r.title}
-          </a>
+          </Anchor>
           {r.content && (
-            <p className="text-sm text-muted-foreground">{r.content}</p>
+            <Text size="sm" c="dimmed">
+              {r.content}
+            </Text>
           )}
-          <p className="truncate text-xs text-muted-foreground">
+          <Text size="xs" c="dimmed" truncate>
             {r.url}
             {r.engine ? ` · ${r.engine}` : ''}
-          </p>
-        </li>
+          </Text>
+        </Box>
       ))}
-    </ul>
+    </Stack>
   )
 }

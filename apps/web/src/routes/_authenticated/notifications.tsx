@@ -1,4 +1,5 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
+import { Box, Button, Group, Title } from '@mantine/core'
 import type { Notification } from '@pcc/contracts'
 
 import {
@@ -30,25 +31,21 @@ function NotificationsPage() {
   }
 
   return (
-    <div className="p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Notifications</h1>
+    <Box p="lg">
+      <Group justify="space-between" mb="md">
+        <Title order={1}>Notifications</Title>
         {data && data.unread > 0 && (
-          <button
-            type="button"
-            onClick={onMarkAll}
-            className="rounded bg-foreground px-3 py-1 text-sm text-background"
-          >
+          <Button size="sm" onClick={onMarkAll}>
             Mark all read
-          </button>
+          </Button>
         )}
-      </div>
+      </Group>
 
       <NotificationList
         notifications={data?.notifications ?? []}
         error={result.error ? 'unreachable' : undefined}
         onMarkRead={onMarkRead}
       />
-    </div>
+    </Box>
   )
 }

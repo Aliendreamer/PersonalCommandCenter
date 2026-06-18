@@ -1,3 +1,4 @@
+import { Box, Group, Paper, Stack, Text, Title } from '@mantine/core'
 import type { ModelsStatus } from '@pcc/contracts'
 
 export interface ModelsViewProps {
@@ -9,93 +10,112 @@ function gb(bytes: number): string {
   return `${(bytes / 1024 / 1024 / 1024).toFixed(1)} GB`
 }
 
+const rowBorder = (i: number) =>
+  i > 0
+    ? { borderTop: '1px solid var(--mantine-color-default-border)' }
+    : undefined
+
 /** The /models page body: GPU panel + loaded + installed models. Degrades on error. */
 export function ModelsView({ status, error }: ModelsViewProps) {
   if (error || !status) {
     return (
-      <p role="status" className="text-sm text-warning">
+      <Text role="status" size="sm" c="yellow.7">
         Models unavailable
-      </p>
+      </Text>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <Stack gap="lg">
       <section>
-        <h2 className="mb-2 text-lg font-medium">GPU</h2>
+        <Title order={3} mb="xs">
+          GPU
+        </Title>
         {status.gpus.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No GPU telemetry</p>
+          <Text size="sm" c="dimmed">
+            No GPU telemetry
+          </Text>
         ) : (
-          <ul className="space-y-1">
+          <Box component="ul" m={0} p={0} style={{ listStyle: 'none' }}>
             {status.gpus.map((g) => (
-              <li key={g.name} className="text-sm">
-                <span className="font-medium">{g.name}</span> —{' '}
-                {Math.round(g.utilizationPct)}% util ·{' '}
+              <Text component="li" key={g.name} size="sm">
+                <Text span fw={500}>
+                  {g.name}
+                </Text>{' '}
+                — {Math.round(g.utilizationPct)}% util ·{' '}
                 {Math.round(g.temperatureC)}°C · {Math.round(g.memoryUsedMb)}/
                 {Math.round(g.memoryTotalMb)} MB
-              </li>
+              </Text>
             ))}
-          </ul>
+          </Box>
         )}
       </section>
 
       <section>
-        <h2 className="mb-2 text-lg font-medium">
+        <Title order={3} mb="xs">
           Loaded ({status.running.length})
-        </h2>
+        </Title>
         {status.running.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Nothing loaded</p>
+          <Text size="sm" c="dimmed">
+            Nothing loaded
+          </Text>
         ) : (
-          <ul className="divide-y rounded border">
-            {status.running.map((m) => (
-              <li
-                key={m.name}
-                className="flex justify-between px-3 py-2 text-sm"
-              >
-                <span>{m.name}</span>
-                <span className="text-muted-foreground">
-                  {gb(m.sizeVramBytes)} VRAM
-                </span>
-              </li>
-            ))}
-          </ul>
+          <Paper withBorder radius="md">
+            <Box component="ul" m={0} p={0} style={{ listStyle: 'none' }}>
+              {status.running.map((m, i) => (
+                <Box component="li" key={m.name} style={rowBorder(i)}>
+                  <Group justify="space-between" px="sm" py="xs">
+                    <Text size="sm">{m.name}</Text>
+                    <Text size="sm" c="dimmed">
+                      {gb(m.sizeVramBytes)} VRAM
+                    </Text>
+                  </Group>
+                </Box>
+              ))}
+            </Box>
+          </Paper>
         )}
       </section>
 
       <section>
-        <h2 className="mb-2 text-lg font-medium">
+        <Title order={3} mb="xs">
           Installed ({status.installed.length})
-        </h2>
+        </Title>
         {status.installed.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No models pulled</p>
+          <Text size="sm" c="dimmed">
+            No models pulled
+          </Text>
         ) : (
-          <ul className="divide-y rounded border">
-            {status.installed.map((m) => (
-              <li
-                key={m.name}
-                className="flex justify-between px-3 py-2 text-sm"
-              >
-                <span>
-                  {m.name}
-                  {m.parameterSize ? (
-                    <span className="text-muted-foreground">
-                      {' '}
-                      · {m.parameterSize}
-                    </span>
-                  ) : null}
-                  {m.quantization ? (
-                    <span className="text-muted-foreground">
-                      {' '}
-                      · {m.quantization}
-                    </span>
-                  ) : null}
-                </span>
-                <span className="text-muted-foreground">{gb(m.sizeBytes)}</span>
-              </li>
-            ))}
-          </ul>
+          <Paper withBorder radius="md">
+            <Box component="ul" m={0} p={0} style={{ listStyle: 'none' }}>
+              {status.installed.map((m, i) => (
+                <Box component="li" key={m.name} style={rowBorder(i)}>
+                  <Group justify="space-between" px="sm" py="xs">
+                    <Text size="sm">
+                      {m.name}
+                      {m.parameterSize ? (
+                        <Text span c="dimmed">
+                          {' '}
+                          · {m.parameterSize}
+                        </Text>
+                      ) : null}
+                      {m.quantization ? (
+                        <Text span c="dimmed">
+                          {' '}
+                          · {m.quantization}
+                        </Text>
+                      ) : null}
+                    </Text>
+                    <Text size="sm" c="dimmed">
+                      {gb(m.sizeBytes)}
+                    </Text>
+                  </Group>
+                </Box>
+              ))}
+            </Box>
+          </Paper>
         )}
       </section>
-    </div>
+    </Stack>
   )
 }

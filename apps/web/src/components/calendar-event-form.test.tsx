@@ -1,21 +1,32 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { MantineProvider } from '@mantine/core'
 import { CalendarEventForm } from './calendar-event-form'
+import { mantineTheme } from '../lib/theme'
+
+function renderForm(ui: React.ReactNode) {
+  return render(<MantineProvider theme={mantineTheme}>{ui}</MantineProvider>)
+}
 
 afterEach(cleanup)
 
 describe('CalendarEventForm', () => {
+  it('renders Mantine inputs', () => {
+    renderForm(<CalendarEventForm onSubmit={vi.fn()} />)
+    expect(screen.getByLabelText(/Title/).className).toContain('mantine-')
+  })
+
   it('submits the entered fields as a CalendarEventInput', () => {
     const onSubmit = vi.fn()
-    render(<CalendarEventForm onSubmit={onSubmit} />)
+    renderForm(<CalendarEventForm onSubmit={onSubmit} />)
 
-    fireEvent.change(screen.getByLabelText('Title'), {
+    fireEvent.change(screen.getByLabelText(/Title/), {
       target: { value: 'Lunch' },
     })
-    fireEvent.change(screen.getByLabelText('Start'), {
+    fireEvent.change(screen.getByLabelText(/Start/), {
       target: { value: '2026-06-15T12:00' },
     })
-    fireEvent.change(screen.getByLabelText('End'), {
+    fireEvent.change(screen.getByLabelText(/End/), {
       target: { value: '2026-06-15T13:00' },
     })
     fireEvent.click(screen.getByRole('button', { name: 'Save' }))
@@ -30,7 +41,7 @@ describe('CalendarEventForm', () => {
   })
 
   it('pre-fills when editing an existing event', () => {
-    render(
+    renderForm(
       <CalendarEventForm
         onSubmit={vi.fn()}
         submitLabel="Update"

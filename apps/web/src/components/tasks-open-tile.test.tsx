@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, render, screen } from '../test/render'
 import type { TodoItem } from '@pcc/contracts'
 import { TasksOpenTile } from './tasks-open-tile'
 

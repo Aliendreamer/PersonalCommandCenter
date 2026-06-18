@@ -1,3 +1,4 @@
+import { Badge, Box, Group, Paper, Text } from '@mantine/core'
 import type { UptimeCheck } from '@pcc/contracts'
 
 export interface UptimeListProps {
@@ -5,50 +6,60 @@ export interface UptimeListProps {
   error?: string
 }
 
+const rowBorder = (i: number) =>
+  i > 0
+    ? { borderTop: '1px solid var(--mantine-color-default-border)' }
+    : undefined
+
 /** Lists each target with an up/down badge + latency. Degrades on error. */
 export function UptimeList({ checks, error }: UptimeListProps) {
   if (error) {
     return (
-      <p role="status" className="text-sm text-warning">
+      <Text role="status" size="sm" c="yellow.7">
         Uptime unavailable
-      </p>
+      </Text>
     )
   }
 
   if (checks.length === 0) {
-    return <p className="text-sm text-muted-foreground">No targets</p>
+    return (
+      <Text size="sm" c="dimmed">
+        No targets
+      </Text>
+    )
   }
 
   return (
-    <ul className="divide-y rounded border">
-      {checks.map((check) => (
-        <li
-          key={check.url}
-          className="flex items-center justify-between px-3 py-2 text-sm"
-        >
-          <div className="min-w-0">
-            <p className="truncate font-medium">{check.name}</p>
-            <p className="truncate text-xs text-muted-foreground">
-              {check.url}
-            </p>
-          </div>
-          <div className="flex flex-none items-center gap-2">
-            <span className="text-xs text-muted-foreground">
-              {check.latencyMs} ms
-            </span>
-            <span
-              className={
-                check.up
-                  ? 'rounded bg-success/10 px-2 py-0.5 text-xs font-medium text-success'
-                  : 'rounded bg-danger/10 px-2 py-0.5 text-xs font-medium text-danger'
-              }
-            >
-              {check.up ? 'up' : 'down'}
-              {check.statusCode != null ? ` · ${check.statusCode}` : ''}
-            </span>
-          </div>
-        </li>
-      ))}
-    </ul>
+    <Paper withBorder radius="md">
+      <Box component="ul" m={0} p={0} style={{ listStyle: 'none' }}>
+        {checks.map((check, i) => (
+          <Box component="li" key={check.url} style={rowBorder(i)}>
+            <Group justify="space-between" wrap="nowrap" px="sm" py="xs">
+              <div style={{ minWidth: 0 }}>
+                <Text size="sm" fw={500} truncate>
+                  {check.name}
+                </Text>
+                <Text size="xs" c="dimmed" truncate>
+                  {check.url}
+                </Text>
+              </div>
+              <Group gap="xs" wrap="nowrap" style={{ flex: 'none' }}>
+                <Text size="xs" c="dimmed">
+                  {check.latencyMs} ms
+                </Text>
+                <Badge
+                  color={check.up ? 'green' : 'red'}
+                  variant="light"
+                  size="sm"
+                >
+                  {check.up ? 'up' : 'down'}
+                  {check.statusCode != null ? ` · ${check.statusCode}` : ''}
+                </Badge>
+              </Group>
+            </Group>
+          </Box>
+        ))}
+      </Box>
+    </Paper>
   )
 }

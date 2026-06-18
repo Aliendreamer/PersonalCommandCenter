@@ -19,8 +19,10 @@
     "check": "prettier --check ."
   },
   "dependencies": {
+    "@mantine/core": "9.3.2",
+    "@mantine/form": "9.3.2",
+    "@mantine/hooks": "9.3.2",
     "@pcc/contracts": "workspace:*",
-    "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-devtools": "latest",
     "@tanstack/react-router": "latest",
     "@tanstack/react-router-devtools": "latest",
@@ -30,11 +32,9 @@
     "lucide-react": "^0.545.0",
     "react": "19.2.7",
     "react-dom": "19.2.7",
-    "srvx": "0.11.16",
-    "tailwindcss": "4.3.0"
+    "srvx": "0.11.16"
   },
   "devDependencies": {
-    "@tailwindcss/typography": "0.5.20",
     "@tanstack/devtools-vite": "latest",
     "@tanstack/eslint-config": "latest",
     "@tanstack/router-cli": "1.167.17",

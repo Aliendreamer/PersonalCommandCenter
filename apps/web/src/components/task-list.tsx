@@ -1,3 +1,4 @@
+import { Anchor, Box, Checkbox, Group, Paper, Text } from '@mantine/core'
 import type { TodoItem } from '@pcc/contracts'
 
 export interface TaskListProps {
@@ -16,6 +17,11 @@ function dueLabel(iso: string): string {
   })
 }
 
+const rowBorder = (i: number) =>
+  i > 0
+    ? { borderTop: '1px solid var(--mantine-color-default-border)' }
+    : undefined
+
 /** Lists to-dos with a completion checkbox; degrades on error. */
 export function TaskList({
   tasks,
@@ -26,70 +32,79 @@ export function TaskList({
 }: TaskListProps) {
   if (error) {
     return (
-      <p role="status" className="text-sm text-warning">
+      <Text role="status" size="sm" c="yellow.7">
         Tasks unavailable
-      </p>
+      </Text>
     )
   }
 
   if (tasks.length === 0) {
-    return <p className="text-sm text-muted-foreground">No tasks</p>
+    return (
+      <Text size="sm" c="dimmed">
+        No tasks
+      </Text>
+    )
   }
 
   return (
-    <ul className="divide-y rounded border">
-      {tasks.map((task) => (
-        <li
-          key={task.uid}
-          className="flex items-center justify-between gap-3 px-3 py-2 text-sm"
-        >
-          <label className="flex min-w-0 items-center gap-2">
-            <input
-              type="checkbox"
-              aria-label={`Complete ${task.title}`}
-              checked={task.completed}
-              disabled={!onToggle}
-              onChange={() => onToggle?.(task)}
-            />
-            <span
-              className={
-                task.completed
-                  ? 'truncate text-muted-foreground line-through'
-                  : 'truncate'
-              }
-            >
-              {task.title}
-            </span>
-            {task.due && (
-              <span className="shrink-0 text-muted-foreground">
-                {dueLabel(task.due)}
-              </span>
-            )}
-          </label>
-          {(onEdit || onDelete) && (
-            <span className="flex shrink-0 gap-2">
-              {onEdit && (
-                <button
-                  type="button"
-                  onClick={() => onEdit(task)}
-                  className="underline"
-                >
-                  Edit
-                </button>
+    <Paper withBorder radius="md">
+      <Box component="ul" m={0} p={0} style={{ listStyle: 'none' }}>
+        {tasks.map((task, i) => (
+          <Box component="li" key={task.uid} style={rowBorder(i)}>
+            <Group justify="space-between" wrap="nowrap" px="sm" py="xs">
+              <Checkbox
+                aria-label={`Complete ${task.title}`}
+                checked={task.completed}
+                disabled={!onToggle}
+                onChange={() => onToggle?.(task)}
+                styles={{ body: { minWidth: 0, alignItems: 'center' } }}
+                label={
+                  <Group gap="xs" wrap="nowrap">
+                    <Text
+                      size="sm"
+                      truncate
+                      td={task.completed ? 'line-through' : undefined}
+                      c={task.completed ? 'dimmed' : undefined}
+                    >
+                      {task.title}
+                    </Text>
+                    {task.due && (
+                      <Text size="sm" c="dimmed" style={{ flex: 'none' }}>
+                        {dueLabel(task.due)}
+                      </Text>
+                    )}
+                  </Group>
+                }
+              />
+              {(onEdit || onDelete) && (
+                <Group gap="sm" wrap="nowrap" style={{ flex: 'none' }}>
+                  {onEdit && (
+                    <Anchor
+                      component="button"
+                      type="button"
+                      size="sm"
+                      onClick={() => onEdit(task)}
+                    >
+                      Edit
+                    </Anchor>
+                  )}
+                  {onDelete && (
+                    <Anchor
+                      component="button"
+                      type="button"
+                      size="sm"
+                      c="red"
+                      onClick={() => onDelete(task)}
+                    >
+                      Delete
+                    </Anchor>
+                  )}
+                </Group>
               )}
-              {onDelete && (
-                <button
-                  type="button"
-                  onClick={() => onDelete(task)}
-                  className="text-danger underline"
-                >
-                  Delete
-                </button>
-              )}
-            </span>
-          )}
-        </li>
-      ))}
-    </ul>
+            </Group>
+          </Box>
+        ))}
+      </Box>
+    </Paper>
   )
 }

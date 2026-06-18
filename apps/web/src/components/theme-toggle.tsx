@@ -1,82 +1,59 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
+import {
+  ActionIcon,
+  Group,
+  useComputedColorScheme,
+  useMantineColorScheme,
+} from '@mantine/core'
 
-import { THEME_COOKIE, resolveTheme, themeClass } from '../lib/theme'
-import type { ThemePref } from '../lib/theme'
+/** A user-facing theme choice; `system` maps to Mantine's `auto` color scheme. */
+type Choice = 'light' | 'dark' | 'system'
 
-const OPTIONS: ReadonlyArray<{
-  pref: ThemePref
-  label: string
-  glyph: string
-}> = [
-  { pref: 'light', label: 'Light', glyph: '☀' },
-  { pref: 'dark', label: 'Dark', glyph: '☾' },
-  { pref: 'system', label: 'System', glyph: '◑' },
-]
+const OPTIONS: ReadonlyArray<{ choice: Choice; label: string; glyph: string }> =
+  [
+    { choice: 'light', label: 'Light', glyph: '☀' },
+    { choice: 'dark', label: 'Dark', glyph: '☾' },
+    { choice: 'system', label: 'System', glyph: '◑' },
+  ]
 
-function systemPrefersDark(): boolean {
-  return (
-    typeof window !== 'undefined' &&
-    window.matchMedia('(prefers-color-scheme: dark)').matches
-  )
-}
-
-function readPref(): ThemePref {
-  if (typeof document === 'undefined') {
-    return 'system'
-  }
-  const match = document.cookie
-    .split(';')
-    .map((p) => p.trim())
-    .find((p) => p.startsWith(`${THEME_COOKIE}=`))
-  const value = match?.slice(THEME_COOKIE.length + 1)
-  return value === 'light' || value === 'dark' ? value : 'system'
-}
-
-/** Persist the preference and apply it to the document immediately (no reload). */
-function applyPref(pref: ThemePref): void {
-  // One year; app-scoped; Lax — a non-sensitive UI preference, readable by this client toggle.
-  document.cookie = `${THEME_COOKIE}=${pref}; path=/; max-age=31536000; samesite=lax`
-  const resolved = resolveTheme(pref, systemPrefersDark())
-  const root = document.documentElement
-  root.classList.toggle('dark', themeClass(resolved) === 'dark')
-  root.dataset.theme = resolved
-}
-
-/** Header control: choose Light / Dark / System; persists to the `pcc_theme` cookie. */
+/**
+ * Header control: choose Light / Dark / System. Built on Mantine's color-scheme hooks; the cookie
+ * color-scheme manager (see `lib/theme.ts`) persists the choice to `pcc_theme`. During the Tailwind
+ * → Mantine migration this also keeps the `.dark` class in sync with the resolved scheme so any
+ * not-yet-migrated Tailwind components re-theme too (drop the effect once Tailwind is removed).
+ */
 export function ThemeToggle() {
-  // Start at `system` so SSR and the first client render match (no hydration mismatch); the real
-  // preference (and the active highlight) is read from the cookie after mount. The actual theme is
-  // already correct — the pre-paint head script applied it from the cookie.
-  const [pref, setPref] = useState<ThemePref>('system')
+  const { colorScheme, setColorScheme } = useMantineColorScheme()
+  const computed = useComputedColorScheme('dark', {
+    getInitialValueInEffect: true,
+  })
 
   useEffect(() => {
-    setPref(readPref())
-  }, [])
+    document.documentElement.classList.toggle('dark', computed === 'dark')
+  }, [computed])
 
-  const choose = (next: ThemePref) => {
-    setPref(next)
-    applyPref(next)
+  const current: Choice = colorScheme === 'auto' ? 'system' : colorScheme
+
+  const choose = (choice: Choice) => {
+    setColorScheme(choice === 'system' ? 'auto' : choice)
   }
 
   return (
-    <div className="flex items-center gap-0.5" role="group" aria-label="Theme">
+    <Group gap={2} role="group" aria-label="Theme" wrap="nowrap">
       {OPTIONS.map((option) => (
-        <button
-          key={option.pref}
-          type="button"
+        <ActionIcon
+          key={option.choice}
+          variant={current === option.choice ? 'filled' : 'subtle'}
+          color="sky"
+          size="md"
           aria-label={option.label}
-          aria-pressed={pref === option.pref}
+          aria-pressed={current === option.choice}
           title={`${option.label} theme`}
-          onClick={() => choose(option.pref)}
-          className={
-            pref === option.pref
-              ? 'rounded px-1.5 py-0.5 text-foreground'
-              : 'rounded px-1.5 py-0.5 text-muted-foreground hover:text-foreground'
-          }
+          onClick={() => choose(option.choice)}
         >
           {option.glyph}
-        </button>
+        </ActionIcon>
       ))}
-    </div>
+    </Group>
   )
 }

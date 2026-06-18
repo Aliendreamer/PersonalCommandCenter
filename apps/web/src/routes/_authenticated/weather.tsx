@@ -1,4 +1,6 @@
+import { Fragment } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
+import { Box, Divider, Group, Paper, Stack, Text, Title } from '@mantine/core'
 
 import { getWeather } from '../../lib/server/api'
 import { settle } from '../../lib/server/api-loaders'
@@ -13,40 +15,46 @@ function WeatherPage() {
   const weather = result.data
 
   return (
-    <div className="p-6">
-      <h1 className="mb-4 text-2xl font-semibold">Weather</h1>
+    <Box p="lg">
+      <Title order={1} mb="md">
+        Weather
+      </Title>
       {result.error || !weather ? (
-        <p role="status" className="text-sm text-warning">
+        <Text role="status" size="sm" c="yellow.7">
           Weather unavailable
-        </p>
+        </Text>
       ) : (
         <>
-          <p className="mb-6 text-3xl font-semibold">
-            {Math.round(weather.current.temperatureC)}°C{' '}
-            <span className="text-base font-normal text-muted-foreground">
-              {weather.current.condition}
-            </span>
-          </p>
-          <ul className="divide-y rounded border">
-            {weather.daily.map((day) => (
-              <li
-                key={day.date}
-                className="flex items-center justify-between px-3 py-2 text-sm"
-              >
-                <span>
-                  {new Date(day.date).toLocaleDateString([], {
-                    weekday: 'short',
-                  })}
-                </span>
-                <span className="text-muted-foreground">{day.condition}</span>
-                <span>
-                  {Math.round(day.highC)}° / {Math.round(day.lowC)}°
-                </span>
-              </li>
-            ))}
-          </ul>
+          <Group gap="xs" align="baseline" mb="lg">
+            <Text fz={32} fw={600}>
+              {Math.round(weather.current.temperatureC)}°C
+            </Text>
+            <Text c="dimmed">{weather.current.condition}</Text>
+          </Group>
+          <Paper withBorder radius="md">
+            <Stack gap={0}>
+              {weather.daily.map((day, i) => (
+                <Fragment key={day.date}>
+                  {i > 0 && <Divider />}
+                  <Group justify="space-between" px="sm" py="xs">
+                    <Text size="sm">
+                      {new Date(day.date).toLocaleDateString([], {
+                        weekday: 'short',
+                      })}
+                    </Text>
+                    <Text size="sm" c="dimmed">
+                      {day.condition}
+                    </Text>
+                    <Text size="sm">
+                      {Math.round(day.highC)}° / {Math.round(day.lowC)}°
+                    </Text>
+                  </Group>
+                </Fragment>
+              ))}
+            </Stack>
+          </Paper>
         </>
       )}
-    </div>
+    </Box>
   )
 }

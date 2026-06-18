@@ -1,3 +1,4 @@
+import { Group, Stack, Text } from '@mantine/core'
 import type { SystemStatus } from '@pcc/contracts'
 
 export interface SystemTileProps {
@@ -6,30 +7,32 @@ export interface SystemTileProps {
   error?: boolean
 }
 
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <Group justify="space-between" gap="sm">
+      <Text size="sm" c="dimmed">
+        {label}
+      </Text>
+      <Text size="sm">{value}</Text>
+    </Group>
+  )
+}
+
 /** Dashboard tile showing system status, with a degraded state when unavailable. */
 export function SystemTile({ status, error }: SystemTileProps) {
   if (error || !status) {
     return (
-      <p role="status" className="text-sm text-warning">
+      <Text role="status" size="sm" c="yellow.7">
         Status unavailable
-      </p>
+      </Text>
     )
   }
 
   return (
-    <dl className="text-sm">
-      <div className="flex justify-between">
-        <dt>Healthy</dt>
-        <dd>{status.apiHealthy ? 'yes' : 'no'}</dd>
-      </div>
-      <div className="flex justify-between">
-        <dt>Host</dt>
-        <dd>{status.hostname}</dd>
-      </div>
-      <div className="flex justify-between">
-        <dt>Version</dt>
-        <dd>{status.version}</dd>
-      </div>
-    </dl>
+    <Stack gap={4}>
+      <Row label="Healthy" value={status.apiHealthy ? 'yes' : 'no'} />
+      <Row label="Host" value={status.hostname} />
+      <Row label="Version" value={status.version} />
+    </Stack>
   )
 }

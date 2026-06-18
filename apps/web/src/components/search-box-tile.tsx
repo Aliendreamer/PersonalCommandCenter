@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Button, Group, TextInput } from '@mantine/core'
 
 export interface SearchBoxTileProps {
   /** Called with the trimmed query on submit (the dashboard navigates to /search?q=…). */
@@ -11,7 +12,6 @@ export function SearchBoxTile({ onSearch }: SearchBoxTileProps) {
 
   return (
     <form
-      className="flex gap-2"
       onSubmit={(e) => {
         e.preventDefault()
         const trimmed = q.trim()
@@ -20,19 +20,19 @@ export function SearchBoxTile({ onSearch }: SearchBoxTileProps) {
         }
       }}
     >
-      <input
-        aria-label="Search the web"
-        placeholder="Search the web…"
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-        className="min-w-0 flex-1 rounded border px-2 py-1 text-sm"
-      />
-      <button
-        type="submit"
-        className="rounded bg-foreground px-3 py-1 text-sm text-background"
-      >
-        Go
-      </button>
+      <Group gap="xs" wrap="nowrap">
+        <TextInput
+          aria-label="Search the web"
+          placeholder="Search the web…"
+          value={q}
+          onChange={(e) => setQ(e.currentTarget.value)}
+          size="sm"
+          style={{ flex: 1 }}
+        />
+        <Button type="submit" size="sm">
+          Go
+        </Button>
+      </Group>
     </form>
   )
 }

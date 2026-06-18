@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
+import { Box, Button, Group, Title } from '@mantine/core'
 import type { CalendarEvent, CalendarEventInput } from '@pcc/contracts'
 
 import {
@@ -48,19 +49,15 @@ function CalendarPage() {
   }
 
   return (
-    <div className="p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Calendar</h1>
+    <Box p="lg">
+      <Group justify="space-between" mb="md">
+        <Title order={1}>Calendar</Title>
         {editor.mode === 'closed' && (
-          <button
-            type="button"
-            onClick={() => setEditor({ mode: 'create' })}
-            className="rounded bg-foreground px-3 py-1 text-sm text-background"
-          >
+          <Button size="sm" onClick={() => setEditor({ mode: 'create' })}>
             New event
-          </button>
+          </Button>
         )}
-      </div>
+      </Group>
 
       {editor.mode === 'create' && (
         <CalendarEventForm
@@ -84,6 +81,6 @@ function CalendarPage() {
         onEdit={(event) => setEditor({ mode: 'edit', event })}
         onDelete={onDelete}
       />
-    </div>
+    </Box>
   )
 }

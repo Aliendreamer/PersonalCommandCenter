@@ -1,3 +1,5 @@
+import { Text } from '@mantine/core'
+
 export interface NotificationsUnreadTileProps {
   /** Provided by the route loader (SSR-with-data); absent when the source is degraded. */
   unread?: number
@@ -11,15 +13,19 @@ export function NotificationsUnreadTile({
 }: NotificationsUnreadTileProps) {
   if (error || unread === undefined) {
     return (
-      <p role="status" className="text-sm text-warning">
+      <Text role="status" size="sm" c="yellow.7">
         Notifications unavailable
-      </p>
+      </Text>
     )
   }
 
   if (unread === 0) {
-    return <p className="text-sm text-muted-foreground">All caught up</p>
+    return (
+      <Text size="sm" c="dimmed">
+        All caught up
+      </Text>
+    )
   }
 
-  return <p className="text-sm">{unread} unread</p>
+  return <Text size="sm">{unread} unread</Text>
 }

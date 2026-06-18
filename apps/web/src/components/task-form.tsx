@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { Button, Group, Stack, TextInput } from '@mantine/core'
+import { useForm } from '@mantine/form'
 import type { TodoInput } from '@pcc/contracts'
 
 export interface TaskFormProps {
@@ -8,68 +9,47 @@ export interface TaskFormProps {
 
 /** Create form for a to-do. Presentational — the page wires `onSubmit` to a mutation. */
 export function TaskForm({ onSubmit, onCancel }: TaskFormProps) {
-  const [title, setTitle] = useState('')
-  const [due, setDue] = useState('')
-  const [description, setDescription] = useState('')
+  const form = useForm({
+    initialValues: { title: '', due: '', description: '' },
+  })
 
   return (
     <form
-      className="mb-6 grid max-w-md gap-2 rounded border p-4"
-      onSubmit={(e) => {
-        e.preventDefault()
+      onSubmit={form.onSubmit((values) =>
         onSubmit({
-          title,
-          due: due ? new Date(due).toISOString() : undefined,
-          description: description || undefined,
-        })
-      }}
+          title: values.title,
+          due: values.due ? new Date(values.due).toISOString() : undefined,
+          description: values.description || undefined,
+        }),
+      )}
     >
-      <label className="grid gap-1 text-sm">
-        Title
-        <input
+      <Stack gap="sm" maw={420} mb="lg">
+        <TextInput
           required
-          aria-label="Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="rounded border px-2 py-1"
+          label="Title"
+          key={form.key('title')}
+          {...form.getInputProps('title')}
         />
-      </label>
-      <label className="grid gap-1 text-sm">
-        Due
-        <input
+        <TextInput
           type="date"
-          aria-label="Due"
-          value={due}
-          onChange={(e) => setDue(e.target.value)}
-          className="rounded border px-2 py-1"
+          label="Due"
+          key={form.key('due')}
+          {...form.getInputProps('due')}
         />
-      </label>
-      <label className="grid gap-1 text-sm">
-        Notes
-        <input
-          aria-label="Notes"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="rounded border px-2 py-1"
+        <TextInput
+          label="Notes"
+          key={form.key('description')}
+          {...form.getInputProps('description')}
         />
-      </label>
-      <div className="mt-2 flex gap-2">
-        <button
-          type="submit"
-          className="rounded bg-foreground px-3 py-1 text-sm text-background"
-        >
-          Add task
-        </button>
-        {onCancel && (
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-3 py-1 text-sm underline"
-          >
-            Cancel
-          </button>
-        )}
-      </div>
+        <Group gap="sm" mt="xs">
+          <Button type="submit">Add task</Button>
+          {onCancel && (
+            <Button type="button" variant="subtle" onClick={onCancel}>
+              Cancel
+            </Button>
+          )}
+        </Group>
+      </Stack>
     </form>
   )
 }

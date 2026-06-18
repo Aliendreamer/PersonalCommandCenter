@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { Box, Paper, Title } from '@mantine/core'
 
 import { getSystemStatus } from '../../lib/server/api'
 import { settle } from '../../lib/server/api-loaders'
@@ -12,11 +13,13 @@ export const Route = createFileRoute('/_authenticated/system')({
 function SystemPage() {
   const status = Route.useLoaderData()
   return (
-    <div className="p-6">
-      <h1 className="mb-4 text-2xl font-semibold">System</h1>
-      <div className="max-w-sm rounded border p-4">
+    <Box p="lg">
+      <Title order={1} mb="md">
+        System
+      </Title>
+      <Paper withBorder radius="md" p="md" maw={360}>
         <SystemTile status={status.data} error={status.error} />
-      </div>
-    </div>
+      </Paper>
+    </Box>
   )
 }

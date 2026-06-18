@@ -1,3 +1,4 @@
+import { Text } from '@mantine/core'
 import type { Book } from '@pcc/contracts'
 
 export interface GoodreadsReadingTileProps {
@@ -12,24 +13,30 @@ export function GoodreadsReadingTile({
 }: GoodreadsReadingTileProps) {
   if (error || !books) {
     return (
-      <p role="status" className="text-sm text-warning">
+      <Text role="status" size="sm" c="yellow.7">
         Reading list unavailable
-      </p>
+      </Text>
     )
   }
 
   if (books.length === 0) {
-    return <p className="text-sm text-muted-foreground">No books</p>
+    return (
+      <Text size="sm" c="dimmed">
+        No books
+      </Text>
+    )
   }
 
   const current = books[0]
   return (
-    <div className="text-sm">
-      <p className="truncate font-medium">{current.title}</p>
-      <p className="text-xs text-muted-foreground">
+    <div>
+      <Text size="sm" fw={500} truncate>
+        {current.title}
+      </Text>
+      <Text size="xs" c="dimmed">
         {current.author ? `${current.author} · ` : ''}
         {books.length} on shelf
-      </p>
+      </Text>
     </div>
   )
 }

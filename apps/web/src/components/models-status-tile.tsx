@@ -1,3 +1,4 @@
+import { Text } from '@mantine/core'
 import type { ModelsStatus } from '@pcc/contracts'
 
 export interface ModelsStatusTileProps {
@@ -9,23 +10,23 @@ export interface ModelsStatusTileProps {
 export function ModelsStatusTile({ status, error }: ModelsStatusTileProps) {
   if (error || !status) {
     return (
-      <p role="status" className="text-sm text-warning">
+      <Text role="status" size="sm" c="yellow.7">
         Models unavailable
-      </p>
+      </Text>
     )
   }
 
   const gpu = status.gpus.length > 0 ? status.gpus[0] : null
   return (
-    <div className="text-sm">
-      <p className="font-medium">
+    <div>
+      <Text size="sm" fw={500}>
         {status.installed.length} models · {status.running.length} loaded
-      </p>
-      <p className="text-xs text-muted-foreground">
+      </Text>
+      <Text size="xs" c="dimmed">
         {gpu
           ? `GPU ${Math.round(gpu.utilizationPct)}% · ${Math.round(gpu.temperatureC)}°C`
           : 'no GPU data'}
-      </p>
+      </Text>
     </div>
   )
 }

@@ -1,3 +1,4 @@
+import { Text } from '@mantine/core'
 import type { Weather } from '@pcc/contracts'
 
 export interface WeatherTodayTileProps {
@@ -9,17 +10,17 @@ export interface WeatherTodayTileProps {
 export function WeatherTodayTile({ weather, error }: WeatherTodayTileProps) {
   if (error || !weather) {
     return (
-      <p role="status" className="text-sm text-warning">
+      <Text role="status" size="sm" c="yellow.7">
         Weather unavailable
-      </p>
+      </Text>
     )
   }
 
   const today = weather.daily.length > 0 ? weather.daily[0] : null
   return (
-    <p className="text-sm">
+    <Text size="sm">
       {Math.round(weather.current.temperatureC)}°C · {weather.current.condition}
       {today ? ` · ${Math.round(today.highC)}°/${Math.round(today.lowC)}°` : ''}
-    </p>
+    </Text>
   )
 }

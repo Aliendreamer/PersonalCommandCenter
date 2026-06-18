@@ -1,3 +1,4 @@
+import { Text } from '@mantine/core'
 import type { RssItem } from '@pcc/contracts'
 
 export interface RssLatestTileProps {
@@ -9,23 +10,29 @@ export interface RssLatestTileProps {
 export function RssLatestTile({ items, error }: RssLatestTileProps) {
   if (error || !items) {
     return (
-      <p role="status" className="text-sm text-warning">
+      <Text role="status" size="sm" c="yellow.7">
         Feeds unavailable
-      </p>
+      </Text>
     )
   }
 
   if (items.length === 0) {
-    return <p className="text-sm text-muted-foreground">No items</p>
+    return (
+      <Text size="sm" c="dimmed">
+        No items
+      </Text>
+    )
   }
 
   const latest = items[0]
   return (
-    <div className="text-sm">
-      <p className="truncate font-medium">{latest.title}</p>
-      <p className="text-xs text-muted-foreground">
+    <div>
+      <Text size="sm" fw={500} truncate>
+        {latest.title}
+      </Text>
+      <Text size="xs" c="dimmed">
         {latest.source} · {items.length} items
-      </p>
+      </Text>
     </div>
   )
 }

@@ -1,3 +1,4 @@
+import { Group, Stack, Text } from '@mantine/core'
 import type { CalendarEvent } from '@pcc/contracts'
 
 export interface CalendarTodayTileProps {
@@ -24,27 +25,33 @@ function formatTime(event: CalendarEvent): string {
 export function CalendarTodayTile({ events, error }: CalendarTodayTileProps) {
   if (error || !events) {
     return (
-      <p role="status" className="text-sm text-warning">
+      <Text role="status" size="sm" c="yellow.7">
         Calendar unavailable
-      </p>
+      </Text>
     )
   }
 
   const today = events.filter((event) => isToday(event.start))
   if (today.length === 0) {
-    return <p className="text-sm text-muted-foreground">Nothing today</p>
+    return (
+      <Text size="sm" c="dimmed">
+        Nothing today
+      </Text>
+    )
   }
 
   return (
-    <ul className="space-y-1 text-sm">
+    <Stack gap={4}>
       {today.map((event) => (
-        <li key={event.uid} className="flex justify-between gap-2">
-          <span className="truncate">{event.title}</span>
-          <span className="shrink-0 text-muted-foreground">
+        <Group key={event.uid} justify="space-between" gap="sm" wrap="nowrap">
+          <Text size="sm" truncate>
+            {event.title}
+          </Text>
+          <Text size="sm" c="dimmed" style={{ flexShrink: 0 }}>
             {formatTime(event)}
-          </span>
-        </li>
+          </Text>
+        </Group>
       ))}
-    </ul>
+    </Stack>
   )
 }

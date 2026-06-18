@@ -1,3 +1,4 @@
+import { Text } from '@mantine/core'
 import type { TodoItem } from '@pcc/contracts'
 
 export interface TasksOpenTileProps {
@@ -14,21 +15,25 @@ function isOverdue(task: TodoItem): boolean {
 export function TasksOpenTile({ tasks, error }: TasksOpenTileProps) {
   if (error || !tasks) {
     return (
-      <p role="status" className="text-sm text-warning">
+      <Text role="status" size="sm" c="yellow.7">
         Tasks unavailable
-      </p>
+      </Text>
     )
   }
 
   const open = tasks.filter((task) => !task.completed)
   if (open.length === 0) {
-    return <p className="text-sm text-muted-foreground">All clear</p>
+    return (
+      <Text size="sm" c="dimmed">
+        All clear
+      </Text>
+    )
   }
 
   const overdue = open.filter(isOverdue).length
   return (
-    <p className="text-sm">
+    <Text size="sm">
       {open.length} open{overdue > 0 ? ` · ${overdue} overdue` : ''}
-    </p>
+    </Text>
   )
 }

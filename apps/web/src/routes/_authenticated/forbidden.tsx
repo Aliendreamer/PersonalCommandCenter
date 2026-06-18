@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { Box, Text, Title } from '@mantine/core'
 
 export const Route = createFileRoute('/_authenticated/forbidden')({
   component: Forbidden,
@@ -6,11 +7,13 @@ export const Route = createFileRoute('/_authenticated/forbidden')({
 
 function Forbidden() {
   return (
-    <main className="p-6">
-      <h1 className="text-lg font-semibold">Forbidden</h1>
-      <p className="text-sm text-muted-foreground">
+    <Box component="main" p="lg">
+      <Title order={2} size="h4">
+        Forbidden
+      </Title>
+      <Text size="sm" c="dimmed">
         You do not have access to this page.
-      </p>
-    </main>
+      </Text>
+    </Box>
   )
 }

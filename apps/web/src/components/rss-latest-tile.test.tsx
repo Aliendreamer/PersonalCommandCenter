@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, render, screen } from '../test/render'
 import type { RssItem } from '@pcc/contracts'
 import { RssLatestTile } from './rss-latest-tile'
 

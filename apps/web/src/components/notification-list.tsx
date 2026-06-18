@@ -1,3 +1,4 @@
+import { Anchor, Box, Group, Paper, Text } from '@mantine/core'
 import type { Notification } from '@pcc/contracts'
 
 export interface NotificationListProps {
@@ -6,10 +7,10 @@ export interface NotificationListProps {
   onMarkRead?: (notification: Notification) => void
 }
 
-const severityClass: Record<Notification['severity'], string> = {
-  Info: 'text-accent',
-  Warning: 'text-warning',
-  Error: 'text-danger',
+const severityColor: Record<Notification['severity'], string> = {
+  Info: 'sky',
+  Warning: 'yellow.7',
+  Error: 'red',
 }
 
 function when(iso: string): string {
@@ -21,6 +22,11 @@ function when(iso: string): string {
   })
 }
 
+const rowBorder = (i: number) =>
+  i > 0
+    ? { borderTop: '1px solid var(--mantine-color-default-border)' }
+    : undefined
+
 /** Lists notifications newest-first; unread rows are emphasized and offer a mark-read action. */
 export function NotificationList({
   notifications,
@@ -29,57 +35,78 @@ export function NotificationList({
 }: NotificationListProps) {
   if (error) {
     return (
-      <p role="status" className="text-sm text-warning">
+      <Text role="status" size="sm" c="yellow.7">
         Notifications unavailable
-      </p>
+      </Text>
     )
   }
 
   if (notifications.length === 0) {
-    return <p className="text-sm text-muted-foreground">No notifications</p>
+    return (
+      <Text size="sm" c="dimmed">
+        No notifications
+      </Text>
+    )
   }
 
   return (
-    <ul className="divide-y rounded border">
-      {notifications.map((n) => {
-        const unread = n.readAt == null
-        return (
-          <li
-            key={n.id}
-            className="flex items-start justify-between gap-3 px-3 py-2 text-sm"
-          >
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <span
-                  className={`text-xs uppercase ${severityClass[n.severity]}`}
-                >
-                  {n.severity}
-                </span>
-                <span
-                  className={unread ? 'font-semibold' : 'text-muted-foreground'}
-                >
-                  {n.title}
-                </span>
-              </div>
-              {n.message && (
-                <p className="text-muted-foreground">{n.message}</p>
-              )}
-              <p className="text-xs text-muted-foreground">
-                {n.source} · {when(n.createdAt)}
-              </p>
-            </div>
-            {unread && onMarkRead && (
-              <button
-                type="button"
-                onClick={() => onMarkRead(n)}
-                className="shrink-0 underline"
+    <Paper withBorder radius="md">
+      <Box component="ul" m={0} p={0} style={{ listStyle: 'none' }}>
+        {notifications.map((n, i) => {
+          const unread = n.readAt == null
+          return (
+            <Box component="li" key={n.id} style={rowBorder(i)}>
+              <Group
+                justify="space-between"
+                align="flex-start"
+                wrap="nowrap"
+                px="sm"
+                py="xs"
               >
-                Mark read
-              </button>
-            )}
-          </li>
-        )
-      })}
-    </ul>
+                <div style={{ minWidth: 0 }}>
+                  <Group gap="xs" wrap="nowrap">
+                    <Text
+                      span
+                      size="xs"
+                      tt="uppercase"
+                      c={severityColor[n.severity]}
+                    >
+                      {n.severity}
+                    </Text>
+                    <Text
+                      span
+                      size="sm"
+                      fw={unread ? 600 : undefined}
+                      c={unread ? undefined : 'dimmed'}
+                    >
+                      {n.title}
+                    </Text>
+                  </Group>
+                  {n.message && (
+                    <Text size="sm" c="dimmed">
+                      {n.message}
+                    </Text>
+                  )}
+                  <Text size="xs" c="dimmed">
+                    {n.source} · {when(n.createdAt)}
+                  </Text>
+                </div>
+                {unread && onMarkRead && (
+                  <Anchor
+                    component="button"
+                    type="button"
+                    size="sm"
+                    style={{ flex: 'none' }}
+                    onClick={() => onMarkRead(n)}
+                  >
+                    Mark read
+                  </Anchor>
+                )}
+              </Group>
+            </Box>
+          )
+        })}
+      </Box>
+    </Paper>
   )
 }

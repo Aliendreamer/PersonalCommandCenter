@@ -1,4 +1,5 @@
 import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
+import { Anchor, Group, Text } from '@mantine/core'
 
 import { getMe } from '../lib/server/api'
 import { logout } from '../lib/auth/session'
@@ -26,16 +27,25 @@ function AuthenticatedLayout() {
   const { me } = Route.useRouteContext()
   return (
     <>
-      <div className="fixed right-3 top-2 z-50 flex items-center gap-3 text-xs">
-        <span>Hello, {me.email ?? me.subject}</span>
+      <Group
+        gap="sm"
+        align="center"
+        fz="xs"
+        style={{ position: 'fixed', right: 12, top: 8, zIndex: 50 }}
+      >
+        <Text span fz="xs">
+          Hello, {me.email ?? me.subject}
+        </Text>
         {me.roles.length > 0 ? (
-          <span className="text-muted-foreground">{me.roles.join(', ')}</span>
+          <Text span fz="xs" c="dimmed">
+            {me.roles.join(', ')}
+          </Text>
         ) : null}
         <ThemeToggle />
-        <button type="button" onClick={logout} className="underline">
+        <Anchor component="button" type="button" fz="xs" onClick={logout}>
           Logout
-        </button>
-      </div>
+        </Anchor>
+      </Group>
       <Outlet />
     </>
   )

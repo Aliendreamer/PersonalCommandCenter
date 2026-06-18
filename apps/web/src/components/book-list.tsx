@@ -1,3 +1,4 @@
+import { Anchor, Group, Image, SimpleGrid, Text } from '@mantine/core'
 import type { Book } from '@pcc/contracts'
 import { safeHref } from '../lib/safe-href'
 
@@ -10,42 +11,66 @@ export interface BookListProps {
 export function BookList({ books, error }: BookListProps) {
   if (error) {
     return (
-      <p role="status" className="text-sm text-warning">
+      <Text role="status" size="sm" c="yellow.7">
         Reading list unavailable
-      </p>
+      </Text>
     )
   }
 
   if (books.length === 0) {
-    return <p className="text-sm text-muted-foreground">No books</p>
+    return (
+      <Text size="sm" c="dimmed">
+        No books
+      </Text>
+    )
   }
 
   return (
-    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+    <SimpleGrid
+      component="ul"
+      cols={{ base: 2, sm: 3 }}
+      spacing="md"
+      m={0}
+      p={0}
+      style={{ listStyle: 'none' }}
+    >
       {books.map((book) => (
-        <li key={book.link} className="flex gap-2 text-sm">
+        <Group
+          component="li"
+          key={book.link}
+          gap="xs"
+          wrap="nowrap"
+          align="flex-start"
+        >
           {book.coverUrl ? (
-            <img
+            <Image
               src={safeHref(book.coverUrl)}
               alt=""
-              className="h-16 w-11 flex-none rounded object-cover"
+              w={44}
+              h={64}
+              radius="sm"
+              fit="cover"
+              flex="none"
             />
           ) : null}
-          <div className="min-w-0">
-            <a
+          <div style={{ minWidth: 0 }}>
+            <Anchor
               href={safeHref(book.link)}
               target="_blank"
               rel="noreferrer noopener"
-              className="font-medium text-accent underline"
+              fw={500}
+              size="sm"
             >
               {book.title}
-            </a>
+            </Anchor>
             {book.author ? (
-              <p className="text-xs text-muted-foreground">{book.author}</p>
+              <Text size="xs" c="dimmed">
+                {book.author}
+              </Text>
             ) : null}
           </div>
-        </li>
+        </Group>
       ))}
-    </ul>
+    </SimpleGrid>
   )
 }

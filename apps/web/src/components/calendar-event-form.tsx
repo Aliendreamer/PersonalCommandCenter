@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { Button, Checkbox, Group, Stack, TextInput } from '@mantine/core'
+import { useForm } from '@mantine/form'
 import type { CalendarEvent, CalendarEventInput } from '@pcc/contracts'
 
 export interface CalendarEventFormProps {
@@ -26,93 +27,68 @@ export function CalendarEventForm({
   initial,
   submitLabel = 'Save',
 }: CalendarEventFormProps) {
-  const [title, setTitle] = useState(initial?.title ?? '')
-  const [start, setStart] = useState(toLocalInput(initial?.start))
-  const [end, setEnd] = useState(toLocalInput(initial?.end))
-  const [allDay, setAllDay] = useState(initial?.allDay ?? false)
-  const [location, setLocation] = useState(initial?.location ?? '')
+  const form = useForm({
+    initialValues: {
+      title: initial?.title ?? '',
+      start: toLocalInput(initial?.start),
+      end: toLocalInput(initial?.end),
+      allDay: initial?.allDay ?? false,
+      location: initial?.location ?? '',
+    },
+  })
 
   return (
     <form
-      className="mb-6 grid max-w-md gap-2 rounded border p-4"
-      onSubmit={(e) => {
-        e.preventDefault()
+      onSubmit={form.onSubmit((values) =>
         onSubmit({
-          title,
-          start: new Date(start).toISOString(),
-          end: new Date(end).toISOString(),
-          allDay,
-          location: location || undefined,
-        })
-      }}
+          title: values.title,
+          start: new Date(values.start).toISOString(),
+          end: new Date(values.end).toISOString(),
+          allDay: values.allDay,
+          location: values.location || undefined,
+        }),
+      )}
     >
-      <label className="grid gap-1 text-sm">
-        Title
-        <input
+      <Stack gap="sm" maw={420} mb="lg">
+        <TextInput
           required
-          aria-label="Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="rounded border px-2 py-1"
+          label="Title"
+          key={form.key('title')}
+          {...form.getInputProps('title')}
         />
-      </label>
-      <label className="grid gap-1 text-sm">
-        Start
-        <input
+        <TextInput
           required
           type="datetime-local"
-          aria-label="Start"
-          value={start}
-          onChange={(e) => setStart(e.target.value)}
-          className="rounded border px-2 py-1"
+          label="Start"
+          key={form.key('start')}
+          {...form.getInputProps('start')}
         />
-      </label>
-      <label className="grid gap-1 text-sm">
-        End
-        <input
+        <TextInput
           required
           type="datetime-local"
-          aria-label="End"
-          value={end}
-          onChange={(e) => setEnd(e.target.value)}
-          className="rounded border px-2 py-1"
+          label="End"
+          key={form.key('end')}
+          {...form.getInputProps('end')}
         />
-      </label>
-      <label className="flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
-          aria-label="All day"
-          checked={allDay}
-          onChange={(e) => setAllDay(e.target.checked)}
+        <Checkbox
+          label="All day"
+          key={form.key('allDay')}
+          {...form.getInputProps('allDay', { type: 'checkbox' })}
         />
-        All day
-      </label>
-      <label className="grid gap-1 text-sm">
-        Location
-        <input
-          aria-label="Location"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          className="rounded border px-2 py-1"
+        <TextInput
+          label="Location"
+          key={form.key('location')}
+          {...form.getInputProps('location')}
         />
-      </label>
-      <div className="mt-2 flex gap-2">
-        <button
-          type="submit"
-          className="rounded bg-foreground px-3 py-1 text-sm text-background"
-        >
-          {submitLabel}
-        </button>
-        {onCancel && (
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-3 py-1 text-sm underline"
-          >
-            Cancel
-          </button>
-        )}
-      </div>
+        <Group gap="sm" mt="xs">
+          <Button type="submit">{submitLabel}</Button>
+          {onCancel && (
+            <Button type="button" variant="subtle" onClick={onCancel}>
+              Cancel
+            </Button>
+          )}
+        </Group>
+      </Stack>
     </form>
   )
 }

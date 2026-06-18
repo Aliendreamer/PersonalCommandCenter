@@ -1,3 +1,4 @@
+import { Anchor, Box, Paper, Text } from '@mantine/core'
 import type { RssItem } from '@pcc/contracts'
 import { safeHref } from '../lib/safe-href'
 
@@ -13,38 +14,55 @@ function when(iso: string): string {
     : d.toLocaleDateString([], { month: 'short', day: 'numeric' })
 }
 
+const rowBorder = (i: number) =>
+  i > 0
+    ? { borderTop: '1px solid var(--mantine-color-default-border)' }
+    : undefined
+
 /** Lists feed items newest-first (title links out, with source + date); degrades on error. */
 export function RssItemList({ items, error }: RssItemListProps) {
   if (error) {
     return (
-      <p role="status" className="text-sm text-warning">
+      <Text role="status" size="sm" c="yellow.7">
         Feeds unavailable
-      </p>
+      </Text>
     )
   }
 
   if (items.length === 0) {
-    return <p className="text-sm text-muted-foreground">No items</p>
+    return (
+      <Text size="sm" c="dimmed">
+        No items
+      </Text>
+    )
   }
 
   return (
-    <ul className="divide-y rounded border">
-      {items.map((item) => (
-        <li key={item.link} className="px-3 py-2 text-sm">
-          <a
-            href={safeHref(item.link)}
-            target="_blank"
-            rel="noreferrer noopener"
-            className="text-accent underline"
+    <Paper withBorder radius="md">
+      <Box component="ul" m={0} p={0} style={{ listStyle: 'none' }}>
+        {items.map((item, i) => (
+          <Box
+            component="li"
+            key={item.link}
+            px="sm"
+            py="xs"
+            style={rowBorder(i)}
           >
-            {item.title}
-          </a>
-          <p className="text-xs text-muted-foreground">
-            {item.source}
-            {when(item.published) ? ` · ${when(item.published)}` : ''}
-          </p>
-        </li>
-      ))}
-    </ul>
+            <Anchor
+              href={safeHref(item.link)}
+              target="_blank"
+              rel="noreferrer noopener"
+              size="sm"
+            >
+              {item.title}
+            </Anchor>
+            <Text size="xs" c="dimmed">
+              {item.source}
+              {when(item.published) ? ` · ${when(item.published)}` : ''}
+            </Text>
+          </Box>
+        ))}
+      </Box>
+    </Paper>
   )
 }

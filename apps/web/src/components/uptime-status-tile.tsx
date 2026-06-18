@@ -1,3 +1,4 @@
+import { Text } from '@mantine/core'
 import type { UptimeCheck } from '@pcc/contracts'
 
 export interface UptimeStatusTileProps {
@@ -9,27 +10,25 @@ export interface UptimeStatusTileProps {
 export function UptimeStatusTile({ checks, error }: UptimeStatusTileProps) {
   if (error || !checks) {
     return (
-      <p role="status" className="text-sm text-warning">
+      <Text role="status" size="sm" c="yellow.7">
         Uptime unavailable
-      </p>
+      </Text>
     )
   }
 
   if (checks.length === 0) {
-    return <p className="text-sm text-muted-foreground">No targets</p>
+    return (
+      <Text size="sm" c="dimmed">
+        No targets
+      </Text>
+    )
   }
 
   const up = checks.filter((c) => c.up).length
   const allUp = up === checks.length
   return (
-    <div className="text-sm">
-      <p
-        className={
-          allUp ? 'font-medium text-success' : 'font-medium text-warning'
-        }
-      >
-        {up}/{checks.length} up
-      </p>
-    </div>
+    <Text size="sm" fw={500} c={allUp ? 'green' : 'yellow.7'}>
+      {up}/{checks.length} up
+    </Text>
   )
 }

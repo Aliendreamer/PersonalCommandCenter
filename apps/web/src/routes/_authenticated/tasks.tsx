@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
+import { Box, Button, Group, Title } from '@mantine/core'
 import type { TodoInput, TodoItem } from '@pcc/contracts'
 
 import {
@@ -53,19 +54,15 @@ function TasksPage() {
   }
 
   return (
-    <div className="p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Tasks</h1>
+    <Box p="lg">
+      <Group justify="space-between" mb="md">
+        <Title order={1}>Tasks</Title>
         {!creating && (
-          <button
-            type="button"
-            onClick={() => setCreating(true)}
-            className="rounded bg-foreground px-3 py-1 text-sm text-background"
-          >
+          <Button size="sm" onClick={() => setCreating(true)}>
             Add task
-          </button>
+          </Button>
         )}
-      </div>
+      </Group>
 
       {creating && (
         <TaskForm onSubmit={onCreate} onCancel={() => setCreating(false)} />
@@ -77,6 +74,6 @@ function TasksPage() {
         onToggle={onToggle}
         onDelete={onDelete}
       />
-    </div>
+    </Box>
   )
 }

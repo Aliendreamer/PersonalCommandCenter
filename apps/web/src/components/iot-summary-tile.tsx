@@ -1,3 +1,4 @@
+import { Text } from '@mantine/core'
 import type { IotEntity } from '@pcc/contracts'
 
 export interface IotSummaryTileProps {
@@ -10,17 +11,17 @@ export interface IotSummaryTileProps {
 export function IotSummaryTile({ entities, error }: IotSummaryTileProps) {
   if (error || !entities) {
     return (
-      <p role="status" className="text-sm text-warning">
+      <Text role="status" size="sm" c="yellow.7">
         Devices unavailable
-      </p>
+      </Text>
     )
   }
 
   const total = entities.length
   const on = entities.filter((entity) => entity.state === 'on').length
   return (
-    <p className="text-sm">
+    <Text size="sm">
       {total} devices · {on} on
-    </p>
+    </Text>
   )
 }

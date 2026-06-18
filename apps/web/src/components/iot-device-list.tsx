@@ -1,3 +1,4 @@
+import { Box, Group, Paper, Stack, Text, Title } from '@mantine/core'
 import type { IotEntity } from '@pcc/contracts'
 
 export interface IotDeviceListProps {
@@ -5,13 +6,18 @@ export interface IotDeviceListProps {
   error?: string
 }
 
+const rowBorder = (i: number) =>
+  i > 0
+    ? { borderTop: '1px solid var(--mantine-color-default-border)' }
+    : undefined
+
 /** Lists Home Assistant entities grouped by domain; degrades on error. */
 export function IotDeviceList({ entities, error }: IotDeviceListProps) {
   if (error) {
     return (
-      <p role="status" className="text-sm text-warning">
+      <Text role="status" size="sm" c="yellow.7">
         Devices unavailable
-      </p>
+      </Text>
     )
   }
 
@@ -23,26 +29,29 @@ export function IotDeviceList({ entities, error }: IotDeviceListProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <Stack gap="lg">
       {[...byDomain.entries()].map(([domain, list]) => (
         <section key={domain} data-testid={`domain-${domain}`}>
-          <h3 className="mb-2 font-semibold capitalize">{domain}</h3>
-          <ul className="divide-y rounded border">
-            {list.map((entity) => (
-              <li
-                key={entity.entityId}
-                className="flex justify-between px-3 py-2 text-sm"
-              >
-                <span>{entity.name}</span>
-                <span className="text-muted-foreground">
-                  {entity.state}
-                  {entity.unit ? ` ${entity.unit}` : ''}
-                </span>
-              </li>
-            ))}
-          </ul>
+          <Title order={4} tt="capitalize" mb="xs">
+            {domain}
+          </Title>
+          <Paper withBorder radius="md">
+            <Box component="ul" m={0} p={0} style={{ listStyle: 'none' }}>
+              {list.map((entity, i) => (
+                <Box component="li" key={entity.entityId} style={rowBorder(i)}>
+                  <Group justify="space-between" px="sm" py="xs">
+                    <Text size="sm">{entity.name}</Text>
+                    <Text size="sm" c="dimmed">
+                      {entity.state}
+                      {entity.unit ? ` ${entity.unit}` : ''}
+                    </Text>
+                  </Group>
+                </Box>
+              ))}
+            </Box>
+          </Paper>
         </section>
       ))}
-    </div>
+    </Stack>
   )
 }

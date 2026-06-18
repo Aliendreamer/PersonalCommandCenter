@@ -246,12 +246,21 @@ pnpm dlx @tanstack/intent@latest load <package>#<skill> # then follow the return
   `app.pcc.localhost`. The `_authenticated` `beforeLoad` guard (server-side `getMe()`) gates every
   route; there is no client `/me` probe. The SSR server reaches core-api via the **server-side**
   `API_URL` env (`http://core-api:8080`); there is **no** `VITE_API_URL` baked into the client.
-- **Theming is semantic tokens, not `dark:` variants** (`apps/web/src/styles.css`): Tailwind v4
-  `@theme inline` maps `--color-*` utilities to CSS variables defined in `:root` (light) / `.dark`
-  (dark), so toggling the `.dark` class on `<html>` re-themes everything. Components use semantic
-  utilities (`bg-background`, `text-muted-foreground`, `text-warning/danger/success`, `text-accent`,
-  borders via a base-layer `border-color: var(--border)`) — **never** hardcoded `gray/amber/...-NNN`.
-  Theme choice lives in a non-HttpOnly `pcc_theme` cookie (`light|dark|system`, default system); a
-  blocking inline `<head>` script in `__root.tsx` applies the class **before first paint** (no flash),
-  and `<html>` carries `suppressHydrationWarning`. The `ThemeToggle` (header) writes the cookie + flips
-  the class live (`apps/web/src/lib/theme.ts` holds the pure `resolveTheme`).
+- **UI is Mantine v9, not Tailwind** (`@mantine/core` + `@mantine/hooks` + `@mantine/form`). Tailwind
+  was fully retired (see `openspec/changes/archive/*-adopt-mantine`). Build with Mantine components +
+  the shared theme (`apps/web/src/lib/theme.ts` `mantineTheme`, `createTheme`, **sky** primary, shade
+  7 light / 4 dark) — props/`c=`/`fz=`/`size=`, **not** CSS classes. `__root.tsx` wires SSR: it imports
+  `@mantine/core/styles.css` (via `styles.css`), wraps the app in `<MantineProvider theme colorSchemeManager
+  defaultColorScheme="dark">`, and Mantine's reset/body styling comes from its stylesheet. Date/time use
+  native `type="datetime-local"`/`"date"` on `TextInput` (no `@mantine/dates`). Forms use `@mantine/form`
+  `useForm` (`required` adds a `*` to the label → query by regex in tests, not exact text).
+- **Color scheme is cookie-driven, default dark** (`apps/web/src/lib/theme.ts`): a cookie-backed
+  `MantineColorSchemeManager` (`pccColorSchemeManager`) over the non-HttpOnly `pcc_theme` cookie
+  (`light|dark|system`, mapping `system`↔Mantine `auto`). Mantine's stock `ColorSchemeScript` is
+  localStorage-only, so `__root.tsx` keeps a **blocking inline `<head>` script** that reads `pcc_theme`
+  and sets `data-mantine-color-scheme` (and `.dark`, now vestigial) **before first paint** — no cookie →
+  **dark**; only explicit `system` defers to the OS. `<html>` carries `suppressHydrationWarning`. The
+  `ThemeToggle` (header) is built on `useMantineColorScheme`/`useComputedColorScheme`.
+- **Component tests must wrap in `MantineProvider`** — use the shared `apps/web/src/test/render.tsx`
+  (`render` auto-wraps + re-exports RTL). `apps/web/vitest.setup.ts` polyfills `matchMedia`/`scrollIntoView`
+  (jsdom gaps Mantine needs), guarded for node-env (server-fn) tests.

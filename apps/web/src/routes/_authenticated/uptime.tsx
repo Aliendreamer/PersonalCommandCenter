@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { Box, Title } from '@mantine/core'
 
 import { getUptime } from '../../lib/server/api'
 import { settle } from '../../lib/server/api-loaders'
@@ -12,12 +13,14 @@ export const Route = createFileRoute('/_authenticated/uptime')({
 function UptimePage() {
   const result = Route.useLoaderData()
   return (
-    <div className="p-6">
-      <h1 className="mb-4 text-2xl font-semibold">Uptime</h1>
+    <Box p="lg">
+      <Title order={1} mb="md">
+        Uptime
+      </Title>
       <UptimeList
         checks={result.data ?? []}
         error={result.error ? 'unreachable' : undefined}
       />
-    </div>
+    </Box>
   )
 }

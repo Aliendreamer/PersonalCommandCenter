@@ -1,3 +1,4 @@
+import { Anchor, Box, Group, Paper, Stack, Text, Title } from '@mantine/core'
 import type { CalendarEvent } from '@pcc/contracts'
 
 export interface CalendarEventListProps {
@@ -26,6 +27,11 @@ function timeLabel(event: CalendarEvent): string {
   })
 }
 
+const rowBorder = (i: number) =>
+  i > 0
+    ? { borderTop: '1px solid var(--mantine-color-default-border)' }
+    : undefined
+
 /** Lists calendar events grouped by day; degrades on error. */
 export function CalendarEventList({
   events,
@@ -35,14 +41,18 @@ export function CalendarEventList({
 }: CalendarEventListProps) {
   if (error) {
     return (
-      <p role="status" className="text-sm text-warning">
+      <Text role="status" size="sm" c="yellow.7">
         Calendar unavailable
-      </p>
+      </Text>
     )
   }
 
   if (events.length === 0) {
-    return <p className="text-sm text-muted-foreground">No upcoming events</p>
+    return (
+      <Text size="sm" c="dimmed">
+        No upcoming events
+      </Text>
+    )
   }
 
   const byDay = new Map<string, CalendarEvent[]>()
@@ -56,52 +66,58 @@ export function CalendarEventList({
   }
 
   return (
-    <div className="space-y-6">
+    <Stack gap="lg">
       {[...byDay.values()].map((list) => (
         <section
           key={list[0].start}
           data-testid={`day-${new Date(list[0].start).toDateString()}`}
         >
-          <h3 className="mb-2 font-semibold">{dayLabel(list[0].start)}</h3>
-          <ul className="divide-y rounded border">
-            {list.map((event) => (
-              <li
-                key={event.uid}
-                className="flex items-center justify-between gap-3 px-3 py-2 text-sm"
-              >
-                <span className="truncate">
-                  <span className="text-muted-foreground">
-                    {timeLabel(event)}
-                  </span>{' '}
-                  {event.title}
-                </span>
-                {(onEdit || onDelete) && (
-                  <span className="flex shrink-0 gap-2">
-                    {onEdit && (
-                      <button
-                        type="button"
-                        onClick={() => onEdit(event)}
-                        className="underline"
-                      >
-                        Edit
-                      </button>
+          <Title order={5} mb="xs">
+            {dayLabel(list[0].start)}
+          </Title>
+          <Paper withBorder radius="md">
+            <Box component="ul" m={0} p={0} style={{ listStyle: 'none' }}>
+              {list.map((event, i) => (
+                <Box component="li" key={event.uid} style={rowBorder(i)}>
+                  <Group justify="space-between" wrap="nowrap" px="sm" py="xs">
+                    <Text size="sm" truncate>
+                      <Text span c="dimmed">
+                        {timeLabel(event)}
+                      </Text>{' '}
+                      {event.title}
+                    </Text>
+                    {(onEdit || onDelete) && (
+                      <Group gap="sm" wrap="nowrap" style={{ flex: 'none' }}>
+                        {onEdit && (
+                          <Anchor
+                            component="button"
+                            type="button"
+                            size="sm"
+                            onClick={() => onEdit(event)}
+                          >
+                            Edit
+                          </Anchor>
+                        )}
+                        {onDelete && (
+                          <Anchor
+                            component="button"
+                            type="button"
+                            size="sm"
+                            c="red"
+                            onClick={() => onDelete(event)}
+                          >
+                            Delete
+                          </Anchor>
+                        )}
+                      </Group>
                     )}
-                    {onDelete && (
-                      <button
-                        type="button"
-                        onClick={() => onDelete(event)}
-                        className="text-danger underline"
-                      >
-                        Delete
-                      </button>
-                    )}
-                  </span>
-                )}
-              </li>
-            ))}
-          </ul>
+                  </Group>
+                </Box>
+              ))}
+            </Box>
+          </Paper>
         </section>
       ))}
-    </div>
+    </Stack>
   )
 }
