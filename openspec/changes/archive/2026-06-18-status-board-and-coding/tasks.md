@@ -68,7 +68,7 @@
   screenshot confirmed real Wakapi data ("4h 26m this week") + the design (icons, accents, symmetry)
 - [x] 8.2 Run all gates green: `dotnet build` (0 err) · `dotnet format` (0) · `dotnet test` (144);
   `nx` typecheck · lint · test (114) · build · `prettier --check .` — all green, output read
-- [ ] 8.3 Tick the OpenSpec tasks, request review, then archive the change
+- [x] 8.3 Tick the OpenSpec tasks, request review, then archive the change
 
 Note: the core-api **Dockerfile** is a 5th compile-time wiring place (it COPYs each plugin csproj +
 source explicitly) — added the two `coding` COPY lines so the container build includes the plugin.
