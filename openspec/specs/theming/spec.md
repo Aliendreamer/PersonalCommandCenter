@@ -1,68 +1,76 @@
 # theming Specification
 
 ## Purpose
-TBD - created by archiving change ui-theming. Update Purpose after archive.
+Light/dark color-scheme behavior for the web shell: a `pcc_theme` preference (Light/Dark/System,
+default Dark) resolved into Mantine's color scheme, delivered flash-free under SSR, and switchable
+via a header toggle. The component/token layer itself lives in the `ui-kit` capability (Mantine).
 ## Requirements
-### Requirement: Light/dark theme via semantic tokens
-
-The FE SHALL define a semantic design-token layer (background, foreground, card, muted, border, accent,
-and status warning/danger/success) with light values under `:root` and dark values under `.dark`, wired
-to Tailwind so component utilities resolve from the tokens. Toggling the `.dark` class on the document
-element SHALL re-theme the entire UI without per-component changes.
-
-#### Scenario: Dark class re-themes the app
-
-- **WHEN** the document element has the `dark` class
-- **THEN** components rendered with semantic utilities (e.g. `bg-background`, `text-muted-foreground`,
-  `text-warning`) display their dark values; removing the class restores the light values
-
 ### Requirement: Theme preference resolution
 
-The FE SHALL resolve the active theme from a `pcc_theme` preference of `light`, `dark`, or `system`
-(default `system`): `light`/`dark` are used directly, and `system` resolves to dark when the OS prefers
-a dark color scheme, otherwise light.
+The FE SHALL resolve the active color scheme from a `pcc_theme` preference of `light`, `dark`, or
+`system` — **defaulting to `dark`** when no preference is set. `light`/`dark` are used directly; `system`
+resolves to dark when the OS prefers a dark color scheme, otherwise light; and an absent/invalid
+preference resolves to `dark` (not the OS preference).
 
 #### Scenario: Explicit preference wins
 
-- **WHEN** the preference is `dark`
-- **THEN** the resolved theme is dark regardless of the OS preference
+- **WHEN** the preference is `light`
+- **THEN** the resolved color scheme is light regardless of the OS preference
+
+#### Scenario: Default is dark when no preference is set
+
+- **WHEN** there is no `pcc_theme` cookie
+- **THEN** the resolved color scheme is dark, regardless of the OS preference
 
 #### Scenario: System follows the OS
 
-- **WHEN** the preference is `system` (or absent) and the OS prefers dark
-- **THEN** the resolved theme is dark; when the OS prefers light, the resolved theme is light
+- **WHEN** the preference is explicitly `system` and the OS prefers light
+- **THEN** the resolved color scheme is light
 
 ### Requirement: Flash-free SSR theme delivery
 
-The theme SHALL be applied to the document element before first paint. A small blocking inline `<head>`
-script SHALL read the `pcc_theme` cookie (or the OS `prefers-color-scheme` when `system`/absent), resolve
-the theme, and set the `dark` class on the document element before the body renders — covering both the
-SSR initial load and client navigation — so there is no flash of the wrong theme.
+The theme SHALL be applied to the document element before first paint via a blocking inline `<head>`
+script (Mantine's stock `ColorSchemeScript` reads localStorage, not cookies, so PCC keeps a cookie-driven
+script). It SHALL read the resolved color scheme — from the `pcc_theme` cookie, or the OS
+`prefers-color-scheme` when `system`/absent — and set the `data-mantine-color-scheme` attribute on the
+document element before the body renders, covering both the SSR initial load and client navigation, so
+there is no flash of the wrong theme and no hydration mismatch. The Mantine color scheme SHALL be driven
+by a cookie-backed `MantineColorSchemeManager` over the same `pcc_theme` cookie (mapping `system` ↔ Mantine
+`auto`), and the SSR `defaultColorScheme` SHALL be read from the cookie server-side so the server render
+matches the client.
 
 #### Scenario: Explicit dark applied before paint
 
 - **WHEN** a document loads with `pcc_theme=dark`
-- **THEN** the inline head script sets the `dark` class on the document element before the body paints
+- **THEN** the pre-paint script sets `data-mantine-color-scheme="dark"` on the document element before the
+  body paints
 
 #### Scenario: System preference applied before paint
 
-- **WHEN** there is no `pcc_theme` cookie and the OS prefers dark
-- **THEN** the inline head script sets the `dark` class on the document element before the body paints
+- **WHEN** `pcc_theme=system` and the OS prefers dark
+- **THEN** the pre-paint script sets `data-mantine-color-scheme="dark"` on the document element before the
+  body paints
+
+#### Scenario: Dark default applied before paint
+
+- **WHEN** there is no `pcc_theme` cookie
+- **THEN** the pre-paint script sets `data-mantine-color-scheme="dark"` on the document element before the
+  body paints
 
 ### Requirement: Theme toggle, persisted
 
-The FE SHALL provide a theme toggle in the app header offering Light, Dark, and System. Selecting an
-option SHALL persist the choice to the `pcc_theme` cookie and update the active theme immediately
-without a page reload, and the choice SHALL survive reloads.
+The FE SHALL provide a theme toggle in the app header offering Light, Dark, and System, built on Mantine's
+`useMantineColorScheme`. Selecting an option SHALL update Mantine's color scheme immediately without a page
+reload and persist the choice to the `pcc_theme` cookie (via the cookie color-scheme manager), and the
+choice SHALL survive reloads.
 
 #### Scenario: Toggle to dark and persist
 
 - **WHEN** the user selects Dark from the header toggle
-- **THEN** the document element gains the `dark` class immediately and `pcc_theme=dark` is stored; after
-  a reload the app is still dark
+- **THEN** the document's `data-mantine-color-scheme` becomes `dark` immediately and `pcc_theme=dark` is
+  stored; after a reload the app is still dark
 
 #### Scenario: Toggle to system
 
 - **WHEN** the user selects System
-- **THEN** the active theme follows the OS preference and `pcc_theme=system` is stored
-
+- **THEN** the active color scheme follows the OS preference and `pcc_theme=system` is stored
