@@ -154,11 +154,18 @@ pnpm dlx @tanstack/intent@latest load <package>#<skill> # then follow the return
 - **TanStack server routes/functions** need the `server` route-option type augmentation in scope for
   `tsc`; any module importing `@tanstack/react-start` (e.g. `lib/server/api.ts`) activates it. The
   standalone proxy route adds a `import type {} from '@tanstack/react-start'` so it typechecks alone.
-- **IoT needs a Home Assistant token** in `.env` (`HA_TOKEN`, gitignored); without it
-  `/api/iot/entities` returns 502 by design (the dashboard tile degrades, page still renders).
+- **Plugin config is layered, and `docker-compose` carries NONE of it.** Each plugin's `Options` class
+  owns its defaults (container addresses, e.g. `CodingOptions.BaseUrl=http://wakapi:3000`); non-secret
+  config + `Plugins:<Id>:Enabled` live in `appsettings.json` (baked in the image); host-dev `localhost`
+  overrides live in `appsettings.Development.json`; **secrets** live in `.env` (gitignored) in **.NET
+  key form** (`Plugins__Iot__HomeAssistant__Token`, `Plugins__Coding__ApiKey`, `Plugins__Goodreads__UserId`)
+  and reach core-api via compose `env_file: .env`. Adding a plugin's config = a `Plugins:<Id>:Enabled`
+  line in `appsettings.json` (+ one `.env` line if it has a secret). See `openspec/changes/archive/*-plugin-config-consolidation`.
+- **IoT needs a Home Assistant token** in `.env` (`Plugins__Iot__HomeAssistant__Token`, gitignored);
+  without it `/api/iot/entities` returns 502 by design (the dashboard tile degrades, page still renders).
 - **Calendar uses Radicale (CalDAV), internal-only** (`radicale:5232`, no Traefik route). Dev login
-  `pcc/pcc-dev-caldav` is committed in `harness/radicale/users` (like the Keycloak `testuser`);
-  override at core-api with `.env` `CALDAV_USER`/`CALDAV_PASSWORD` (then update `users` to match).
+  `pcc/pcc-dev-caldav` is committed in `harness/radicale/users` + `appsettings.json` (like the Keycloak
+  `testuser`); override at core-api with `.env` `Plugins__Calendar__Password` (then update `users` to match).
   `CalDavClient` `MKCALENDAR`s the collection on demand — Radicale answers **409 Conflict** (not 405)
   when it already exists, so both are treated as "exists". Unconfigured/unreachable → `502` (degrades).
   `tasks` reuses the same Radicale with a **separate `/pcc/tasks/`** collection (VTODO). The dev

@@ -3,8 +3,8 @@ namespace Pcc.Plugins.Tasks;
 /// <summary>Bound from the plugin's config section (<c>Plugins:Tasks</c>).</summary>
 public sealed class TaskOptions
 {
-    /// <summary>CalDAV server base URL (e.g. <c>http://radicale:5232</c>).</summary>
-    public string BaseUrl { get; set; } = "";
+    /// <summary>CalDAV server base URL; defaults to the compose-network Radicale.</summary>
+    public string BaseUrl { get; set; } = "http://radicale:5232";
 
     /// <summary>Collection path on the server (e.g. <c>/pcc/tasks/</c>).</summary>
     public string Collection { get; set; } = "/pcc/tasks/";

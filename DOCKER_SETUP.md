@@ -87,8 +87,9 @@ CPU. Pull a model once: `docker compose exec ollama ollama pull <model>`.
 
 3. Code for a bit; heartbeats appear on the Wakapi dashboard.
 4. For the **Coding plugin** (PCC's `/coding` tile + page), put that same Wakapi API key in your
-   `.env` as `WAKAPI_API_KEY=...`. core-api reads Wakapi server-to-server at `http://wakapi:3000`;
-   without the key the Coding tile degrades (`api/coding → 502`).
+   `.env` as `Plugins__Coding__ApiKey=...` (compose injects `.env` into core-api via `env_file`).
+   core-api reads Wakapi server-to-server at `http://wakapi:3000`; without the key the Coding tile
+   degrades (`api/coding → 502`). Other plugin secrets follow the same .NET-key form — see `.env.example`.
 
 ### Redis / Qdrant from other projects
 

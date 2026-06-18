@@ -7,8 +7,8 @@ namespace CoreApi.Notifications;
 /// <summary>Bound from <c>Notifications:Ntfy</c>.</summary>
 public sealed class NtfyOptions
 {
-    /// <summary>ntfy base URL (e.g. <c>http://ntfy:80</c>). Empty disables delivery.</summary>
-    public string BaseUrl { get; set; } = "";
+    /// <summary>ntfy base URL; defaults to the compose-network instance. Empty disables delivery.</summary>
+    public string BaseUrl { get; set; } = "http://ntfy:80";
 
     public string Topic { get; set; } = "pcc";
 }

@@ -15,6 +15,6 @@ public sealed class OllamaOptions
 
 public sealed class GpuOptions
 {
-    /// <summary>The nvidia exporter's Prometheus endpoint (e.g. <c>http://gpu-exporter:9835/metrics</c>); empty = no GPU panel.</summary>
-    public string ExporterUrl { get; set; } = "";
+    /// <summary>The nvidia exporter's Prometheus endpoint; defaults to the compose-network exporter (empty = no GPU panel).</summary>
+    public string ExporterUrl { get; set; } = "http://gpu-exporter:9835/metrics";
 }

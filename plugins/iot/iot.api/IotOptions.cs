@@ -10,7 +10,8 @@ public sealed class IotOptions
 
 public sealed class HomeAssistantOptions
 {
-    public string BaseUrl { get; set; } = "";
+    /// <summary>Home Assistant base URL; defaults to the compose-network instance.</summary>
+    public string BaseUrl { get; set; } = "http://home-assistant:8123";
 
     public string Token { get; set; } = "";
 }
