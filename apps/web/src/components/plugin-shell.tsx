@@ -1,13 +1,15 @@
 import type { ReactNode } from 'react'
 import {
   Alert,
-  Anchor,
   Box,
+  Divider,
   Group,
+  NavLink,
   Paper,
   SimpleGrid,
   Stack,
   Text,
+  Title,
 } from '@mantine/core'
 import {
   Activity,
@@ -18,6 +20,7 @@ import {
   Cloud,
   Code2,
   Cpu,
+  LayoutDashboard,
   LayoutGrid,
   ListChecks,
   Rss,
@@ -75,27 +78,40 @@ export function PluginShell({
   hero,
 }: PluginShellProps) {
   return (
-    <Group align="stretch" gap={0} wrap="nowrap" mih="100vh">
+    <Group align="stretch" gap={0} wrap="nowrap" flex={1} mih="100%">
       <Box
         component="nav"
         aria-label="Plugins"
-        w={192}
-        p="md"
+        w={232}
+        p="lg"
         style={{
           flex: 'none',
           borderRight: '1px solid var(--mantine-color-default-border)',
+          background: 'var(--mantine-color-default)',
         }}
       >
-        <Stack gap="xs">
+        <Group gap="xs" align="center" mb="xs" px="xs">
+          <LayoutDashboard size={20} aria-hidden />
+          <Title order={2} size="h5" m={0}>
+            Command Center
+          </Title>
+        </Group>
+        <Divider mb="md" />
+        <Stack gap={4}>
           {manifests.map((manifest) => {
             const Icon = iconFor(manifest.id)
             return (
-              <Anchor key={manifest.id} href={manifest.routeBase} size="sm">
-                <Group gap="xs" wrap="nowrap" align="center">
-                  <Icon size={16} aria-hidden />
-                  {manifest.navLabel}
-                </Group>
-              </Anchor>
+              <NavLink
+                key={manifest.id}
+                component="a"
+                href={manifest.routeBase}
+                label={manifest.navLabel}
+                leftSection={<Icon size={18} aria-hidden />}
+                styles={{
+                  root: { borderRadius: 'var(--mantine-radius-md)' },
+                  label: { fontSize: 'var(--mantine-font-size-sm)' },
+                }}
+              />
             )
           })}
         </Stack>
