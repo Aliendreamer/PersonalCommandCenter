@@ -15,18 +15,7 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Pcc.Plugins;
-using Pcc.Plugins.Calendar;
-using Pcc.Plugins.Coding;
-using Pcc.Plugins.Goodreads;
-using Pcc.Plugins.Iot;
-using Pcc.Plugins.Models;
-using Pcc.Plugins.Notifications;
-using Pcc.Plugins.Rss;
-using Pcc.Plugins.Search;
-using Pcc.Plugins.SystemPlugin;
-using Pcc.Plugins.Tasks;
-using Pcc.Plugins.Uptime;
-using Pcc.Plugins.Weather;
+using Pcc.Plugins.Generated;
 using Scalar.AspNetCore;
 using ZiggyCreatures.Caching.Fusion;
 
@@ -90,21 +79,9 @@ builder.Services
 builder.Services.AddAuthorization();
 
 // --- Plugins: discover, activate enabled, expose manifests + FastEndpoints ---
-Assembly[] pluginAssemblies =
-[
-    typeof(SystemStatusPlugin).Assembly,
-    typeof(IotPlugin).Assembly,
-    typeof(CalendarPlugin).Assembly,
-    typeof(TasksPlugin).Assembly,
-    typeof(NotificationsPlugin).Assembly,
-    typeof(SearchPlugin).Assembly,
-    typeof(WeatherPlugin).Assembly,
-    typeof(RssPlugin).Assembly,
-    typeof(GoodreadsPlugin).Assembly,
-    typeof(UptimePlugin).Assembly,
-    typeof(ModelsPlugin).Assembly,
-    typeof(CodingPlugin).Assembly,
-];
+// The plugin-assembly list is generated at build time from the referenced IPlugin implementations
+// (see libs/plugin-generator) — adding a plugin project requires no edit here.
+Assembly[] pluginAssemblies = PccPlugins.Assemblies;
 
 using var bootstrapLoggerFactory = LoggerFactory.Create(logging => logging.AddConsole());
 var bootstrapLogger = bootstrapLoggerFactory.CreateLogger("Plugins");

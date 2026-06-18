@@ -2,18 +2,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\libs\plugin-abstractions\PluginAbstractions.csproj" />
-    <ProjectReference Include="..\..\plugins\system\system.api\SystemPlugin.csproj" />
-    <ProjectReference Include="..\..\plugins\iot\iot.api\IotPlugin.csproj" />
-    <ProjectReference Include="..\..\plugins\calendar\calendar.api\CalendarPlugin.csproj" />
-    <ProjectReference Include="..\..\plugins\tasks\tasks.api\TasksPlugin.csproj" />
-    <ProjectReference Include="..\..\plugins\notifications\notifications.api\NotificationsPlugin.csproj" />
-    <ProjectReference Include="..\..\plugins\search\search.api\SearchPlugin.csproj" />
-    <ProjectReference Include="..\..\plugins\weather\weather.api\WeatherPlugin.csproj" />
-    <ProjectReference Include="..\..\plugins\rss\rss.api\RssPlugin.csproj" />
-    <ProjectReference Include="..\..\plugins\goodreads\goodreads.api\GoodreadsPlugin.csproj" />
-    <ProjectReference Include="..\..\plugins\uptime\uptime.api\UptimePlugin.csproj" />
-    <ProjectReference Include="..\..\plugins\models\models.api\ModelsPlugin.csproj" />
-    <ProjectReference Include="..\..\plugins\coding\coding.api\CodingPlugin.csproj" />
+    <!-- Every plugin is referenced by convention — drop a plugins/<name>/<name>.api/<Name>Plugin.csproj
+         and it is picked up automatically (no edit here). -->
+    <ProjectReference Include="..\..\plugins\*\*.api\*Plugin.csproj" />
+    <!-- Build-time source generator: emits Pcc.Plugins.Generated.PccPlugins.Assemblies from the
+         referenced IPlugin implementations above, so Program.cs needs no hand-maintained array. -->
+    <ProjectReference Include="..\..\libs\plugin-generator\PluginGenerator.csproj"
+                      OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>

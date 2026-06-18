@@ -78,11 +78,13 @@ pnpm release:dry
 
 ## Architecture: the plugin model
 
-The host does **not** dynamically scan assemblies. Plugins are registered at **compile time**
-in `apps/core-api/Program.cs`:
+The host does **not** dynamically scan assemblies at runtime. The plugin-assembly list is **generated
+at build time** by a Roslyn source generator (`libs/plugin-generator`) that finds the concrete
+`IPlugin` implementations in the referenced plugin projects and emits `Pcc.Plugins.Generated.PccPlugins`;
+`apps/core-api/Program.cs` just uses it:
 
 ```csharp
-Assembly[] pluginAssemblies = [typeof(SystemStatusPlugin).Assembly, typeof(IotPlugin).Assembly];
+Assembly[] pluginAssemblies = PccPlugins.Assemblies; // generated from referenced IPlugin types
 ```
 
 A `PluginRegistry` activates only plugins whose `Plugins:{Id}:Enabled` config is `true` and exposes
@@ -109,13 +111,19 @@ core-api's auth code (`apps/core-api/Auth/`) is unchanged by the SSR-BFF cutover
 `redirectUri` + `CallbackUri` config moved to `app.pcc.localhost/api/auth/callback`. See
 `openspec/changes/archive/2026-06-14-ssr-bff-auth-v2/`.
 
-### Adding a plugin (the non-obvious part)
+### Adding a plugin (now low-friction)
 
-Because wiring is compile-time, a new plugin must be added in **three** places, or it won't load:
+The backend wiring is **automatic** — create the project and it's referenced (csproj glob
+`plugins/*/*.api/*Plugin.csproj`), copied (Dockerfile `COPY plugins/ plugins/`), and registered (the
+source generator picks up its `IPlugin`). So a new backend plugin needs only:
 1. `plugins/<name>/<name>.api/` — classlib implementing `IPlugin` + FastEndpoints endpoint classes
-2. `apps/core-api/CoreApi.csproj` — a `<ProjectReference>` to it
-3. `apps/core-api/Program.cs` — its assembly in the `pluginAssemblies` array
-4. `PersonalCommandCenter.slnx` — register the project in the solution
+2. `appsettings.json` — a `Plugins:<Id>:Enabled` line (+ one `.env` line if it has a secret; config
+   defaults live in the plugin's `Options` class — see the config-layering note in Gotchas)
+
+`PersonalCommandCenter.slnx` is **optional** (IDE/solution only; the build resolves plugins via the
+glob). A guard test (`PluginRegistrationCoverageTests`) fails if the generated array ever misses a
+plugin project. Frontend still needs its own wiring (contracts type, server fn, tile, page,
+`index.tsx` branch) — that reduction is a separate effort.
 
 Plugin endpoints require auth by default; use lazy `Resolve<T>()` (not constructor injection) for
 plugin services so the host can instantiate the endpoint at startup even when the plugin is disabled.
@@ -143,7 +151,8 @@ pnpm dlx @tanstack/intent@latest load <package>#<skill> # then follow the return
 - **Warnings are errors** (`Directory.Build.props`: `TreatWarningsAsErrors=true`). Compiler +
   analyzer (CAxxxx) warnings fail `dotnet build`; code STYLE (IDExxxx) is a separate gate via
   `dotnet format`. `Nullable` + `ImplicitUsings` are on.
-- **Plugins are compile-time**, not auto-discovered — see "Adding a plugin" above.
+- **Plugins are compile-time registered via a build-time source generator** (`libs/plugin-generator`),
+  not runtime-scanned and not hand-listed — see "Adding a plugin" above.
 - **srvx `--static` is resolved relative to the server-entry directory**, not the cwd. The web
   prod command uses `-s ../client` (sibling of `dist/server`); `-s dist/client` silently
   disables static serving and every `/assets/*` 404s. (See `apps/web/Dockerfile`.)

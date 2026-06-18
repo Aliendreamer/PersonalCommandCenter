@@ -7,6 +7,9 @@
   <Folder Name="/libs/plugin-abstractions/">
     <Project Path="libs/plugin-abstractions/PluginAbstractions.csproj" />
   </Folder>
+  <Folder Name="/libs/plugin-generator/">
+    <Project Path="libs/plugin-generator/PluginGenerator.csproj" />
+  </Folder>
   <Folder Name="/plugins/" />
   <Folder Name="/plugins/calendar/" />
   <Folder Name="/plugins/calendar/calendar.api/">

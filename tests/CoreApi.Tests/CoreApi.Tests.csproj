@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.9" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
@@ -28,6 +29,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\apps\core-api\CoreApi.csproj" />
+    <!-- Normal reference (not Analyzer) so tests can drive the generator without it running here. -->
+    <ProjectReference Include="..\..\libs\plugin-generator\PluginGenerator.csproj" />
   </ItemGroup>
 
 </Project>
