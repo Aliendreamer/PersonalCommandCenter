@@ -86,6 +86,9 @@ CPU. Pull a model once: `docker compose exec ollama ollama pull <model>`.
    UI still works at `wakapi.pcc.localhost`.
 
 3. Code for a bit; heartbeats appear on the Wakapi dashboard.
+4. For the **Coding plugin** (PCC's `/coding` tile + page), put that same Wakapi API key in your
+   `.env` as `WAKAPI_API_KEY=...`. core-api reads Wakapi server-to-server at `http://wakapi:3000`;
+   without the key the Coding tile degrades (`api/coding → 502`).
 
 ### Redis / Qdrant from other projects
 

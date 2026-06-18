@@ -1,23 +1,27 @@
 ## 1. Confirm the Wakapi data contract
 
-- [ ] 1.1 Against the live internal Wakapi, confirm the endpoint(s) for this-week totals + project/
+- [x] 1.1 Against the live internal Wakapi, confirm the endpoint(s) for this-week totals + project/
   language breakdown and the per-day array; record the exact paths, auth header, and JSON shape
-- [ ] 1.2 Finalize the `CodingStatus` field list (week/today seconds, days[], projects[], languages[])
+  → `GET /api/compat/wakatime/v1/users/current/summaries?range=week`, Basic `base64(apiKey)`;
+  `cumulative_total.seconds` = week, `data[].grand_total.total_seconds` + `range.start` = per-day
+  (last = today), `data[].projects[]`/`languages[]` (`name`,`total_seconds`) summed by name = breakdown
+- [x] 1.2 Finalize the `CodingStatus` field list: `WeekSeconds`, `TodaySeconds`, `Days[{Date,Seconds}]`,
+  `Projects[{Name,Seconds}]`, `Languages[{Name,Seconds}]` (raw seconds; web formats to `18h 04m`)
 
 ## 2. Coding plugin backend (TDD)
 
-- [ ] 2.1 Scaffold `plugins/coding/coding.api/` classlib (`Pcc.Plugins.Coding`); add to `.slnx`
-- [ ] 2.2 Write `CodingClientTests` (mocked `HttpMessageHandler`): parses week/today/days/projects/
+- [x] 2.1 Scaffold `plugins/coding/coding.api/` classlib (`Pcc.Plugins.Coding`); add to `.slnx`
+- [x] 2.2 Write `CodingClientTests` (mocked `HttpMessageHandler`): parses week/today/days/projects/
   languages; Basic auth header is `base64(apiKey)`; empty key and non-2xx → throw — watch them fail
-- [ ] 2.3 Implement `CodingOptions`, `CodingStatus`, `ICodingClient`/`CodingClient` until green
-- [ ] 2.4 Write `CodingEndpointTests` (Mvc.Testing): authed `GET /api/coding` → 200 with shape; client
+- [x] 2.3 Implement `CodingOptions`, `CodingStatus`, `ICodingClient`/`CodingClient` until green
+- [x] 2.4 Write `CodingEndpointTests` (Mvc.Testing): authed `GET /api/coding` → 200 with shape; client
   failure → 502; disabled plugin → not served / absent from `/api/plugins` — watch them fail
-- [ ] 2.5 Implement `CodingPlugin` (manifest `("coding","Coding","/coding",["coding-status"])`) +
+- [x] 2.5 Implement `CodingPlugin` (manifest `("coding","Coding","/coding",["coding-status"])`) +
   `GetCodingEndpoint` (Resolve, try→Ok, catch→502) until green
-- [ ] 2.6 Wire compile-time: `CoreApi.csproj` ProjectReference, `Program.cs` `pluginAssemblies`,
-  `appsettings` `Plugins:Coding:{Enabled,BaseUrl,ApiKey}` (BaseUrl `http://wakapi:3000`)
-- [ ] 2.7 Add `Plugins__Coding__ApiKey` to `.env.example`; document in `DOCKER_SETUP.md`; confirm key
-  stays gitignored
+- [x] 2.6 Wire compile-time: `CoreApi.csproj` ProjectReference, `Program.cs` `pluginAssemblies`,
+  `appsettings` `Plugins:Coding:{Enabled,BaseUrl,ApiKey}` (BaseUrl `http://wakapi:3000`); compose env
+- [x] 2.7 Add `WAKAPI_API_KEY` to `.env.example`; document in `DOCKER_SETUP.md`; confirm key
+  stays gitignored (`.env` is gitignored)
 
 ## 3. Contracts + server function
 

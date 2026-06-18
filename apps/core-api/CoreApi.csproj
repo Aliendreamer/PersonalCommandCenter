@@ -13,6 +13,7 @@
     <ProjectReference Include="..\..\plugins\goodreads\goodreads.api\GoodreadsPlugin.csproj" />
     <ProjectReference Include="..\..\plugins\uptime\uptime.api\UptimePlugin.csproj" />
     <ProjectReference Include="..\..\plugins\models\models.api\ModelsPlugin.csproj" />
+    <ProjectReference Include="..\..\plugins\coding\coding.api\CodingPlugin.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -52,6 +52,10 @@
   <Folder Name="/plugins/models/models.api/">
     <Project Path="plugins/models/models.api/ModelsPlugin.csproj" />
   </Folder>
+  <Folder Name="/plugins/coding/" />
+  <Folder Name="/plugins/coding/coding.api/">
+    <Project Path="plugins/coding/coding.api/CodingPlugin.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/CoreApi.Tests/CoreApi.Tests.csproj" />
   </Folder>

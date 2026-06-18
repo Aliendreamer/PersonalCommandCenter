@@ -16,6 +16,7 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Pcc.Plugins;
 using Pcc.Plugins.Calendar;
+using Pcc.Plugins.Coding;
 using Pcc.Plugins.Goodreads;
 using Pcc.Plugins.Iot;
 using Pcc.Plugins.Models;
@@ -102,6 +103,7 @@ Assembly[] pluginAssemblies =
     typeof(GoodreadsPlugin).Assembly,
     typeof(UptimePlugin).Assembly,
     typeof(ModelsPlugin).Assembly,
+    typeof(CodingPlugin).Assembly,
 ];
 
 using var bootstrapLoggerFactory = LoggerFactory.Create(logging => logging.AddConsole());

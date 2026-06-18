@@ -82,6 +82,9 @@ the plugin and revert the shell restyle; no persisted state is introduced.
 
 ## Open Questions
 
-- Exact Wakapi endpoint(s) for this-week-with-per-day (native `/api/summary?interval=week` gives
-  totals + breakdown but not per-day; the compat `summaries?range=week` gives the per-day array) —
-  resolve against the live instance in task 1.
+- ~~Exact Wakapi endpoint(s) for this-week-with-per-day~~ **Resolved (task 1):** a single call to
+  `GET {BaseUrl}/api/compat/wakatime/v1/users/current/summaries?range=week` (Basic
+  `base64(apiKey)`) returns everything — `cumulative_total.seconds` (week total), a `data[]` per-day
+  array (each `grand_total.total_seconds` + `range.start` date; last element = today), and per-day
+  `projects[]`/`languages[]` (`name` + `total_seconds`) which `CodingClient` sums by name across the
+  week for the breakdown. No second call needed.
