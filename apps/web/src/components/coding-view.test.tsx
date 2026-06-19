@@ -17,14 +17,19 @@ const status: CodingStatus = {
 afterEach(cleanup)
 
 describe('CodingView', () => {
-  it('shows the week total, per-day strip, and breakdowns', () => {
+  it('shows the week total, per-day strip, project tiles, and a languages table', () => {
     render(<CodingView status={status} />)
     expect(screen.getByText('This week')).toBeDefined()
     // 18h 04m renders for the week total and the (equal) top project/language.
     expect(screen.getAllByText('18h 04m').length).toBeGreaterThanOrEqual(1)
     expect(screen.getByText('Projects')).toBeDefined()
     expect(screen.getByText('Languages')).toBeDefined()
+    // Projects render as tiles (the project name appears).
     expect(screen.getByText('PersonalCommandCenter')).toBeDefined()
+    // Languages render in a table.
+    expect(screen.getByRole('table')).toBeDefined()
+    expect(screen.getByRole('columnheader', { name: 'Language' })).toBeDefined()
+    expect(screen.getByRole('cell', { name: 'C#' })).toBeDefined()
     // Per-day strip renders a weekday label.
     expect(screen.getByText('Mon')).toBeDefined()
   })
