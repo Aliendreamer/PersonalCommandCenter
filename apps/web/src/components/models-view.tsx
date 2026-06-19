@@ -1,4 +1,4 @@
-import { Box, Group, Paper, Stack, Text, Title } from '@mantine/core'
+import { Group, Paper, Stack, Text, Title } from '@mantine/core'
 import type { ModelsStatus } from '@pcc/contracts'
 
 export interface ModelsViewProps {
@@ -10,12 +10,7 @@ function gb(bytes: number): string {
   return `${(bytes / 1024 / 1024 / 1024).toFixed(1)} GB`
 }
 
-const rowBorder = (i: number) =>
-  i > 0
-    ? { borderTop: '1px solid var(--mantine-color-default-border)' }
-    : undefined
-
-/** The /models page body: GPU panel + loaded + installed models. Degrades on error. */
+/** The /models page body: GPU panel + loaded + installed models, as cards. Degrades on error. */
 export function ModelsView({ status, error }: ModelsViewProps) {
   if (error || !status) {
     return (
@@ -26,9 +21,9 @@ export function ModelsView({ status, error }: ModelsViewProps) {
   }
 
   return (
-    <Stack gap="lg">
-      <section>
-        <Title order={3} mb="xs">
+    <Stack gap="md">
+      <Paper component="section" withBorder radius="md" p="md">
+        <Title order={3} size="h5" mb="sm">
           GPU
         </Title>
         {status.gpus.length === 0 ? (
@@ -36,23 +31,30 @@ export function ModelsView({ status, error }: ModelsViewProps) {
             No GPU telemetry
           </Text>
         ) : (
-          <Box component="ul" m={0} p={0} style={{ listStyle: 'none' }}>
+          <Stack gap="xs">
             {status.gpus.map((g) => (
-              <Text component="li" key={g.name} size="sm">
-                <Text span fw={500}>
+              <Group
+                key={g.name}
+                justify="space-between"
+                gap="md"
+                wrap="nowrap"
+              >
+                <Text size="sm" fw={500}>
                   {g.name}
-                </Text>{' '}
-                — {Math.round(g.utilizationPct)}% util ·{' '}
-                {Math.round(g.temperatureC)}°C · {Math.round(g.memoryUsedMb)}/
-                {Math.round(g.memoryTotalMb)} MB
-              </Text>
+                </Text>
+                <Text size="sm" c="dimmed">
+                  {Math.round(g.utilizationPct)}% · {Math.round(g.temperatureC)}
+                  °C · {Math.round(g.memoryUsedMb)}/
+                  {Math.round(g.memoryTotalMb)} MB
+                </Text>
+              </Group>
             ))}
-          </Box>
+          </Stack>
         )}
-      </section>
+      </Paper>
 
-      <section>
-        <Title order={3} mb="xs">
+      <Paper component="section" withBorder radius="md" p="md">
+        <Title order={3} size="h5" mb="sm">
           Loaded ({status.running.length})
         </Title>
         {status.running.length === 0 ? (
@@ -60,25 +62,26 @@ export function ModelsView({ status, error }: ModelsViewProps) {
             Nothing loaded
           </Text>
         ) : (
-          <Paper withBorder radius="md">
-            <Box component="ul" m={0} p={0} style={{ listStyle: 'none' }}>
-              {status.running.map((m, i) => (
-                <Box component="li" key={m.name} style={rowBorder(i)}>
-                  <Group justify="space-between" px="sm" py="xs">
-                    <Text size="sm">{m.name}</Text>
-                    <Text size="sm" c="dimmed">
-                      {gb(m.sizeVramBytes)} VRAM
-                    </Text>
-                  </Group>
-                </Box>
-              ))}
-            </Box>
-          </Paper>
+          <Stack gap="xs">
+            {status.running.map((m) => (
+              <Group
+                key={m.name}
+                justify="space-between"
+                gap="md"
+                wrap="nowrap"
+              >
+                <Text size="sm">{m.name}</Text>
+                <Text size="sm" c="dimmed">
+                  {gb(m.sizeVramBytes)} VRAM
+                </Text>
+              </Group>
+            ))}
+          </Stack>
         )}
-      </section>
+      </Paper>
 
-      <section>
-        <Title order={3} mb="xs">
+      <Paper component="section" withBorder radius="md" p="md">
+        <Title order={3} size="h5" mb="sm">
           Installed ({status.installed.length})
         </Title>
         {status.installed.length === 0 ? (
@@ -86,36 +89,37 @@ export function ModelsView({ status, error }: ModelsViewProps) {
             No models pulled
           </Text>
         ) : (
-          <Paper withBorder radius="md">
-            <Box component="ul" m={0} p={0} style={{ listStyle: 'none' }}>
-              {status.installed.map((m, i) => (
-                <Box component="li" key={m.name} style={rowBorder(i)}>
-                  <Group justify="space-between" px="sm" py="xs">
-                    <Text size="sm">
-                      {m.name}
-                      {m.parameterSize ? (
-                        <Text span c="dimmed">
-                          {' '}
-                          · {m.parameterSize}
-                        </Text>
-                      ) : null}
-                      {m.quantization ? (
-                        <Text span c="dimmed">
-                          {' '}
-                          · {m.quantization}
-                        </Text>
-                      ) : null}
+          <Stack gap="xs">
+            {status.installed.map((m) => (
+              <Group
+                key={m.name}
+                justify="space-between"
+                gap="md"
+                wrap="nowrap"
+              >
+                <Text size="sm">
+                  {m.name}
+                  {m.parameterSize ? (
+                    <Text span c="dimmed">
+                      {' '}
+                      · {m.parameterSize}
                     </Text>
-                    <Text size="sm" c="dimmed">
-                      {gb(m.sizeBytes)}
+                  ) : null}
+                  {m.quantization ? (
+                    <Text span c="dimmed">
+                      {' '}
+                      · {m.quantization}
                     </Text>
-                  </Group>
-                </Box>
-              ))}
-            </Box>
-          </Paper>
+                  ) : null}
+                </Text>
+                <Text size="sm" c="dimmed">
+                  {gb(m.sizeBytes)}
+                </Text>
+              </Group>
+            ))}
+          </Stack>
         )}
-      </section>
+      </Paper>
     </Stack>
   )
 }

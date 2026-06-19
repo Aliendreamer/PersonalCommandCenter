@@ -1,9 +1,10 @@
 import { Fragment } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { Box, Divider, Group, Paper, Stack, Text, Title } from '@mantine/core'
+import { Divider, Group, Paper, Stack, Text } from '@mantine/core'
 
 import { getWeather } from '../../lib/server/api'
 import { settle } from '../../lib/server/api-loaders'
+import { PluginPage } from '../../components/plugin-page'
 
 export const Route = createFileRoute('/_authenticated/weather')({
   loader: async () => settle(getWeather()),
@@ -15,10 +16,7 @@ function WeatherPage() {
   const weather = result.data
 
   return (
-    <Box p="lg">
-      <Title order={1} mb="md">
-        Weather
-      </Title>
+    <PluginPage title="Weather">
       {result.error || !weather ? (
         <Text role="status" size="sm" c="yellow.7">
           Weather unavailable
@@ -55,6 +53,6 @@ function WeatherPage() {
           </Paper>
         </>
       )}
-    </Box>
+    </PluginPage>
   )
 }

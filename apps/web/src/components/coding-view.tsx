@@ -1,4 +1,4 @@
-import { Box, Group, Stack, Text, Title } from '@mantine/core'
+import { Group, Paper, Stack, Text, Title } from '@mantine/core'
 import type { CodingBucket, CodingStatus } from '@pcc/contracts'
 
 import { formatDuration } from '../lib/duration'
@@ -16,10 +16,11 @@ function weekday(date: string): string {
     : parsed.toLocaleDateString(undefined, { weekday: 'short' })
 }
 
+/** A card of name·duration rows (projects or languages). */
 function Breakdown({ title, items }: { title: string; items: CodingBucket[] }) {
   return (
-    <section>
-      <Title order={3} mb="xs">
+    <Paper component="section" withBorder radius="md" p="md">
+      <Title order={3} size="h5" mb="sm">
         {title}
       </Title>
       {items.length === 0 ? (
@@ -27,20 +28,23 @@ function Breakdown({ title, items }: { title: string; items: CodingBucket[] }) {
           No data
         </Text>
       ) : (
-        <Box component="ul" m={0} p={0} style={{ listStyle: 'none' }}>
+        <Stack gap="xs">
           {items.map((item) => (
-            <Group key={item.name} justify="space-between" gap="md">
-              <Text component="li" size="sm">
-                {item.name}
-              </Text>
+            <Group
+              key={item.name}
+              justify="space-between"
+              gap="md"
+              wrap="nowrap"
+            >
+              <Text size="sm">{item.name}</Text>
               <Text size="sm" c="dimmed">
                 {formatDuration(item.seconds)}
               </Text>
             </Group>
           ))}
-        </Box>
+        </Stack>
       )}
-    </section>
+    </Paper>
   )
 }
 
@@ -55,33 +59,40 @@ export function CodingView({ status, error }: CodingViewProps) {
   }
 
   return (
-    <Stack gap="lg">
-      <section>
-        <Title order={3} mb="xs">
+    <Stack gap="md">
+      <Paper component="section" withBorder radius="md" p="md">
+        <Title order={3} size="h5" mb="xs">
           This week
         </Title>
-        <Text size="xl" fw={600}>
+        <Text fz={32} fw={700} lh={1}>
           {formatDuration(status.weekSeconds)}
         </Text>
-        <Group gap="md" mt="xs" wrap="wrap">
+        <Group gap="sm" mt="md" wrap="wrap">
           {status.days.length === 0 ? (
             <Text size="sm" c="dimmed">
               No activity this week
             </Text>
           ) : (
             status.days.map((day) => (
-              <Text key={day.date} size="sm">
-                <Text span fw={500}>
+              <Paper
+                key={day.date}
+                withBorder
+                radius="sm"
+                px="sm"
+                py={4}
+                bg="var(--mantine-color-default)"
+              >
+                <Text span size="xs" fw={600}>
                   {weekday(day.date)}
                 </Text>{' '}
-                <Text span c="dimmed">
+                <Text span size="xs" c="dimmed">
                   {formatDuration(day.seconds)}
                 </Text>
-              </Text>
+              </Paper>
             ))
           )}
         </Group>
-      </section>
+      </Paper>
 
       <Breakdown title="Projects" items={status.projects} />
       <Breakdown title="Languages" items={status.languages} />

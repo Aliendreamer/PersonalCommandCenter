@@ -1,9 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { Box, Title } from '@mantine/core'
 
 import { getRss } from '../../lib/server/api'
 import { settle } from '../../lib/server/api-loaders'
 import { RssItemList } from '../../components/rss-item-list'
+import { PluginPage } from '../../components/plugin-page'
 
 export const Route = createFileRoute('/_authenticated/rss')({
   loader: async () => settle(getRss()),
@@ -13,14 +13,11 @@ export const Route = createFileRoute('/_authenticated/rss')({
 function RssPage() {
   const result = Route.useLoaderData()
   return (
-    <Box p="lg">
-      <Title order={1} mb="md">
-        Feeds
-      </Title>
+    <PluginPage title="Feeds">
       <RssItemList
         items={result.data ?? []}
         error={result.error ? 'unreachable' : undefined}
       />
-    </Box>
+    </PluginPage>
   )
 }

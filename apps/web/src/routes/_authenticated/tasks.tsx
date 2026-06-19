@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { Box, Button, Group, Title } from '@mantine/core'
+import { Button } from '@mantine/core'
 import type { TodoInput, TodoItem } from '@pcc/contracts'
 
 import {
@@ -12,6 +12,7 @@ import {
 import { settle } from '../../lib/server/api-loaders'
 import { TaskList } from '../../components/task-list'
 import { TaskForm } from '../../components/task-form'
+import { PluginPage } from '../../components/plugin-page'
 
 export const Route = createFileRoute('/_authenticated/tasks')({
   loader: async () => settle(getTasks()),
@@ -54,16 +55,16 @@ function TasksPage() {
   }
 
   return (
-    <Box p="lg">
-      <Group justify="space-between" mb="md">
-        <Title order={1}>Tasks</Title>
-        {!creating && (
+    <PluginPage
+      title="Tasks"
+      actions={
+        !creating && (
           <Button size="sm" onClick={() => setCreating(true)}>
             Add task
           </Button>
-        )}
-      </Group>
-
+        )
+      }
+    >
       {creating && (
         <TaskForm onSubmit={onCreate} onCancel={() => setCreating(false)} />
       )}
@@ -74,6 +75,6 @@ function TasksPage() {
         onToggle={onToggle}
         onDelete={onDelete}
       />
-    </Box>
+    </PluginPage>
   )
 }

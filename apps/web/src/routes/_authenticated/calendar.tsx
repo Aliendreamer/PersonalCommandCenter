@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { Box, Button, Group, Title } from '@mantine/core'
+import { Button } from '@mantine/core'
 import type { CalendarEvent, CalendarEventInput } from '@pcc/contracts'
 
 import {
@@ -12,6 +12,7 @@ import {
 import { settle } from '../../lib/server/api-loaders'
 import { CalendarEventList } from '../../components/calendar-event-list'
 import { CalendarEventForm } from '../../components/calendar-event-form'
+import { PluginPage } from '../../components/plugin-page'
 
 export const Route = createFileRoute('/_authenticated/calendar')({
   loader: async () => settle(getCalendarEvents()),
@@ -49,16 +50,16 @@ function CalendarPage() {
   }
 
   return (
-    <Box p="lg">
-      <Group justify="space-between" mb="md">
-        <Title order={1}>Calendar</Title>
-        {editor.mode === 'closed' && (
+    <PluginPage
+      title="Calendar"
+      actions={
+        editor.mode === 'closed' && (
           <Button size="sm" onClick={() => setEditor({ mode: 'create' })}>
             New event
           </Button>
-        )}
-      </Group>
-
+        )
+      }
+    >
       {editor.mode === 'create' && (
         <CalendarEventForm
           submitLabel="Create"
@@ -81,6 +82,6 @@ function CalendarPage() {
         onEdit={(event) => setEditor({ mode: 'edit', event })}
         onDelete={onDelete}
       />
-    </Box>
+    </PluginPage>
   )
 }

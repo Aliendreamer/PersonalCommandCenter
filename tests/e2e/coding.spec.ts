@@ -42,5 +42,11 @@ test('coding: status board renders the hero + coding tile, and the /coding page,
     page.getByText(/This week/).or(page.getByText(/unavailable/i)),
   ).toBeVisible({ timeout: 20_000 })
 
+  // The persistent sidebar nav is present on the plugin page (not only the dashboard).
+  await expect(page.getByRole('navigation', { name: 'Plugins' })).toBeVisible()
+  await expect(
+    page.getByRole('navigation', { name: 'Plugins' }).getByRole('link', { name: 'Coding' }),
+  ).toBeVisible()
+
   expect(foreign, `browser hit non-app hosts: ${foreign.join(', ')}`).toEqual([])
 })

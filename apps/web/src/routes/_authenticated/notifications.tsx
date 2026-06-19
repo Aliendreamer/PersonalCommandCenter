@@ -1,5 +1,5 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { Box, Button, Group, Title } from '@mantine/core'
+import { Button } from '@mantine/core'
 import type { Notification } from '@pcc/contracts'
 
 import {
@@ -9,6 +9,7 @@ import {
 } from '../../lib/server/api'
 import { settle } from '../../lib/server/api-loaders'
 import { NotificationList } from '../../components/notification-list'
+import { PluginPage } from '../../components/plugin-page'
 
 export const Route = createFileRoute('/_authenticated/notifications')({
   loader: async () => settle(getNotifications()),
@@ -31,21 +32,22 @@ function NotificationsPage() {
   }
 
   return (
-    <Box p="lg">
-      <Group justify="space-between" mb="md">
-        <Title order={1}>Notifications</Title>
-        {data && data.unread > 0 && (
+    <PluginPage
+      title="Notifications"
+      actions={
+        data &&
+        data.unread > 0 && (
           <Button size="sm" onClick={onMarkAll}>
             Mark all read
           </Button>
-        )}
-      </Group>
-
+        )
+      }
+    >
       <NotificationList
         notifications={data?.notifications ?? []}
         error={result.error ? 'unreachable' : undefined}
         onMarkRead={onMarkRead}
       />
-    </Box>
+    </PluginPage>
   )
 }

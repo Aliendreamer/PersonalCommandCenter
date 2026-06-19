@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { Box, Button, Group, TextInput, Title } from '@mantine/core'
+import { Button, Group, TextInput } from '@mantine/core'
 
 import { getSearch } from '../../lib/server/api'
 import { settle } from '../../lib/server/api-loaders'
 import { SearchResultList } from '../../components/search-result-list'
+import { PluginPage } from '../../components/plugin-page'
 
 export const Route = createFileRoute('/_authenticated/search')({
   // `q` is JSON-validated search-param state; a blank query is normalized away.
@@ -26,10 +27,7 @@ function SearchPage() {
   const [input, setInput] = useState(q ?? '')
 
   return (
-    <Box p="lg">
-      <Title order={1} mb="md">
-        Search
-      </Title>
+    <PluginPage title="Search">
       <form
         onSubmit={(e) => {
           e.preventDefault()
@@ -54,6 +52,6 @@ function SearchPage() {
         error={result?.error ? 'unreachable' : undefined}
         idle={!q}
       />
-    </Box>
+    </PluginPage>
   )
 }

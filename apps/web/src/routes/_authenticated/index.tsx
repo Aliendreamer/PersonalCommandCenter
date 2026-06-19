@@ -18,7 +18,7 @@ import {
 import { settle } from '../../lib/server/api-loaders'
 import type { Settled } from '../../lib/server/api-loaders'
 import { deriveHealth } from '../../lib/health'
-import { PluginShell } from '../../components/plugin-shell'
+import { DashboardGrid } from '../../components/dashboard-grid'
 import { DashboardHero } from '../../components/dashboard-hero'
 import { SystemTile } from '../../components/system-tile'
 import { IotSummaryTile } from '../../components/iot-summary-tile'
@@ -123,7 +123,7 @@ function Home() {
   const healths = manifests.map(tileHealth)
 
   return (
-    <PluginShell
+    <DashboardGrid
       manifests={manifests}
       error={plugins.error ? 'plugins unavailable' : undefined}
       hero={<DashboardHero healths={healths} />}
