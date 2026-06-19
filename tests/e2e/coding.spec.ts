@@ -48,5 +48,12 @@ test('coding: status board renders the hero + coding tile, and the /coding page,
     page.getByRole('navigation', { name: 'Plugins' }).getByRole('link', { name: 'Coding' }),
   ).toBeVisible()
 
+  // Switching the range reloads the page for that range (heading + URL follow).
+  // Wait for client hydration so the SegmentedControl's onChange fires.
+  await page.waitForLoadState('networkidle')
+  await page.getByText('Month', { exact: true }).click()
+  await expect(page).toHaveURL(/range=month/, { timeout: 20_000 })
+  await expect(page.getByText(/This month/i)).toBeVisible({ timeout: 20_000 })
+
   expect(foreign, `browser hit non-app hosts: ${foreign.join(', ')}`).toEqual([])
 })

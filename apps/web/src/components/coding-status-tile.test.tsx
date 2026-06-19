@@ -4,9 +4,10 @@ import type { CodingStatus } from '@pcc/contracts'
 import { CodingStatusTile } from './coding-status-tile'
 
 const status: CodingStatus = {
-  weekSeconds: 65040, // 18h 04m
+  range: 'week',
+  totalSeconds: 65040, // 18h 04m
   todaySeconds: 11520, // 3h 12m
-  days: [{ date: '2026-06-18', seconds: 11520 }],
+  days: [{ date: '2026-06-18', seconds: 11520, projects: [], languages: [] }],
   projects: [{ name: 'PersonalCommandCenter', seconds: 65040 }],
   languages: [{ name: 'C#', seconds: 65040 }],
 }

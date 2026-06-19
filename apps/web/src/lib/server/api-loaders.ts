@@ -10,6 +10,7 @@ import type {
   SearchResult,
   ModelsStatus,
   CodingStatus,
+  CodingRange,
   SystemStatus,
   UptimeCheck,
   Weather,
@@ -127,8 +128,11 @@ export const loadUptime = (fetchImpl: FetchLike): Promise<UptimeCheck[]> =>
 export const loadModels = (fetchImpl: FetchLike): Promise<ModelsStatus> =>
   loadProtected<ModelsStatus>(fetchImpl, '/api/models')
 
-export const loadCoding = (fetchImpl: FetchLike): Promise<CodingStatus> =>
-  loadProtected<CodingStatus>(fetchImpl, '/api/coding')
+export const loadCoding = (
+  fetchImpl: FetchLike,
+  range: CodingRange,
+): Promise<CodingStatus> =>
+  loadProtected<CodingStatus>(fetchImpl, `/api/coding?range=${range}`)
 
 /**
  * Sends a protected mutation server-to-server. 401 → login redirect (revoked session); 404 → null

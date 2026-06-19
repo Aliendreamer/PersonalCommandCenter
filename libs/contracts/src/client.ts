@@ -10,6 +10,7 @@ import type {
   Weather,
   ModelsStatus,
   CodingStatus,
+  CodingRange,
   SystemStatus,
   UptimeCheck,
   TodoInput,
@@ -39,7 +40,7 @@ export interface ApiClient {
   getGoodreads(): Promise<Book[]>;
   getUptime(): Promise<UptimeCheck[]>;
   getModels(): Promise<ModelsStatus>;
-  getCoding(): Promise<CodingStatus>;
+  getCoding(range?: CodingRange): Promise<CodingStatus>;
 }
 
 /**
@@ -99,6 +100,6 @@ export function createApiClient(baseUrl: string, fetchImpl: FetchLike = fetch): 
     getGoodreads: () => getJson<Book[]>('/api/goodreads'),
     getUptime: () => getJson<UptimeCheck[]>('/api/uptime'),
     getModels: () => getJson<ModelsStatus>('/api/models'),
-    getCoding: () => getJson<CodingStatus>('/api/coding'),
+    getCoding: (range = 'week') => getJson<CodingStatus>(`/api/coding?range=${range}`),
   };
 }

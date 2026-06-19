@@ -32,18 +32,24 @@ public class CodingClientTests
         """;
 
     [Fact]
-    public async Task Maps_week_today_days_and_aggregated_breakdowns()
+    public async Task Maps_total_today_days_per_day_and_aggregated_breakdowns()
     {
         var client = Create(out _, Week);
 
-        var status = await client.GetStatusAsync();
+        var status = await client.GetStatusAsync("week");
 
-        Assert.Equal(1612, status.WeekSeconds);
+        Assert.Equal("week", status.Range);
+        Assert.Equal(1612, status.TotalSeconds);
         Assert.Equal(200, status.TodaySeconds); // last day element
         Assert.Equal(["2026-06-15", "2026-06-18"], status.Days.Select(d => d.Date));
         Assert.Equal([1412, 200], status.Days.Select(d => d.Seconds));
 
-        // Projects summed by name across the week, descending.
+        // Each day carries its own breakdown.
+        Assert.Equal("PersonalCommandCenter", status.Days[1].Projects[0].Name);
+        Assert.Equal(120, status.Days[1].Projects[0].Seconds);
+        Assert.Equal("C#", status.Days[1].Languages[0].Name);
+
+        // Projects summed by name across the range, descending.
         Assert.Equal("PersonalCommandCenter", status.Projects[0].Name);
         Assert.Equal(1532, status.Projects[0].Seconds);
         Assert.Equal("aidoctor", status.Projects[1].Name);
@@ -54,11 +60,21 @@ public class CodingClientTests
     }
 
     [Fact]
+    public async Task Requests_the_given_range()
+    {
+        var client = Create(out var handler, Week);
+
+        await client.GetStatusAsync("month");
+
+        Assert.Contains("range=month", handler.LastUri!.AbsoluteUri, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Sends_basic_auth_with_base64_api_key()
     {
         var client = Create(out var handler, Week, apiKey: "secret-key");
 
-        await client.GetStatusAsync();
+        await client.GetStatusAsync("week");
 
         Assert.Equal("Basic", handler.LastAuth?.Scheme);
         Assert.Equal(Convert.ToBase64String(Encoding.UTF8.GetBytes("secret-key")), handler.LastAuth?.Parameter);
@@ -70,7 +86,7 @@ public class CodingClientTests
     {
         var client = Create(out _, Week, apiKey: "");
 
-        await Assert.ThrowsAnyAsync<Exception>(() => client.GetStatusAsync());
+        await Assert.ThrowsAnyAsync<Exception>(() => client.GetStatusAsync("week"));
     }
 
     [Fact]
@@ -78,7 +94,7 @@ public class CodingClientTests
     {
         var client = Create(out _, Week, ok: false);
 
-        await Assert.ThrowsAnyAsync<Exception>(() => client.GetStatusAsync());
+        await Assert.ThrowsAnyAsync<Exception>(() => client.GetStatusAsync("week"));
     }
 
     private static CodingClient Create(out StubHandler handler, string body, string apiKey = "k", bool ok = true)

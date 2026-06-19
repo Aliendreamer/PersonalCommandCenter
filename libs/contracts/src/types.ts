@@ -151,18 +151,23 @@ export interface UptimeCheck {
 }
 
 /** Mirrors the backend `CodingStatus` from `GET /api/coding`. Raw seconds; the web layer formats. */
-export interface CodingDay {
-  date: string;
-  seconds: number;
-}
+export type CodingRange = 'week' | 'month' | 'year';
 
 export interface CodingBucket {
   name: string;
   seconds: number;
 }
 
+export interface CodingDay {
+  date: string;
+  seconds: number;
+  projects: CodingBucket[];
+  languages: CodingBucket[];
+}
+
 export interface CodingStatus {
-  weekSeconds: number;
+  range: CodingRange;
+  totalSeconds: number;
   todaySeconds: number;
   days: CodingDay[];
   projects: CodingBucket[];

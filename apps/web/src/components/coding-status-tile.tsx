@@ -21,7 +21,7 @@ export function CodingStatusTile({ status, error }: CodingStatusTileProps) {
   return (
     <div>
       <Text size="sm" fw={500}>
-        {formatDuration(status.weekSeconds)} this week
+        {formatDuration(status.totalSeconds)} this week
       </Text>
       <Text size="xs" c="dimmed">
         {formatDuration(status.todaySeconds)} today

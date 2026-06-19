@@ -62,7 +62,7 @@ export const Route = createFileRoute('/_authenticated/')({
       settle(getGoodreads()),
       settle(getUptime()),
       settle(getModels()),
-      settle(getCoding()),
+      settle(getCoding({ data: 'week' })),
     ])
     return {
       plugins,

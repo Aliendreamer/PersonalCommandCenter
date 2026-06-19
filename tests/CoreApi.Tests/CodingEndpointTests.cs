@@ -13,24 +13,54 @@ public class CodingEndpointTests(WebApplicationFactory<Program> factory)
     private readonly WebApplicationFactory<Program> _factory = factory;
 
     private static CodingStatus Sample() => new(
+        "week",
         1612,
         200,
-        [new CodingDay("2026-06-15", 1412), new CodingDay("2026-06-18", 200)],
+        [
+            new CodingDay("2026-06-15", 1412, [], []),
+            new CodingDay(
+                "2026-06-18",
+                200,
+                [new CodingBucket("PersonalCommandCenter", 120)],
+                [new CodingBucket("C#", 200)]),
+        ],
         [new CodingBucket("PersonalCommandCenter", 1532), new CodingBucket("aidoctor", 80)],
         [new CodingBucket("Markdown", 1412), new CodingBucket("C#", 200)]);
 
     [Fact]
-    public async Task Returns_weekly_coding_summary()
+    public async Task Returns_coding_summary_with_per_day_breakdowns()
     {
         var client = AuthedWith(new FakeCoding(Sample()));
 
         var status = await client.GetFromJsonAsync<StatusDto>("/api/coding");
 
         Assert.NotNull(status);
-        Assert.Equal(1612, status!.WeekSeconds);
+        Assert.Equal("week", status!.Range);
+        Assert.Equal(1612, status.TotalSeconds);
         Assert.Equal(200, status.TodaySeconds);
         Assert.Equal(2, status.Days.Count);
+        Assert.Contains(status.Days[1].Languages, l => l.Name == "C#");
         Assert.Contains(status.Projects, p => p.Name == "PersonalCommandCenter");
+    }
+
+    [Fact]
+    public async Task Passes_the_range_query_to_the_client()
+    {
+        var client = AuthedWith(new FakeCoding(Sample()));
+
+        var status = await client.GetFromJsonAsync<StatusDto>("/api/coding?range=month");
+
+        Assert.Equal("month", status!.Range);
+    }
+
+    [Fact]
+    public async Task Defaults_invalid_range_to_week()
+    {
+        var client = AuthedWith(new FakeCoding(Sample()));
+
+        var status = await client.GetFromJsonAsync<StatusDto>("/api/coding?range=bogus");
+
+        Assert.Equal("week", status!.Range);
     }
 
     [Fact]
@@ -77,9 +107,15 @@ public class CodingEndpointTests(WebApplicationFactory<Program> factory)
     }
 
     private sealed record StatusDto(
-        long WeekSeconds, long TodaySeconds, List<DayDto> Days, List<BucketDto> Projects, List<BucketDto> Languages);
+        string Range,
+        long TotalSeconds,
+        long TodaySeconds,
+        List<DayDto> Days,
+        List<BucketDto> Projects,
+        List<BucketDto> Languages);
 
-    private sealed record DayDto(string Date, long Seconds);
+    private sealed record DayDto(
+        string Date, long Seconds, List<BucketDto> Projects, List<BucketDto> Languages);
 
     private sealed record BucketDto(string Name, long Seconds);
 
@@ -87,12 +123,14 @@ public class CodingEndpointTests(WebApplicationFactory<Program> factory)
 
     private sealed class FakeCoding(CodingStatus status) : ICodingClient
     {
-        public Task<CodingStatus> GetStatusAsync(CancellationToken ct = default) => Task.FromResult(status);
+        // The endpoint validates the range, so echo the requested range back in the response.
+        public Task<CodingStatus> GetStatusAsync(string range, CancellationToken ct = default) =>
+            Task.FromResult(status with { Range = range });
     }
 
     private sealed class ThrowingCoding : ICodingClient
     {
-        public Task<CodingStatus> GetStatusAsync(CancellationToken ct = default) =>
+        public Task<CodingStatus> GetStatusAsync(string range, CancellationToken ct = default) =>
             throw new HttpRequestException("wakapi unreachable");
     }
 }

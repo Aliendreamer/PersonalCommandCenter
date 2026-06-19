@@ -21,4 +21,13 @@ if (typeof window !== 'undefined') {
   }
 
   window.HTMLElement.prototype.scrollIntoView = vi.fn()
+
+  // Mantine's FloatingIndicator (used by SegmentedControl) needs ResizeObserver.
+  if (typeof window.ResizeObserver !== 'function') {
+    window.ResizeObserver = class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    }
+  }
 }

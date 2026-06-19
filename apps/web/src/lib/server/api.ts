@@ -1,7 +1,7 @@
 import { createServerFn } from '@tanstack/react-start'
 import { getRequestHeader } from '@tanstack/react-start/server'
 
-import type { CalendarEventInput, TodoInput } from '@pcc/contracts'
+import type { CalendarEventInput, CodingRange, TodoInput } from '@pcc/contracts'
 
 import { cookiesAreSecure, forwardCookieHeader } from './cookies'
 import {
@@ -119,9 +119,9 @@ export const getModels = createServerFn({ method: 'GET' }).handler(() =>
   loadModels(serverFetch()),
 )
 
-export const getCoding = createServerFn({ method: 'GET' }).handler(() =>
-  loadCoding(serverFetch()),
-)
+export const getCoding = createServerFn({ method: 'GET' })
+  .validator((range: CodingRange) => range)
+  .handler(({ data }) => loadCoding(serverFetch(), data))
 
 // Mutations: the RPC transport is POST regardless of the underlying core-api method; the handler
 // re-attaches the cookie and calls core-api with the right verb. The browser only talks to app.

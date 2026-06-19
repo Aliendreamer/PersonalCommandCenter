@@ -1,41 +1,83 @@
-import { afterEach, describe, expect, it } from 'vitest'
-import { cleanup, render, screen } from '../test/render'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { cleanup, fireEvent, render, screen } from '../test/render'
 import type { CodingStatus } from '@pcc/contracts'
 import { CodingView } from './coding-view'
 
 const status: CodingStatus = {
-  weekSeconds: 65040, // 18h 04m
-  todaySeconds: 11520,
+  range: 'week',
+  totalSeconds: 3600,
+  todaySeconds: 1200,
   days: [
-    { date: '2026-06-15', seconds: 7200 },
-    { date: '2026-06-18', seconds: 11520 },
+    {
+      date: '2026-06-15', // Mon
+      seconds: 2400,
+      projects: [{ name: 'Alpha', seconds: 2400 }],
+      languages: [{ name: 'Go', seconds: 2400 }],
+    },
+    {
+      date: '2026-06-18', // Thu
+      seconds: 1200,
+      projects: [{ name: 'Beta', seconds: 1200 }],
+      languages: [{ name: 'C#', seconds: 1200 }],
+    },
   ],
-  projects: [{ name: 'PersonalCommandCenter', seconds: 65040 }],
-  languages: [{ name: 'C#', seconds: 65040 }],
+  projects: [
+    { name: 'Alpha', seconds: 2400 },
+    { name: 'Beta', seconds: 1200 },
+  ],
+  languages: [
+    { name: 'Go', seconds: 2400 },
+    { name: 'C#', seconds: 1200 },
+  ],
 }
 
 afterEach(cleanup)
 
 describe('CodingView', () => {
-  it('shows the week total, per-day strip, project tiles, and a languages table', () => {
-    render(<CodingView status={status} />)
+  it('shows the range total, a range control, day bars, and breakdowns', () => {
+    render(<CodingView status={status} range="week" onRangeChange={() => {}} />)
+
     expect(screen.getByText('This week')).toBeDefined()
-    // 18h 04m renders for the week total and the (equal) top project/language.
-    expect(screen.getAllByText('18h 04m').length).toBeGreaterThanOrEqual(1)
-    expect(screen.getByText('Projects')).toBeDefined()
-    expect(screen.getByText('Languages')).toBeDefined()
-    // Projects render as tiles (the project name appears).
-    expect(screen.getByText('PersonalCommandCenter')).toBeDefined()
-    // Languages render in a table.
-    expect(screen.getByRole('table')).toBeDefined()
-    expect(screen.getByRole('columnheader', { name: 'Language' })).toBeDefined()
-    expect(screen.getByRole('cell', { name: 'C#' })).toBeDefined()
-    // Per-day strip renders a weekday label.
-    expect(screen.getByText('Mon')).toBeDefined()
+    expect(screen.getByText('Month')).toBeDefined() // range control option
+    expect(screen.getByRole('table')).toBeDefined() // languages table
+    // Aggregate breakdown shows both projects.
+    expect(screen.getByText('Alpha')).toBeDefined()
+    expect(screen.getByText('Beta')).toBeDefined()
+  })
+
+  it('switches range via the control', () => {
+    const onRangeChange = vi.fn()
+    render(
+      <CodingView status={status} range="week" onRangeChange={onRangeChange} />,
+    )
+
+    fireEvent.click(screen.getByText('Month'))
+
+    expect(onRangeChange).toHaveBeenCalledWith('month')
+  })
+
+  it('filters the breakdown to a clicked day, then clears', () => {
+    render(<CodingView status={status} range="week" onRangeChange={() => {}} />)
+
+    // Click the Thursday bar → only that day's project (Beta) remains.
+    fireEvent.click(screen.getByRole('button', { name: /Thu/ }))
+    expect(screen.getByText('Beta')).toBeDefined()
+    expect(screen.queryByText('Alpha')).toBeNull()
+
+    // Clear → back to the whole-range aggregate.
+    fireEvent.click(screen.getByRole('button', { name: /whole week/i }))
+    expect(screen.getByText('Alpha')).toBeDefined()
   })
 
   it('degrades on error', () => {
-    render(<CodingView status={null} error="unreachable" />)
+    render(
+      <CodingView
+        status={null}
+        error="unreachable"
+        range="week"
+        onRangeChange={() => {}}
+      />,
+    )
     expect(screen.getByText(/unavailable/i)).toBeDefined()
   })
 })

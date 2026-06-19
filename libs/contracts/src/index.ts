@@ -16,6 +16,7 @@ export type {
   SystemStatus,
   UptimeCheck,
   CodingStatus,
+  CodingRange,
   CodingDay,
   CodingBucket,
   Weather,

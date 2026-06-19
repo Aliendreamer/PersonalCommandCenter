@@ -19,17 +19,24 @@ public sealed class CodingPlugin : IPlugin
     }
 }
 
-/// <summary><c>GET /api/coding</c> — weekly coding summary from Wakapi (unreachable/unconfigured → 502).</summary>
+/// <summary><c>GET /api/coding?range=week|month|year</c> — coding summary from Wakapi (unreachable/unconfigured → 502).</summary>
 internal sealed class GetCodingEndpoint : EndpointWithoutRequest<CodingStatus>
 {
+    private static readonly string[] Ranges = ["week", "month", "year"];
+
     public override void Configure() => Get("/coding");
 
     public override async Task HandleAsync(CancellationToken ct)
     {
+        var requested = Query<string?>("range", isRequired: false);
+        var range = requested is not null && Ranges.Contains(requested, StringComparer.OrdinalIgnoreCase)
+            ? requested.ToLowerInvariant()
+            : "week";
+
         var client = Resolve<ICodingClient>();
         try
         {
-            await Send.OkAsync(await client.GetStatusAsync(ct), ct);
+            await Send.OkAsync(await client.GetStatusAsync(range, ct), ct);
         }
         catch (Exception)
         {
