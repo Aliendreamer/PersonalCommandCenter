@@ -6,7 +6,7 @@ namespace CoreApi.Tests;
 
 public class GoodreadsClientTests
 {
-    // A trimmed Goodreads shelf RSS item: book title + custom author/cover elements.
+    // A trimmed Goodreads shelf RSS item: book title + custom author/cover/detail elements.
     private const string Rss = """
         <?xml version="1.0" encoding="UTF-8"?>
         <rss version="2.0"><channel>
@@ -17,6 +17,10 @@ public class GoodreadsClientTests
             <book_image_url><![CDATA[https://img.test/small.jpg]]></book_image_url>
             <book_large_image_url><![CDATA[https://img.test/large.jpg]]></book_large_image_url>
             <author_name>Andrew Hunt</author_name>
+            <book_description><![CDATA[<b>What others tell you</b> after you know the basics.]]></book_description>
+            <average_rating>4.33</average_rating>
+            <num_pages>352</num_pages>
+            <book_published>1999</book_published>
           </item>
         </channel></rss>
         """;
@@ -32,6 +36,19 @@ public class GoodreadsClientTests
         Assert.Equal("Andrew Hunt", book.Author);
         Assert.Equal("https://www.goodreads.com/review/show/123", book.Link);
         Assert.Equal("https://img.test/large.jpg", book.CoverUrl);
+    }
+
+    [Fact]
+    public async Task Maps_description_rating_pages_and_year()
+    {
+        var client = Create(Rss, out _);
+
+        var book = Assert.Single(await client.GetShelfAsync());
+
+        Assert.Contains("What others tell you", book.Description);
+        Assert.Equal(4.33, book.AverageRating);
+        Assert.Equal(352, book.NumPages);
+        Assert.Equal(1999, book.Published);
     }
 
     [Fact]

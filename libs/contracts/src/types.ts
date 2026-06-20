@@ -180,6 +180,11 @@ export interface Book {
   author?: string | null;
   link: string;
   coverUrl?: string | null;
+  /** Goodreads book description (may contain light HTML — render as stripped text). */
+  description?: string | null;
+  averageRating?: number | null;
+  numPages?: number | null;
+  published?: number | null;
 }
 
 /** Mirrors the backend `Weather` from `GET /api/weather`. */

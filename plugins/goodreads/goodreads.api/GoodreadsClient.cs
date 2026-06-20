@@ -34,7 +34,11 @@ public sealed class GoodreadsClient(HttpClient http, IOptions<GoodreadsOptions> 
             item.Title?.Text ?? "",
             Extension(item, "author_name"),
             item.Links.FirstOrDefault()?.Uri?.ToString() ?? "",
-            Extension(item, "book_large_image_url") ?? Extension(item, "book_image_url")))
+            Extension(item, "book_large_image_url") ?? Extension(item, "book_image_url"),
+            Extension(item, "book_description"),
+            Double(item, "average_rating"),
+            Int(item, "num_pages"),
+            Int(item, "book_published")))
             .ToList();
     }
 
@@ -51,4 +55,14 @@ public sealed class GoodreadsClient(HttpClient http, IOptions<GoodreadsOptions> 
         var value = reader.ReadElementContentAsString();
         return string.IsNullOrWhiteSpace(value) ? null : value;
     }
+
+    private static double? Double(SyndicationItem item, string name) =>
+        double.TryParse(Extension(item, name), System.Globalization.CultureInfo.InvariantCulture, out var value)
+            ? value
+            : null;
+
+    private static int? Int(SyndicationItem item, string name) =>
+        int.TryParse(Extension(item, name), System.Globalization.CultureInfo.InvariantCulture, out var value)
+            ? value
+            : null;
 }
