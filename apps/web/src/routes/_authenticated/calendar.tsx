@@ -154,6 +154,12 @@ function CalendarPage() {
             onNextMonth={() =>
               setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))
             }
+            onPrevYear={() =>
+              setMonth(new Date(month.getFullYear() - 1, month.getMonth(), 1))
+            }
+            onNextYear={() =>
+              setMonth(new Date(month.getFullYear() + 1, month.getMonth(), 1))
+            }
             onToday={() => selectDay(today)}
           />
           <Text size="xs" c="dimmed" mt="sm">

@@ -14,54 +14,46 @@ const event: CalendarEvent = {
   allDay: false,
 }
 
+function renderMonth(
+  props: Partial<React.ComponentProps<typeof CalendarMonth>> = {},
+) {
+  const handlers = {
+    onSelectDay: vi.fn(),
+    onPrevMonth: vi.fn(),
+    onNextMonth: vi.fn(),
+    onPrevYear: vi.fn(),
+    onNextYear: vi.fn(),
+    onToday: vi.fn(),
+  }
+  render(
+    <CalendarMonth
+      month={month}
+      selected={selected}
+      events={[]}
+      {...handlers}
+      {...props}
+    />,
+  )
+  return handlers
+}
+
 afterEach(cleanup)
 
 describe('CalendarMonth', () => {
   it('shows the month and year header', () => {
-    render(
-      <CalendarMonth
-        month={month}
-        selected={selected}
-        events={[]}
-        onSelectDay={vi.fn()}
-        onPrevMonth={vi.fn()}
-        onNextMonth={vi.fn()}
-        onToday={vi.fn()}
-      />,
-    )
+    renderMonth()
     expect(screen.getByText(/June 2026/)).toBeDefined()
   })
 
   it('selects a day when its cell is clicked', () => {
-    const onSelectDay = vi.fn()
-    render(
-      <CalendarMonth
-        month={month}
-        selected={selected}
-        events={[]}
-        onSelectDay={onSelectDay}
-        onPrevMonth={vi.fn()}
-        onNextMonth={vi.fn()}
-        onToday={vi.fn()}
-      />,
-    )
+    const { onSelectDay } = renderMonth()
     fireEvent.click(screen.getByTestId('day-2026-6-21'))
     expect(onSelectDay).toHaveBeenCalledTimes(1)
     expect(onSelectDay.mock.calls[0][0].getDate()).toBe(21)
   })
 
   it('marks days that have events', () => {
-    render(
-      <CalendarMonth
-        month={month}
-        selected={selected}
-        events={[event]}
-        onSelectDay={vi.fn()}
-        onPrevMonth={vi.fn()}
-        onNextMonth={vi.fn()}
-        onToday={vi.fn()}
-      />,
-    )
+    renderMonth({ events: [event] })
     expect(
       screen.getByTestId('day-2026-6-10').getAttribute('data-has-events'),
     ).toBe('true')
@@ -71,22 +63,18 @@ describe('CalendarMonth', () => {
   })
 
   it('navigates months', () => {
-    const onPrevMonth = vi.fn()
-    const onNextMonth = vi.fn()
-    render(
-      <CalendarMonth
-        month={month}
-        selected={selected}
-        events={[]}
-        onSelectDay={vi.fn()}
-        onPrevMonth={onPrevMonth}
-        onNextMonth={onNextMonth}
-        onToday={vi.fn()}
-      />,
-    )
+    const { onPrevMonth, onNextMonth } = renderMonth()
     fireEvent.click(screen.getByLabelText('Previous month'))
     fireEvent.click(screen.getByLabelText('Next month'))
     expect(onPrevMonth).toHaveBeenCalledTimes(1)
     expect(onNextMonth).toHaveBeenCalledTimes(1)
+  })
+
+  it('navigates years', () => {
+    const { onPrevYear, onNextYear } = renderMonth()
+    fireEvent.click(screen.getByLabelText('Previous year'))
+    fireEvent.click(screen.getByLabelText('Next year'))
+    expect(onPrevYear).toHaveBeenCalledTimes(1)
+    expect(onNextYear).toHaveBeenCalledTimes(1)
   })
 })

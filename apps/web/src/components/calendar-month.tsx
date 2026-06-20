@@ -1,5 +1,10 @@
 import { ActionIcon, Box, Button, Group, SimpleGrid, Text } from '@mantine/core'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+} from 'lucide-react'
 import type { CalendarEvent } from '@pcc/contracts'
 
 export interface CalendarMonthProps {
@@ -12,6 +17,8 @@ export interface CalendarMonthProps {
   onSelectDay: (day: Date) => void
   onPrevMonth: () => void
   onNextMonth: () => void
+  onPrevYear: () => void
+  onNextYear: () => void
   onToday: () => void
 }
 
@@ -44,6 +51,8 @@ export function CalendarMonth({
   onSelectDay,
   onPrevMonth,
   onNextMonth,
+  onPrevYear,
+  onNextYear,
   onToday,
 }: CalendarMonthProps) {
   const today = new Date()
@@ -61,7 +70,14 @@ export function CalendarMonth({
         <Text fw={700} fz="lg">
           {month.toLocaleDateString([], { month: 'long', year: 'numeric' })}
         </Text>
-        <Group gap="xs">
+        <Group gap={4}>
+          <ActionIcon
+            variant="default"
+            aria-label="Previous year"
+            onClick={onPrevYear}
+          >
+            <ChevronsLeft size={16} aria-hidden />
+          </ActionIcon>
           <ActionIcon
             variant="default"
             aria-label="Previous month"
@@ -78,6 +94,13 @@ export function CalendarMonth({
             onClick={onNextMonth}
           >
             <ChevronRight size={16} aria-hidden />
+          </ActionIcon>
+          <ActionIcon
+            variant="default"
+            aria-label="Next year"
+            onClick={onNextYear}
+          >
+            <ChevronsRight size={16} aria-hidden />
           </ActionIcon>
         </Group>
       </Group>
