@@ -44,7 +44,8 @@ export function DashboardHero({ healths, now }: DashboardHeroProps) {
       p="md"
       mb="md"
       style={{
-        border: '1px solid var(--mantine-color-default-border)',
+        border:
+          '2px solid light-dark(var(--mantine-color-gray-5), var(--mantine-color-dark-3))',
         borderRadius: 'var(--mantine-radius-md)',
         background: 'var(--mantine-color-default-hover)',
       }}

@@ -38,10 +38,13 @@ export function BookList({ books, error }: BookListProps) {
         <Paper
           component="li"
           key={book.link}
-          withBorder
           radius="md"
           p="sm"
           shadow="xs"
+          style={{
+            border:
+              '2px solid light-dark(var(--mantine-color-gray-5), var(--mantine-color-dark-3))',
+          }}
         >
           <Group gap="sm" wrap="nowrap" align="flex-start">
             {book.coverUrl ? (

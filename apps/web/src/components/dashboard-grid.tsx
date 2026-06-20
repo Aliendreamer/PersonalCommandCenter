@@ -48,12 +48,13 @@ export function DashboardGrid({
               key={manifest.id}
               component="section"
               data-testid={`tile-${manifest.id}`}
-              withBorder
               radius="md"
               p="md"
               shadow="xs"
               style={{
-                borderLeft: `3px solid var(--mantine-color-${color}-6)`,
+                border:
+                  '2px solid light-dark(var(--mantine-color-gray-5), var(--mantine-color-dark-3))',
+                borderLeft: `4px solid var(--mantine-color-${color}-6)`,
               }}
             >
               <Group
