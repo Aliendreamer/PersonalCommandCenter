@@ -18,6 +18,25 @@ describe('GoodreadsReadingTile', () => {
     expect(screen.getByText('Dune')).toBeDefined()
   })
 
+  it('links the current book out to Goodreads, safely', () => {
+    render(<GoodreadsReadingTile books={[book]} />)
+    const link = screen.getByText('Dune').closest('a')
+    expect(link?.getAttribute('href')).toBe('https://gr.test/1')
+    expect(link?.getAttribute('target')).toBe('_blank')
+    expect(link?.getAttribute('rel')).toContain('noopener')
+  })
+
+  it('neutralizes a dangerous book link', () => {
+    render(
+      <GoodreadsReadingTile
+        books={[{ ...book, link: 'javascript:alert(1)' }]}
+      />,
+    )
+    expect(screen.getByText('Dune').closest('a')?.getAttribute('href')).toBe(
+      '#',
+    )
+  })
+
   it('shows a degraded state on error', () => {
     render(<GoodreadsReadingTile error />)
     expect(screen.getByText(/unavailable/i)).toBeDefined()

@@ -1,4 +1,4 @@
-import { Anchor, Group, Image, SimpleGrid, Text } from '@mantine/core'
+import { Anchor, Group, Image, Paper, SimpleGrid, Text } from '@mantine/core'
 import type { Book } from '@pcc/contracts'
 import { safeHref } from '../lib/safe-href'
 
@@ -35,41 +35,52 @@ export function BookList({ books, error }: BookListProps) {
       style={{ listStyle: 'none' }}
     >
       {books.map((book) => (
-        <Group
+        <Paper
           component="li"
           key={book.link}
-          gap="xs"
-          wrap="nowrap"
-          align="flex-start"
+          withBorder
+          radius="md"
+          p="sm"
+          shadow="xs"
         >
-          {book.coverUrl ? (
-            <Image
-              src={safeHref(book.coverUrl)}
-              alt=""
-              w={44}
-              h={64}
-              radius="sm"
-              fit="cover"
-              flex="none"
-            />
-          ) : null}
-          <div style={{ minWidth: 0 }}>
-            <Anchor
-              href={safeHref(book.link)}
-              target="_blank"
-              rel="noreferrer noopener"
-              fw={500}
-              size="sm"
-            >
-              {book.title}
-            </Anchor>
-            {book.author ? (
-              <Text size="xs" c="dimmed">
-                {book.author}
-              </Text>
+          <Group gap="sm" wrap="nowrap" align="flex-start">
+            {book.coverUrl ? (
+              <Anchor
+                href={safeHref(book.link)}
+                target="_blank"
+                rel="noreferrer noopener"
+                flex="none"
+                style={{ lineHeight: 0 }}
+              >
+                <Image
+                  src={safeHref(book.coverUrl)}
+                  alt={book.title}
+                  w={48}
+                  h={70}
+                  radius="sm"
+                  fit="cover"
+                />
+              </Anchor>
             ) : null}
-          </div>
-        </Group>
+            <div style={{ minWidth: 0 }}>
+              <Anchor
+                href={safeHref(book.link)}
+                target="_blank"
+                rel="noreferrer noopener"
+                fw={500}
+                size="sm"
+                lineClamp={2}
+              >
+                {book.title}
+              </Anchor>
+              {book.author ? (
+                <Text size="xs" c="dimmed" mt={2}>
+                  {book.author}
+                </Text>
+              ) : null}
+            </div>
+          </Group>
+        </Paper>
       ))}
     </SimpleGrid>
   )

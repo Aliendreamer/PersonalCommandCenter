@@ -1,5 +1,7 @@
-import { Text } from '@mantine/core'
+import { Anchor, Text } from '@mantine/core'
 import type { Book } from '@pcc/contracts'
+
+import { safeHref } from '../lib/safe-href'
 
 export interface GoodreadsReadingTileProps {
   books?: Book[]
@@ -30,9 +32,17 @@ export function GoodreadsReadingTile({
   const current = books[0]
   return (
     <div>
-      <Text size="sm" fw={500} truncate>
+      <Anchor
+        href={safeHref(current.link)}
+        target="_blank"
+        rel="noreferrer noopener"
+        size="sm"
+        fw={500}
+        truncate
+        display="block"
+      >
         {current.title}
-      </Text>
+      </Anchor>
       <Text size="xs" c="dimmed">
         {current.author ? `${current.author} · ` : ''}
         {books.length} on shelf

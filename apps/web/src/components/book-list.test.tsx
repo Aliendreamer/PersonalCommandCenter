@@ -27,6 +27,14 @@ describe('BookList', () => {
     )
   })
 
+  it('also links the cover image out to the book', () => {
+    render(<BookList books={[book]} />)
+    const cover = screen.getByRole('img')
+    const link = cover.closest('a')
+    expect(link?.getAttribute('href')).toBe('https://gr.test/1')
+    expect(link?.getAttribute('rel')).toContain('noopener')
+  })
+
   it('shows a degraded state on error', () => {
     render(<BookList books={[]} error="unreachable" />)
     expect(screen.getByText(/unavailable/i)).toBeDefined()
