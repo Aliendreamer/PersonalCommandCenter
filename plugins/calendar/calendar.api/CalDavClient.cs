@@ -35,12 +35,10 @@ public sealed class CalDavClient : ICalendarClient
 
     private Uri EventUri(string uid) => new(CollectionUri, $"{uid}.ics");
 
-    public async Task<IReadOnlyList<CalendarEvent>> ListAsync(TimeSpan window, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<CalendarEvent>> ListAsync(DateTimeOffset from, DateTimeOffset to, CancellationToken cancellationToken = default)
     {
-        var now = DateTimeOffset.UtcNow;
-        var until = now + window;
-        var start = now.UtcDateTime.ToString("yyyyMMdd'T'HHmmss'Z'", CultureInfo.InvariantCulture);
-        var end = until.UtcDateTime.ToString("yyyyMMdd'T'HHmmss'Z'", CultureInfo.InvariantCulture);
+        var start = from.UtcDateTime.ToString("yyyyMMdd'T'HHmmss'Z'", CultureInfo.InvariantCulture);
+        var end = to.UtcDateTime.ToString("yyyyMMdd'T'HHmmss'Z'", CultureInfo.InvariantCulture);
         var body = $"""
             <?xml version="1.0" encoding="utf-8"?>
             <c:calendar-query xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">
@@ -67,7 +65,7 @@ public sealed class CalDavClient : ICalendarClient
         var xml = await response.Content.ReadAsStringAsync(cancellationToken);
 
         var events = ParseMultistatus(xml)
-            .Where(e => e.Start >= now && e.Start < until)
+            .Where(e => e.Start >= from && e.Start < to)
             .OrderBy(e => e.Start)
             .ToList();
         return events;

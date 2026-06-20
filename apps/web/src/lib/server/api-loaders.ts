@@ -90,6 +90,16 @@ export const loadCalendarEvents = (
       : `/api/calendar/events?days=${days}`,
   )
 
+export const loadCalendarEventsRange = (
+  fetchImpl: FetchLike,
+  from: string,
+  to: string,
+): Promise<CalendarEvent[]> =>
+  loadProtected<CalendarEvent[]>(
+    fetchImpl,
+    `/api/calendar/events?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+  )
+
 export const loadTasks = (
   fetchImpl: FetchLike,
   all?: boolean,

@@ -3,9 +3,9 @@ import { createFileRoute, useRouter } from '@tanstack/react-router'
 import {
   Box,
   Button,
-  Grid,
   Group,
   Paper,
+  SimpleGrid,
   Stack,
   Text,
   Title,
@@ -16,7 +16,7 @@ import type { CalendarEvent, CalendarEventInput } from '@pcc/contracts'
 import {
   createCalendarEvent,
   deleteCalendarEvent,
-  getCalendarEvents,
+  getCalendarEventsRange,
   updateCalendarEvent,
 } from '../../lib/server/api'
 import { settle } from '../../lib/server/api-loaders'
@@ -26,7 +26,18 @@ import { CalendarEventForm } from '../../components/calendar-event-form'
 import { PluginPage } from '../../components/plugin-page'
 
 export const Route = createFileRoute('/_authenticated/calendar')({
-  loader: async () => settle(getCalendarEvents()),
+  // Load a browsing window (previous month through +3 months) so the month grid can show event
+  // dots and the selected day's events across the navigable range — not just the next few days.
+  loader: async () => {
+    const now = new Date()
+    const from = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+    const to = new Date(now.getFullYear(), now.getMonth() + 4, 1)
+    return settle(
+      getCalendarEventsRange({
+        data: { from: from.toISOString(), to: to.toISOString() },
+      }),
+    )
+  },
   component: CalendarPage,
 })
 
@@ -130,82 +141,78 @@ function CalendarPage() {
         </Title>
       </Paper>
 
-      <Grid gutter="lg">
-        <Grid.Col span={{ base: 12, md: 6 }}>
-          <Paper p="md" radius="md" h="100%" style={{ border: cardBorder }}>
-            <CalendarMonth
-              month={month}
-              selected={selected}
-              events={allEvents}
-              onSelectDay={selectDay}
-              onPrevMonth={() =>
-                setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))
-              }
-              onNextMonth={() =>
-                setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))
-              }
-              onToday={() => selectDay(today)}
+      <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
+        <Paper p="md" radius="md" h="100%" style={{ border: cardBorder }}>
+          <CalendarMonth
+            month={month}
+            selected={selected}
+            events={allEvents}
+            onSelectDay={selectDay}
+            onPrevMonth={() =>
+              setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))
+            }
+            onNextMonth={() =>
+              setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))
+            }
+            onToday={() => selectDay(today)}
+          />
+          <Text size="xs" c="dimmed" mt="sm">
+            Click a date to select it, then add an event on that day.
+          </Text>
+        </Paper>
+
+        <Paper p="md" radius="md" h="100%" style={{ border: cardBorder }}>
+          <Group justify="space-between" align="center" mb="sm">
+            <Title order={4}>{selectedLabel}</Title>
+            {editor.mode === 'closed' && (
+              <Button
+                size="compact-sm"
+                leftSection={<Plus size={14} aria-hidden />}
+                onClick={() => setEditor({ mode: 'create' })}
+              >
+                Add event
+              </Button>
+            )}
+          </Group>
+
+          {editor.mode === 'create' && (
+            <CalendarEventForm
+              submitLabel="Create"
+              initialStart={seedStart}
+              onSubmit={onCreate}
+              onCancel={() => setEditor({ mode: 'closed' })}
             />
-            <Text size="xs" c="dimmed" mt="sm">
-              Click a date to select it, then add an event on that day.
+          )}
+          {editor.mode === 'edit' && (
+            <CalendarEventForm
+              submitLabel="Update"
+              initial={editor.event}
+              onSubmit={(input) => onUpdate(editor.event.uid, input)}
+              onCancel={() => setEditor({ mode: 'closed' })}
+            />
+          )}
+
+          {events.error ? (
+            <Text role="status" size="sm" c="yellow.7">
+              Calendar unavailable
             </Text>
-          </Paper>
-        </Grid.Col>
-
-        <Grid.Col span={{ base: 12, md: 6 }}>
-          <Paper p="md" radius="md" h="100%" style={{ border: cardBorder }}>
-            <Group justify="space-between" align="center" mb="sm">
-              <Title order={4}>{selectedLabel}</Title>
-              {editor.mode === 'closed' && (
-                <Button
-                  size="compact-sm"
-                  leftSection={<Plus size={14} aria-hidden />}
-                  onClick={() => setEditor({ mode: 'create' })}
-                >
-                  Add event
-                </Button>
-              )}
-            </Group>
-
-            {editor.mode === 'create' && (
-              <CalendarEventForm
-                submitLabel="Create"
-                initialStart={seedStart}
-                onSubmit={onCreate}
-                onCancel={() => setEditor({ mode: 'closed' })}
-              />
-            )}
-            {editor.mode === 'edit' && (
-              <CalendarEventForm
-                submitLabel="Update"
-                initial={editor.event}
-                onSubmit={(input) => onUpdate(editor.event.uid, input)}
-                onCancel={() => setEditor({ mode: 'closed' })}
-              />
-            )}
-
-            {events.error ? (
-              <Text role="status" size="sm" c="yellow.7">
-                Calendar unavailable
+          ) : dayEvents.length === 0 ? (
+            <Stack gap="xs" align="flex-start">
+              <Text size="sm" c="dimmed">
+                No events on this day.
               </Text>
-            ) : dayEvents.length === 0 ? (
-              <Stack gap="xs" align="flex-start">
-                <Text size="sm" c="dimmed">
-                  No events on this day.
-                </Text>
-              </Stack>
-            ) : (
-              <Box>
-                <CalendarEventList
-                  events={dayEvents}
-                  onEdit={(event) => setEditor({ mode: 'edit', event })}
-                  onDelete={onDelete}
-                />
-              </Box>
-            )}
-          </Paper>
-        </Grid.Col>
-      </Grid>
+            </Stack>
+          ) : (
+            <Box>
+              <CalendarEventList
+                events={dayEvents}
+                onEdit={(event) => setEditor({ mode: 'edit', event })}
+                onDelete={onDelete}
+              />
+            </Box>
+          )}
+        </Paper>
+      </SimpleGrid>
     </PluginPage>
   )
 }

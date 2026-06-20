@@ -20,7 +20,11 @@ public sealed class CalendarPlugin : IPlugin
     }
 }
 
-/// <summary><c>GET /api/calendar/events?days=N</c> — events in the [now, now+window) window.</summary>
+/// <summary>
+/// <c>GET /api/calendar/events</c> — events in a window. Defaults to <c>[now, now+WindowDays)</c>;
+/// pass <c>?days=N</c> to widen forward, or an explicit <c>?from=ISO&amp;to=ISO</c> range (e.g. the
+/// calendar page browsing a month, which needs past days too).
+/// </summary>
 internal sealed class ListCalendarEventsEndpoint : EndpointWithoutRequest<IReadOnlyList<CalendarEvent>>
 {
     public override void Configure() => Get("/calendar/events");
@@ -29,10 +33,24 @@ internal sealed class ListCalendarEventsEndpoint : EndpointWithoutRequest<IReadO
     {
         var client = Resolve<ICalendarClient>();
         var options = Resolve<IOptions<CalendarOptions>>().Value;
-        var days = Query<int?>("days", isRequired: false) ?? options.WindowDays;
+
+        var from = Query<DateTimeOffset?>("from", isRequired: false);
+        var to = Query<DateTimeOffset?>("to", isRequired: false);
+        DateTimeOffset rangeFrom, rangeTo;
+        if (from is { } f && to is { } t && t > f)
+        {
+            (rangeFrom, rangeTo) = (f, t);
+        }
+        else
+        {
+            var days = Query<int?>("days", isRequired: false) ?? options.WindowDays;
+            rangeFrom = DateTimeOffset.UtcNow;
+            rangeTo = rangeFrom + TimeSpan.FromDays(Math.Max(1, days));
+        }
+
         try
         {
-            var events = await client.ListAsync(TimeSpan.FromDays(Math.Max(1, days)), ct);
+            var events = await client.ListAsync(rangeFrom, rangeTo, ct);
             await Send.OkAsync(events, ct);
         }
         catch (Exception)

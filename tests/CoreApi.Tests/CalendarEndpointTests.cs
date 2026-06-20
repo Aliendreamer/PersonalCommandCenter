@@ -30,6 +30,24 @@ public class CalendarEndpointTests(WebApplicationFactory<Program> factory)
     }
 
     [Fact]
+    public async Task Honors_an_explicit_from_to_range_for_past_events()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var past = new CalendarEvent("p1", "Past", now.AddDays(-2), now.AddDays(-2), false, null, null);
+        var future = new CalendarEvent("f1", "Future", now.AddDays(1), now.AddDays(1), false, null, null);
+        var client = AuthedWith(new RangeCalendar([past, future]));
+
+        var defaultWindow = await client.GetFromJsonAsync<List<EventDto>>("/api/calendar/events");
+        var fromIso = Uri.EscapeDataString(now.AddDays(-3).ToString("o"));
+        var toIso = Uri.EscapeDataString(now.AddDays(2).ToString("o"));
+        var ranged = await client.GetFromJsonAsync<List<EventDto>>($"/api/calendar/events?from={fromIso}&to={toIso}");
+
+        Assert.DoesNotContain(defaultWindow!, e => e.Uid == "p1"); // past excluded by the default forward window
+        Assert.Contains(ranged!, e => e.Uid == "p1"); // explicit range reaches back to include it
+        Assert.Contains(ranged!, e => e.Uid == "f1");
+    }
+
+    [Fact]
     public async Task Requires_authentication()
     {
         var response = await _factory.CreateClient().GetAsync("/api/calendar/events");
@@ -152,7 +170,7 @@ public class CalendarEndpointTests(WebApplicationFactory<Program> factory)
     {
         private readonly List<CalendarEvent> _events = [.. seed];
 
-        public Task<IReadOnlyList<CalendarEvent>> ListAsync(TimeSpan window, CancellationToken ct = default) =>
+        public Task<IReadOnlyList<CalendarEvent>> ListAsync(DateTimeOffset from, DateTimeOffset to, CancellationToken ct = default) =>
             Task.FromResult<IReadOnlyList<CalendarEvent>>(_events.ToList());
 
         public Task<CalendarEvent> CreateAsync(CalendarEventInput input, CancellationToken ct = default)
@@ -181,9 +199,28 @@ public class CalendarEndpointTests(WebApplicationFactory<Program> factory)
             Task.FromResult(_events.RemoveAll(e => e.Uid == uid) > 0);
     }
 
+    // Filters by the requested range (unlike FakeCalendar) so range plumbing can be asserted.
+    private sealed class RangeCalendar(IEnumerable<CalendarEvent> seed) : ICalendarClient
+    {
+        private readonly List<CalendarEvent> _events = [.. seed];
+
+        public Task<IReadOnlyList<CalendarEvent>> ListAsync(DateTimeOffset from, DateTimeOffset to, CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<CalendarEvent>>(
+                _events.Where(e => e.Start >= from && e.Start < to).ToList());
+
+        public Task<CalendarEvent> CreateAsync(CalendarEventInput input, CancellationToken ct = default) =>
+            throw new NotSupportedException();
+
+        public Task<CalendarEvent?> UpdateAsync(string uid, CalendarEventInput input, CancellationToken ct = default) =>
+            throw new NotSupportedException();
+
+        public Task<bool> DeleteAsync(string uid, CancellationToken ct = default) =>
+            throw new NotSupportedException();
+    }
+
     private sealed class ThrowingCalendar : ICalendarClient
     {
-        public Task<IReadOnlyList<CalendarEvent>> ListAsync(TimeSpan window, CancellationToken ct = default) =>
+        public Task<IReadOnlyList<CalendarEvent>> ListAsync(DateTimeOffset from, DateTimeOffset to, CancellationToken ct = default) =>
             throw new HttpRequestException("CalDAV unreachable");
 
         public Task<CalendarEvent> CreateAsync(CalendarEventInput input, CancellationToken ct = default) =>

@@ -3,8 +3,8 @@ namespace Pcc.Plugins.Calendar;
 /// <summary>Reads and writes calendar events over CalDAV. Abstracted so endpoints/tests can fake it.</summary>
 public interface ICalendarClient
 {
-    /// <summary>Events whose start falls within [now, now + window).</summary>
-    Task<IReadOnlyList<CalendarEvent>> ListAsync(TimeSpan window, CancellationToken cancellationToken = default);
+    /// <summary>Events whose start falls within the half-open range [from, to).</summary>
+    Task<IReadOnlyList<CalendarEvent>> ListAsync(DateTimeOffset from, DateTimeOffset to, CancellationToken cancellationToken = default);
 
     /// <summary>Creates an event and returns it with its server-assigned <c>Uid</c>.</summary>
     Task<CalendarEvent> CreateAsync(CalendarEventInput input, CancellationToken cancellationToken = default);

@@ -6,6 +6,7 @@ import type { CalendarEventInput, CodingRange, TodoInput } from '@pcc/contracts'
 import { cookiesAreSecure, forwardCookieHeader } from './cookies'
 import {
   loadCalendarEvents,
+  loadCalendarEventsRange,
   loadCoding,
   loadGoodreads,
   loadModels,
@@ -66,6 +67,12 @@ export const getIotEntities = createServerFn({ method: 'GET' }).handler(() =>
 export const getCalendarEvents = createServerFn({ method: 'GET' }).handler(() =>
   loadCalendarEvents(serverFetch()),
 )
+
+export const getCalendarEventsRange = createServerFn({ method: 'GET' })
+  .validator((range: { from: string; to: string }) => range)
+  .handler(({ data }) =>
+    loadCalendarEventsRange(serverFetch(), data.from, data.to),
+  )
 
 export const getTasks = createServerFn({ method: 'GET' }).handler(() =>
   loadTasks(serverFetch()),

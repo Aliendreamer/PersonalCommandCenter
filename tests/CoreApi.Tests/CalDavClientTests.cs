@@ -1,6 +1,5 @@
 using System.Globalization;
 using System.Net;
-using Microsoft.Extensions.Options;
 using Pcc.Plugins.Calendar;
 
 namespace CoreApi.Tests;
@@ -45,13 +44,40 @@ public class CalDavClientTests
             new HttpResponseMessage((HttpStatusCode)207) { Content = new StringContent(multistatus) });
         var client = new CalDavClient(new HttpClient(handler), Microsoft.Extensions.Options.Options.Create(Options()));
 
-        var events = await client.ListAsync(TimeSpan.FromDays(7));
+        var now = DateTimeOffset.UtcNow;
+        var events = await client.ListAsync(now, now.AddDays(7));
 
         var report = Assert.Single(handler.Requests, r => r.Method.Method == "REPORT");
         Assert.Equal("http://radicale.test:5232/pcc/calendar/", report.Uri);
         Assert.Equal("Basic", report.AuthScheme);
         Assert.Equal("1", report.Depth);
         Assert.Equal("soon", Assert.Single(events).Uid); // past event filtered out of the window
+    }
+
+    [Fact]
+    public async Task List_with_an_explicit_past_range_returns_past_events()
+    {
+        var past = DateTimeOffset.UtcNow.AddDays(-2).ToString("yyyyMMdd'T'HHmmss'Z'", CultureInfo.InvariantCulture);
+        var multistatus = $"""
+            <multistatus xmlns="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">
+              <response><propstat><prop><c:calendar-data>BEGIN:VCALENDAR
+            BEGIN:VEVENT
+            UID:past
+            SUMMARY:Past
+            DTSTART:{past}
+            DTEND:{past}
+            END:VEVENT
+            END:VCALENDAR</c:calendar-data></prop></propstat></response>
+            </multistatus>
+            """;
+        var handler = new StubHandler((req, _) =>
+            new HttpResponseMessage((HttpStatusCode)207) { Content = new StringContent(multistatus) });
+        var client = new CalDavClient(new HttpClient(handler), Microsoft.Extensions.Options.Options.Create(Options()));
+
+        var now = DateTimeOffset.UtcNow;
+        var events = await client.ListAsync(now.AddDays(-3), now.AddDays(1));
+
+        Assert.Equal("past", Assert.Single(events).Uid); // a range starting in the past includes it
     }
 
     [Fact]
