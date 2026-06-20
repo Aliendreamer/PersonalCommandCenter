@@ -47,6 +47,17 @@ public class GoodreadsClientTests
     }
 
     [Fact]
+    public async Task Sends_a_browser_user_agent()
+    {
+        // Goodreads returns 403 to requests without a User-Agent, so the shelf fetch must send one.
+        var client = Create(Rss, out var handler);
+
+        await client.GetShelfAsync();
+
+        Assert.NotEmpty(handler.LastRequest!.Headers.UserAgent);
+    }
+
+    [Fact]
     public async Task Throws_when_no_user_configured()
     {
         var client = new GoodreadsClient(new HttpClient(new StubHandler("")), Options.Create(new GoodreadsOptions()));
