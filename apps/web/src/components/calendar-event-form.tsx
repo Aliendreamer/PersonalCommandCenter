@@ -7,6 +7,8 @@ export interface CalendarEventFormProps {
   onCancel?: () => void
   /** When provided, the form edits this event (fields pre-filled). */
   initial?: CalendarEvent
+  /** Create mode: seed start/end from this day (e.g. the day clicked on the calendar). */
+  initialStart?: string
   submitLabel?: string
 }
 
@@ -20,18 +22,29 @@ function toLocalInput(iso: string | undefined): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
+// One hour after the given instant, as a datetime-local string (default event end).
+function oneHourAfter(iso: string | undefined): string {
+  if (!iso) {
+    return ''
+  }
+  return toLocalInput(
+    new Date(new Date(iso).getTime() + 60 * 60 * 1000).toISOString(),
+  )
+}
+
 /** Create/edit form for a calendar event. Presentational — the page wires `onSubmit` to a mutation. */
 export function CalendarEventForm({
   onSubmit,
   onCancel,
   initial,
+  initialStart,
   submitLabel = 'Save',
 }: CalendarEventFormProps) {
   const form = useForm({
     initialValues: {
       title: initial?.title ?? '',
-      start: toLocalInput(initial?.start),
-      end: toLocalInput(initial?.end),
+      start: toLocalInput(initial?.start ?? initialStart),
+      end: toLocalInput(initial?.end) || oneHourAfter(initialStart),
       allDay: initial?.allDay ?? false,
       location: initial?.location ?? '',
     },
