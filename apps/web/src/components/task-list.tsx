@@ -1,4 +1,12 @@
-import { Anchor, Box, Checkbox, Group, Paper, Text } from '@mantine/core'
+import {
+  Anchor,
+  Checkbox,
+  Group,
+  Paper,
+  SimpleGrid,
+  Stack,
+  Text,
+} from '@mantine/core'
 import type { TodoItem } from '@pcc/contracts'
 
 export interface TaskListProps {
@@ -17,12 +25,7 @@ function dueLabel(iso: string): string {
   })
 }
 
-const rowBorder = (i: number) =>
-  i > 0
-    ? { borderTop: '1px solid var(--mantine-color-default-border)' }
-    : undefined
-
-/** Lists to-dos with a completion checkbox; degrades on error. */
+/** A responsive grid of task tiles, each with a completion checkbox; degrades on error. */
 export function TaskList({
   tasks,
   error,
@@ -47,64 +50,80 @@ export function TaskList({
   }
 
   return (
-    <Paper withBorder radius="md">
-      <Box component="ul" m={0} p={0} style={{ listStyle: 'none' }}>
-        {tasks.map((task, i) => (
-          <Box component="li" key={task.uid} style={rowBorder(i)}>
-            <Group justify="space-between" wrap="nowrap" px="sm" py="xs">
+    <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
+      {tasks.map((task) => {
+        const accent = task.completed ? 'green' : 'sky'
+        return (
+          <Paper
+            key={task.uid}
+            component="section"
+            data-testid={`task-tile-${task.uid}`}
+            radius="md"
+            p="sm"
+            shadow="xs"
+            style={{
+              border:
+                '2px solid light-dark(var(--mantine-color-gray-5), var(--mantine-color-dark-3))',
+              borderLeft: `4px solid var(--mantine-color-${accent}-6)`,
+            }}
+          >
+            <Group align="flex-start" wrap="nowrap" gap="xs">
               <Checkbox
                 aria-label={`Complete ${task.title}`}
                 checked={task.completed}
                 disabled={!onToggle}
                 onChange={() => onToggle?.(task)}
-                styles={{ body: { minWidth: 0, alignItems: 'center' } }}
-                label={
-                  <Group gap="xs" wrap="nowrap">
-                    <Text
-                      size="sm"
-                      truncate
-                      td={task.completed ? 'line-through' : undefined}
-                      c={task.completed ? 'dimmed' : undefined}
-                    >
-                      {task.title}
-                    </Text>
-                    {task.due && (
-                      <Text size="sm" c="dimmed" style={{ flex: 'none' }}>
-                        {dueLabel(task.due)}
-                      </Text>
+                mt={2}
+              />
+              <Stack gap={2} style={{ minWidth: 0, flex: 1 }}>
+                <Text
+                  size="sm"
+                  fw={600}
+                  td={task.completed ? 'line-through' : undefined}
+                  c={task.completed ? 'dimmed' : undefined}
+                >
+                  {task.title}
+                </Text>
+                {task.due && (
+                  <Text size="xs" c="dimmed">
+                    Due {dueLabel(task.due)}
+                  </Text>
+                )}
+                {task.description && (
+                  <Text size="xs" c="dimmed" lineClamp={3} mt={2}>
+                    {task.description}
+                  </Text>
+                )}
+                {(onEdit || onDelete) && (
+                  <Group gap="sm" wrap="nowrap" mt={4}>
+                    {onEdit && (
+                      <Anchor
+                        component="button"
+                        type="button"
+                        size="sm"
+                        onClick={() => onEdit(task)}
+                      >
+                        Edit
+                      </Anchor>
+                    )}
+                    {onDelete && (
+                      <Anchor
+                        component="button"
+                        type="button"
+                        size="sm"
+                        c="red"
+                        onClick={() => onDelete(task)}
+                      >
+                        Delete
+                      </Anchor>
                     )}
                   </Group>
-                }
-              />
-              {(onEdit || onDelete) && (
-                <Group gap="sm" wrap="nowrap" style={{ flex: 'none' }}>
-                  {onEdit && (
-                    <Anchor
-                      component="button"
-                      type="button"
-                      size="sm"
-                      onClick={() => onEdit(task)}
-                    >
-                      Edit
-                    </Anchor>
-                  )}
-                  {onDelete && (
-                    <Anchor
-                      component="button"
-                      type="button"
-                      size="sm"
-                      c="red"
-                      onClick={() => onDelete(task)}
-                    >
-                      Delete
-                    </Anchor>
-                  )}
-                </Group>
-              )}
+                )}
+              </Stack>
             </Group>
-          </Box>
-        ))}
-      </Box>
-    </Paper>
+          </Paper>
+        )
+      })}
+    </SimpleGrid>
   )
 }

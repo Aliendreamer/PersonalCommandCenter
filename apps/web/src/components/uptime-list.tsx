@@ -1,4 +1,4 @@
-import { Badge, Box, Group, Paper, Text } from '@mantine/core'
+import { Badge, Box, Group, Paper, SimpleGrid, Text } from '@mantine/core'
 import type { UptimeCheck } from '@pcc/contracts'
 
 export interface UptimeListProps {
@@ -6,12 +6,7 @@ export interface UptimeListProps {
   error?: string
 }
 
-const rowBorder = (i: number) =>
-  i > 0
-    ? { borderTop: '1px solid var(--mantine-color-default-border)' }
-    : undefined
-
-/** Lists each target with an up/down badge + latency. Degrades on error. */
+/** A responsive grid of status tiles — one per target — each with an up/down accent, badge + latency. */
 export function UptimeList({ checks, error }: UptimeListProps) {
   if (error) {
     return (
@@ -30,36 +25,57 @@ export function UptimeList({ checks, error }: UptimeListProps) {
   }
 
   return (
-    <Paper withBorder radius="md">
-      <Box component="ul" m={0} p={0} style={{ listStyle: 'none' }}>
-        {checks.map((check, i) => (
-          <Box component="li" key={check.url} style={rowBorder(i)}>
-            <Group justify="space-between" wrap="nowrap" px="sm" py="xs">
-              <div style={{ minWidth: 0 }}>
-                <Text size="sm" fw={500} truncate>
+    <SimpleGrid cols={{ base: 1, xs: 2, sm: 3, lg: 4 }} spacing="md">
+      {checks.map((check) => {
+        const color = check.up ? 'green' : 'red'
+        return (
+          <Paper
+            key={check.url}
+            component="section"
+            data-testid={`uptime-tile-${check.name}`}
+            radius="md"
+            p="sm"
+            shadow="xs"
+            style={{
+              border:
+                '2px solid light-dark(var(--mantine-color-gray-5), var(--mantine-color-dark-3))',
+              borderLeft: `4px solid var(--mantine-color-${color}-6)`,
+            }}
+          >
+            <Group justify="space-between" wrap="nowrap" mb={6}>
+              <Group gap="xs" wrap="nowrap" style={{ minWidth: 0 }}>
+                <Box
+                  w={10}
+                  h={10}
+                  style={{
+                    flex: 'none',
+                    borderRadius: '50%',
+                    background: `var(--mantine-color-${color}-6)`,
+                  }}
+                />
+                <Text size="sm" fw={600} truncate>
                   {check.name}
                 </Text>
-                <Text size="xs" c="dimmed" truncate>
-                  {check.url}
-                </Text>
-              </div>
-              <Group gap="xs" wrap="nowrap" style={{ flex: 'none' }}>
-                <Text size="xs" c="dimmed">
-                  {check.latencyMs} ms
-                </Text>
-                <Badge
-                  color={check.up ? 'green' : 'red'}
-                  variant="light"
-                  size="sm"
-                >
-                  {check.up ? 'up' : 'down'}
-                  {check.statusCode != null ? ` · ${check.statusCode}` : ''}
-                </Badge>
               </Group>
+              <Badge
+                color={color}
+                variant="light"
+                size="sm"
+                style={{ flex: 'none' }}
+              >
+                {check.up ? 'up' : 'down'}
+                {check.statusCode != null ? ` · ${check.statusCode}` : ''}
+              </Badge>
             </Group>
-          </Box>
-        ))}
-      </Box>
-    </Paper>
+            <Text size="xs" c="dimmed" truncate title={check.url}>
+              {check.url}
+            </Text>
+            <Text size="xs" c="dimmed">
+              {check.latencyMs} ms
+            </Text>
+          </Paper>
+        )
+      })}
+    </SimpleGrid>
   )
 }

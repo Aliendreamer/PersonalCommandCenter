@@ -27,6 +27,12 @@ describe('UptimeList', () => {
     expect(screen.getByText('down')).toBeDefined()
   })
 
+  it('renders each target as its own tile', () => {
+    render(<UptimeList checks={[up, down]} />)
+    expect(screen.getByTestId('uptime-tile-api')).toBeDefined()
+    expect(screen.getByTestId('uptime-tile-db')).toBeDefined()
+  })
+
   it('shows a degraded state on error', () => {
     render(<UptimeList checks={[]} error="unreachable" />)
     expect(screen.getByText(/unavailable/i)).toBeDefined()
