@@ -41,7 +41,7 @@
       "firstName": "Test",
       "lastName": "User",
       "credentials": [{ "type": "password", "value": "Test123!", "temporary": false }],
-      "realmRoles": ["Admin", "User"]
+      "realmRoles": ["Admin", "User", "offline_access"]
     }
   ]
 }
