@@ -18,7 +18,9 @@ public sealed class KeycloakClient(HttpClient http, IOptions<AuthOptions> option
         "?response_type=code" +
         $"&client_id={Uri.EscapeDataString(_kc.ClientId)}" +
         $"&redirect_uri={Uri.EscapeDataString(_kc.CallbackUri)}" +
-        "&scope=openid%20email%20profile" +
+        // offline_access makes the refresh token an offline token: it outlives the online SSO session
+        // and survives a Keycloak restart, so the session stays durable across rebuilds.
+        "&scope=openid%20email%20profile%20offline_access" +
         $"&code_challenge={Uri.EscapeDataString(codeChallenge)}&code_challenge_method=S256" +
         $"&state={Uri.EscapeDataString(state)}";
 

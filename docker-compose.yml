@@ -28,6 +28,23 @@ services:
       timeout: 3s
       retries: 15
 
+  # One-shot: ensure Keycloak's dedicated database exists in the shared Postgres (idempotent, runs on
+  # both fresh and existing volumes since the Postgres initdb hook only fires on an empty data dir).
+  keycloak-db-init:
+    image: postgres:17-alpine
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD:-pcc-dev}
+    command:
+      - sh
+      - -c
+      - >
+        psql -h postgres -U pcc -d pcc -tc "SELECT 1 FROM pg_database WHERE datname='keycloak'"
+        | grep -q 1 || psql -h postgres -U pcc -d pcc -c "CREATE DATABASE keycloak"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: 'no'
+
   keycloak:
     image: quay.io/keycloak/keycloak:26.0
     command: ['start-dev', '--import-realm']
@@ -38,6 +55,17 @@ services:
       KC_HOSTNAME_STRICT: 'false'
       KC_HTTP_ENABLED: 'true'
       KC_PROXY_HEADERS: xforwarded
+      # Persist sessions/refresh-tokens/realm-keys in Postgres so a container rebuild doesn't force a
+      # re-login (start-dev's default is an ephemeral in-container H2 DB).
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: pcc
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD:-pcc-dev}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak-db-init:
+        condition: service_completed_successfully
     volumes:
       - ./harness/keycloak:/opt/keycloak/data/import:ro
     # Routed via the Traefik file provider (harness/traefik/dynamic.yml), not docker labels.

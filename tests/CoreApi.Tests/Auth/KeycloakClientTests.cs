@@ -20,6 +20,8 @@ public class KeycloakClientTests
         Assert.Contains("code_challenge_method=S256", url);
         Assert.Contains("state=STATE", url);
         Assert.Contains("redirect_uri=", url);
+        // offline_access → the refresh token is an offline token (durable across Keycloak restarts).
+        Assert.Contains("offline_access", url);
     }
 
     [Fact]

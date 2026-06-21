@@ -69,7 +69,10 @@ public sealed class SessionService(PccDbContext db, IKeycloakClient keycloak) : 
                 return session.AccessToken;
             }
 
-            if (session.RefreshToken is { } refresh && session.RefreshTokenExpiresAt > now)
+            // A refresh token is usable when present and either non-expiring (an offline token, stored
+            // with a null expiry) or not yet past its expiry.
+            if (session.RefreshToken is { } refresh
+                && (session.RefreshTokenExpiresAt is null || session.RefreshTokenExpiresAt > now))
             {
                 var refreshed = await keycloak.RefreshAsync(refresh, ct);
                 if (refreshed is null)
@@ -107,15 +110,22 @@ public sealed class SessionService(PccDbContext db, IKeycloakClient keycloak) : 
         await db.SaveChangesAsync(ct);
     }
 
+    // Sessions idle longer than this are reaped even if they hold a (non-expiring) offline refresh
+    // token — a server-side mirror of Keycloak's offline-session idle window, so dead rows don't pile up.
+    private static readonly TimeSpan OfflineIdleCap = TimeSpan.FromDays(90);
+
     public async Task<int> PurgeAsync(CancellationToken ct)
     {
         var now = DateTimeOffset.UtcNow;
+        var idleBefore = now - OfflineIdleCap;
         var stale = await db.Sessions
             .Where(s => s.RevokedAt != null
+                // A non-null refresh expiry that has passed: the refresh token is dead.
                 || (s.RefreshTokenExpiresAt != null && s.RefreshTokenExpiresAt < now)
-                // A session with no refresh token can never be resolved once its access token expires —
-                // reap it too, otherwise these rows accumulate forever.
-                || (s.RefreshTokenExpiresAt == null && s.AccessTokenExpiresAt < now))
+                // No refresh token at all + an expired access token: unresolvable, never refreshable.
+                || (s.RefreshToken == null && s.AccessTokenExpiresAt < now)
+                // Idle past the offline window (covers offline sessions with a null refresh expiry).
+                || s.UpdatedAt < idleBefore)
             .ToListAsync(ct);
         db.Sessions.RemoveRange(stale);
         await db.SaveChangesAsync(ct);

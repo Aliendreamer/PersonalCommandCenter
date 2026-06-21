@@ -66,6 +66,25 @@ public class SessionServiceTests
     }
 
     [Fact]
+    public async Task Resolve_refreshes_an_offline_session_with_no_refresh_expiry()
+    {
+        // An offline token is returned with refresh_expires_in:0 → a null RefreshTokenExpiresAt. That
+        // null means "non-expiring", not "no refresh path" — the session must still refresh.
+        await using var db = NewDb();
+        var keycloak = new Mock<IKeycloakClient>();
+        keycloak.Setup(k => k.RefreshAsync("refresh-token", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TokenSet("new-access", "new-refresh",
+                DateTimeOffset.UtcNow.AddMinutes(10), RefreshExpiresAt: null));
+        var service = new SessionService(db, keycloak.Object);
+        var raw = await service.CreateAsync("sub-1",
+            Tokens(accessMinutes: -1, refreshMinutes: null), CancellationToken.None);
+
+        var token = await service.ResolveAccessTokenAsync(raw, CancellationToken.None);
+
+        Assert.Equal("new-access", token);
+    }
+
+    [Fact]
     public async Task Resolve_returns_null_when_refresh_fails()
     {
         await using var db = NewDb();
@@ -151,8 +170,42 @@ public class SessionServiceTests
     {
         await using var db = NewDb();
         var service = new SessionService(db, Mock.Of<IKeycloakClient>());
-        // No refresh expiry (offline/no-refresh) + expired access → unresolvable; must still be reaped.
-        await service.CreateAsync("orphan", Tokens(accessMinutes: -10, refreshMinutes: null), CancellationToken.None);
+        // No refresh token at all + expired access → unresolvable; must be reaped.
+        await service.CreateAsync(
+            "orphan",
+            new TokenSet("access", RefreshToken: null, DateTimeOffset.UtcNow.AddMinutes(-10), RefreshExpiresAt: null),
+            CancellationToken.None);
+
+        var removed = await service.PurgeAsync(CancellationToken.None);
+
+        Assert.Equal(1, removed);
+        Assert.Empty(await db.Sessions.ToListAsync());
+    }
+
+    [Fact]
+    public async Task Purge_keeps_an_active_offline_session_with_a_null_refresh_expiry()
+    {
+        // An offline session (refresh token present, no expiry, recently used) is still usable even with
+        // an expired access token — it must NOT be reaped.
+        await using var db = NewDb();
+        var service = new SessionService(db, Mock.Of<IKeycloakClient>());
+        await service.CreateAsync("offline", Tokens(accessMinutes: -10, refreshMinutes: null), CancellationToken.None);
+
+        var removed = await service.PurgeAsync(CancellationToken.None);
+
+        Assert.Equal(0, removed);
+        Assert.Single(await db.Sessions.ToListAsync());
+    }
+
+    [Fact]
+    public async Task Purge_removes_an_offline_session_idle_past_the_offline_window()
+    {
+        await using var db = NewDb();
+        var service = new SessionService(db, Mock.Of<IKeycloakClient>());
+        await service.CreateAsync("stale", Tokens(accessMinutes: -10, refreshMinutes: null), CancellationToken.None);
+        var session = await db.Sessions.SingleAsync();
+        session.UpdatedAt = DateTimeOffset.UtcNow.AddDays(-120); // beyond the 90-day offline idle cap
+        await db.SaveChangesAsync();
 
         var removed = await service.PurgeAsync(CancellationToken.None);
 
