@@ -49,6 +49,27 @@ describe('DashboardGrid', () => {
     ).toBe('ok')
   })
 
+  it('renders a tile as a link to its page when tileHref yields one', () => {
+    render(
+      <DashboardGrid
+        manifests={[systemManifest]}
+        tileHref={(m) => m.routeBase}
+      />,
+    )
+
+    const tile = screen.getByTestId('tile-system')
+    expect(tile.tagName).toBe('A')
+    expect(tile.getAttribute('href')).toBe('/system')
+  })
+
+  it('renders a tile as a non-link section when tileHref returns undefined', () => {
+    render(
+      <DashboardGrid manifests={[systemManifest]} tileHref={() => undefined} />,
+    )
+
+    expect(screen.getByTestId('tile-system').tagName).toBe('SECTION')
+  })
+
   it('renders the hero slot above the grid', () => {
     render(
       <DashboardGrid

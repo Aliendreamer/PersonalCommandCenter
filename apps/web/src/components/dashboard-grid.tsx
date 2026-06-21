@@ -13,6 +13,12 @@ export interface DashboardGridProps {
   renderTile?: (manifest: PluginManifest) => ReactNode
   /** Per-tile health for the accent bar + status dot; defaults to `ok` when not supplied. */
   tileHealth?: (manifest: PluginManifest) => Health
+  /**
+   * Optional link target for a tile. When it returns a path the whole card becomes a navigation
+   * anchor to that page; when it returns `undefined` the card is a plain section (e.g. the search
+   * tile, which owns its own input and can't be wrapped in an anchor).
+   */
+  tileHref?: (manifest: PluginManifest) => string | undefined
   /** The status-board hero strip, rendered above the tile grid. */
   hero?: ReactNode
 }
@@ -28,6 +34,7 @@ export function DashboardGrid({
   error,
   renderTile,
   tileHealth,
+  tileHref,
   hero,
 }: DashboardGridProps) {
   return (
@@ -43,10 +50,15 @@ export function DashboardGrid({
           const Icon = iconFor(manifest.id)
           const health = tileHealth?.(manifest) ?? 'ok'
           const color = healthColor(health)
+          const href = tileHref?.(manifest)
+          // The whole card is a navigation anchor when a href is supplied; otherwise a plain section.
+          const linkProps = href
+            ? ({ component: 'a', href } as const)
+            : ({ component: 'section' } as const)
           return (
             <Paper
               key={manifest.id}
-              component="section"
+              {...linkProps}
               data-testid={`tile-${manifest.id}`}
               radius="md"
               p="md"
@@ -55,6 +67,14 @@ export function DashboardGrid({
                 border:
                   '2px solid light-dark(var(--mantine-color-gray-5), var(--mantine-color-dark-3))',
                 borderLeft: `4px solid var(--mantine-color-${color}-6)`,
+                ...(href
+                  ? {
+                      color: 'inherit',
+                      textDecoration: 'none',
+                      cursor: 'pointer',
+                      display: 'block',
+                    }
+                  : {}),
               }}
             >
               <Group

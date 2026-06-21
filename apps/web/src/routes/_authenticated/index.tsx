@@ -128,6 +128,11 @@ function Home() {
       error={plugins.error ? 'plugins unavailable' : undefined}
       hero={<DashboardHero healths={healths} />}
       tileHealth={tileHealth}
+      tileHref={(manifest) =>
+        // The search tile owns an input/button, so it can't be a whole-card anchor; every other
+        // tile links to its plugin page.
+        manifest.widgets.includes('search-box') ? undefined : manifest.routeBase
+      }
       renderTile={(manifest) => {
         if (manifest.widgets.includes('system-status')) {
           return <SystemTile status={system.data} error={system.error} />
