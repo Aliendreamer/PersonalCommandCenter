@@ -1,8 +1,5 @@
-# goodreads Specification
+## MODIFIED Requirements
 
-## Purpose
-TBD - created by archiving change goodreads-plugin. Update Purpose after archive.
-## Requirements
 ### Requirement: Shelf listing
 
 The `goodreads` plugin SHALL fetch the configured user's shelf RSS feed
@@ -20,26 +17,6 @@ returning the books mapped to `{ title, author?, link, coverUrl?, description? }
 - **WHEN** the plugin fetches the feed
 - **THEN** the request targets `…/review/list_rss/{UserId}` with the configured `shelf` query and a
   `User-Agent` header
-
-### Requirement: Config-driven activation
-
-The `goodreads` plugin SHALL activate only when `Plugins:Goodreads:Enabled` is `true`, and SHALL
-appear in `/api/plugins` with a "Reading" nav entry and `goodreads-reading` widget when enabled.
-
-#### Scenario: Disabled plugin is absent
-
-- **WHEN** the core starts with `Plugins:Goodreads:Enabled = false`
-- **THEN** `GET /api/goodreads` is not served and `goodreads` is absent from `/api/plugins`
-
-### Requirement: Graceful degradation
-
-When the shelf RSS is unreachable or no user is configured, the `goodreads` plugin SHALL respond with
-`502`, and the UI SHALL show a degraded state without breaking the dashboard.
-
-#### Scenario: Feed unreachable
-
-- **WHEN** the Goodreads request fails or no `UserId` is configured
-- **THEN** `GET /api/goodreads` responds with `502` and the Reading tile/page show a degraded state
 
 ### Requirement: Reading UI surfaces (read-only via the SSR-BFF)
 
@@ -67,4 +44,3 @@ directly.
 - **WHEN** the dashboard renders with the `goodreads` plugin enabled and books available
 - **THEN** the `goodreads-reading` tile shows the current shelf (titles/count), degrading to a
   "Reading unavailable" state on error
-
