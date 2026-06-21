@@ -11,7 +11,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "release": "node tools/release.mjs",
-    "release:dry": "node tools/release.mjs --dry-run"
+    "release:dry": "node tools/release.mjs --dry-run",
+    "fe:rebuild": "bash scripts/fe-rebuild.sh"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
