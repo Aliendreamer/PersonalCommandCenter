@@ -70,6 +70,9 @@ builder.Services
         options.RequireHttpsMetadata = keycloak.Authority.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
         options.TokenValidationParameters = new TokenValidationParameters
         {
+            // Audience validation is intentionally OFF: the Keycloak realm has no audience protocol
+            // mapper, so its access tokens carry aud="account" rather than the client id. Enabling it
+            // requires adding that mapper to harness/keycloak first — tracked in code-audit-followups.
             ValidateAudience = false,
             NameClaimType = "sub",
             RoleClaimType = ClaimTypes.Role,

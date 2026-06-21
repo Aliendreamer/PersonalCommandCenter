@@ -30,14 +30,17 @@ public sealed class NtfyClient(HttpClient http, IOptions<NtfyOptions> options) :
         string? message,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(_options.BaseUrl))
+        // No-op unless a valid http(s) endpoint is configured. The scheme check is defense-in-depth
+        // (the server-side analogue of the FE safeHref rule): a misconfigured BaseUrl must not point the
+        // outbound POST at another scheme. Delivery is best-effort anyway — the in-app row is the truth.
+        if (string.IsNullOrEmpty(_options.BaseUrl)
+            || !Uri.TryCreate($"{_options.BaseUrl.TrimEnd('/')}/{_options.Topic}", UriKind.Absolute, out var endpoint)
+            || (endpoint.Scheme != Uri.UriSchemeHttp && endpoint.Scheme != Uri.UriSchemeHttps))
         {
-            return; // delivery not configured — no-op (the in-app notification still persists)
+            return;
         }
 
-        using var request = new HttpRequestMessage(
-            HttpMethod.Post,
-            new Uri($"{_options.BaseUrl.TrimEnd('/')}/{_options.Topic}"))
+        using var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
         {
             Content = new StringContent(message ?? title),
         };

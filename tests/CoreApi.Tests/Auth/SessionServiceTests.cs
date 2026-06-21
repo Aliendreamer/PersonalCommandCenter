@@ -82,6 +82,42 @@ public class SessionServiceTests
     }
 
     [Fact]
+    public async Task Concurrent_resolve_refreshes_the_session_only_once()
+    {
+        // Two parallel requests (separate DbContexts) with an expired access token must not each spend
+        // the single-use refresh token — the per-session gate serializes them to one refresh.
+        var dbName = Guid.NewGuid().ToString();
+        DbContextOptions<PccDbContext> Opts() =>
+            new DbContextOptionsBuilder<PccDbContext>().UseInMemoryDatabase(dbName).Options;
+
+        var refreshes = 0;
+        var keycloak = new Mock<IKeycloakClient>();
+        keycloak.Setup(k => k.RefreshAsync("refresh-token", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() =>
+            {
+                Interlocked.Increment(ref refreshes);
+                return new TokenSet("new-access", "new-refresh",
+                    DateTimeOffset.UtcNow.AddMinutes(10), DateTimeOffset.UtcNow.AddMinutes(60));
+            });
+
+        string raw;
+        await using (var seed = new PccDbContext(Opts()))
+        {
+            raw = await new SessionService(seed, keycloak.Object)
+                .CreateAsync("sub", Tokens(accessMinutes: -1, refreshMinutes: 60), CancellationToken.None);
+        }
+
+        await using var dbA = new PccDbContext(Opts());
+        await using var dbB = new PccDbContext(Opts());
+        var results = await Task.WhenAll(
+            new SessionService(dbA, keycloak.Object).ResolveAccessTokenAsync(raw, CancellationToken.None),
+            new SessionService(dbB, keycloak.Object).ResolveAccessTokenAsync(raw, CancellationToken.None));
+
+        Assert.All(results, r => Assert.Equal("new-access", r));
+        Assert.Equal(1, refreshes);
+    }
+
+    [Fact]
     public async Task Revoke_then_resolve_returns_null()
     {
         await using var db = NewDb();
@@ -108,5 +144,19 @@ public class SessionServiceTests
         Assert.Equal(2, removed);
         var remaining = await db.Sessions.SingleAsync();
         Assert.Equal(OidcProtocol.HashToken(live), remaining.TokenHash);
+    }
+
+    [Fact]
+    public async Task Purge_removes_a_session_with_no_refresh_token_and_an_expired_access_token()
+    {
+        await using var db = NewDb();
+        var service = new SessionService(db, Mock.Of<IKeycloakClient>());
+        // No refresh expiry (offline/no-refresh) + expired access → unresolvable; must still be reaped.
+        await service.CreateAsync("orphan", Tokens(accessMinutes: -10, refreshMinutes: null), CancellationToken.None);
+
+        var removed = await service.PurgeAsync(CancellationToken.None);
+
+        Assert.Equal(1, removed);
+        Assert.Empty(await db.Sessions.ToListAsync());
     }
 }
