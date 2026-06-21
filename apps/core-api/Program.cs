@@ -50,13 +50,13 @@ builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<INotificationPublisher>(sp => sp.GetRequiredService<NotificationService>());
 builder.Services.AddScoped<INotificationStore>(sp => sp.GetRequiredService<NotificationService>());
 
-// Persist DataProtection keys to a mounted volume so they survive container restarts
-// (Development/tests use the default ephemeral keystore).
+// DataProtection protects the session tokens at rest (and is needed wherever SessionService runs).
+// Outside Development the keyring is persisted to a mounted volume so the ciphertext survives restarts;
+// Development/tests use the default ephemeral keystore (a host-dev restart simply re-logs-in).
+var dataProtection = builder.Services.AddDataProtection().SetApplicationName("pcc-core-api");
 if (!builder.Environment.IsDevelopment())
 {
-    builder.Services.AddDataProtection()
-        .PersistKeysToFileSystem(new DirectoryInfo("/keys"))
-        .SetApplicationName("pcc-core-api");
+    dataProtection.PersistKeysToFileSystem(new DirectoryInfo("/keys"));
 }
 
 // JwtBearer validates the Keycloak access token; the token is sourced from the mp_sid cookie.

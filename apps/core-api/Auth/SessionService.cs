@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using CoreApi.Data;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 
 namespace CoreApi.Auth;
@@ -7,9 +8,10 @@ namespace CoreApi.Auth;
 /// <summary>
 /// The whole server-owned session lifecycle over Postgres: issue an opaque token (storing only
 /// its hash), resolve it to a valid access token (transparently refreshing via Keycloak),
-/// revoke it for instant logout, and purge revoked/expired rows.
+/// revoke it for instant logout, and purge revoked/expired rows. The Keycloak access/refresh
+/// tokens are encrypted at rest (DataProtection); only their hashes-equivalent ciphertext is stored.
 /// </summary>
-public sealed class SessionService(PccDbContext db, IKeycloakClient keycloak) : ISessionService
+public sealed class SessionService : ISessionService
 {
     private static readonly TimeSpan Leeway = TimeSpan.FromSeconds(30);
 
@@ -18,6 +20,21 @@ public sealed class SessionService(PccDbContext db, IKeycloakClient keycloak) : 
     // two parallel refreshes would race and the loser would invalidate the winner's new token.
     private static readonly ConcurrentDictionary<string, SemaphoreSlim> RefreshGates = new(StringComparer.Ordinal);
 
+    private readonly PccDbContext db;
+    private readonly IKeycloakClient keycloak;
+    private readonly IDataProtector protector;
+
+    public SessionService(PccDbContext db, IKeycloakClient keycloak, IDataProtectionProvider dataProtection)
+    {
+        this.db = db;
+        this.keycloak = keycloak;
+        // Tokens are encrypted with a key that lives outside the DB (the persisted /keys keyring), so a
+        // database-only leak can't use them.
+        protector = dataProtection.CreateProtector("pcc.session-tokens.v1");
+    }
+
+    private string? Protect(string? value) => value is null ? null : protector.Protect(value);
+
     public async Task<string> CreateAsync(string subject, TokenSet tokens, CancellationToken ct)
     {
         var (raw, hash) = OidcProtocol.CreateSessionToken();
@@ -25,8 +42,8 @@ public sealed class SessionService(PccDbContext db, IKeycloakClient keycloak) : 
         {
             TokenHash = hash,
             Subject = subject,
-            AccessToken = tokens.AccessToken,
-            RefreshToken = tokens.RefreshToken,
+            AccessToken = protector.Protect(tokens.AccessToken),
+            RefreshToken = Protect(tokens.RefreshToken),
             AccessTokenExpiresAt = tokens.AccessExpiresAt,
             RefreshTokenExpiresAt = tokens.RefreshExpiresAt,
         });
@@ -46,7 +63,7 @@ public sealed class SessionService(PccDbContext db, IKeycloakClient keycloak) : 
 
         if (session.AccessTokenExpiresAt > DateTimeOffset.UtcNow.Add(Leeway))
         {
-            return session.AccessToken;
+            return protector.Unprotect(session.AccessToken);
         }
 
         // The access token is expired — serialize the refresh per session so concurrent requests don't
@@ -66,22 +83,22 @@ public sealed class SessionService(PccDbContext db, IKeycloakClient keycloak) : 
             var now = DateTimeOffset.UtcNow;
             if (session.AccessTokenExpiresAt > now.Add(Leeway))
             {
-                return session.AccessToken;
+                return protector.Unprotect(session.AccessToken);
             }
 
             // A refresh token is usable when present and either non-expiring (an offline token, stored
             // with a null expiry) or not yet past its expiry.
-            if (session.RefreshToken is { } refresh
+            if (session.RefreshToken is { } encryptedRefresh
                 && (session.RefreshTokenExpiresAt is null || session.RefreshTokenExpiresAt > now))
             {
-                var refreshed = await keycloak.RefreshAsync(refresh, ct);
+                var refreshed = await keycloak.RefreshAsync(protector.Unprotect(encryptedRefresh), ct);
                 if (refreshed is null)
                 {
                     return null;
                 }
 
-                session.AccessToken = refreshed.AccessToken;
-                session.RefreshToken = refreshed.RefreshToken;
+                session.AccessToken = protector.Protect(refreshed.AccessToken);
+                session.RefreshToken = Protect(refreshed.RefreshToken);
                 session.AccessTokenExpiresAt = refreshed.AccessExpiresAt;
                 session.RefreshTokenExpiresAt = refreshed.RefreshExpiresAt;
                 session.UpdatedAt = now;

@@ -1,5 +1,6 @@
 using CoreApi.Auth;
 using CoreApi.Data;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 
@@ -7,6 +8,12 @@ namespace CoreApi.Tests.Auth;
 
 public class SessionServiceTests
 {
+    // One shared ephemeral protector so tokens encrypted by one service instance can be decrypted by
+    // another (the concurrent-refresh test spans separate SessionService instances).
+    private static readonly IDataProtectionProvider Dp = new EphemeralDataProtectionProvider();
+
+    private static SessionService Svc(PccDbContext db, IKeycloakClient keycloak) => new(db, keycloak, Dp);
+
     private static PccDbContext NewDb() =>
         new(new DbContextOptionsBuilder<PccDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
@@ -23,21 +30,22 @@ public class SessionServiceTests
     public async Task CreateAsync_persists_hash_not_raw_and_returns_raw()
     {
         await using var db = NewDb();
-        var service = new SessionService(db, Mock.Of<IKeycloakClient>());
+        var service = Svc(db, Mock.Of<IKeycloakClient>());
 
         var raw = await service.CreateAsync("sub-1", Tokens(), CancellationToken.None);
 
         var stored = await db.Sessions.SingleAsync();
         Assert.NotEqual(raw, stored.TokenHash);
         Assert.Equal(OidcProtocol.HashToken(raw), stored.TokenHash);
-        Assert.Equal("access-token", stored.AccessToken);
+        Assert.NotEqual("access-token", stored.AccessToken); // encrypted at rest (round-trip covered by Resolve tests)
+        Assert.NotEqual("refresh-token", stored.RefreshToken);
     }
 
     [Fact]
     public async Task Resolve_returns_unexpired_access_token()
     {
         await using var db = NewDb();
-        var service = new SessionService(db, Mock.Of<IKeycloakClient>());
+        var service = Svc(db, Mock.Of<IKeycloakClient>());
         var raw = await service.CreateAsync("sub-1", Tokens(accessMinutes: 10), CancellationToken.None);
 
         var token = await service.ResolveAccessTokenAsync(raw, CancellationToken.None);
@@ -53,16 +61,16 @@ public class SessionServiceTests
         keycloak.Setup(k => k.RefreshAsync("refresh-token", It.IsAny<CancellationToken>()))
             .ReturnsAsync(new TokenSet("new-access", "new-refresh",
                 DateTimeOffset.UtcNow.AddMinutes(10), DateTimeOffset.UtcNow.AddMinutes(60)));
-        var service = new SessionService(db, keycloak.Object);
+        var service = Svc(db, keycloak.Object);
         var raw = await service.CreateAsync("sub-1",
             Tokens(accessMinutes: -1, refreshMinutes: 60), CancellationToken.None);
 
         var token = await service.ResolveAccessTokenAsync(raw, CancellationToken.None);
 
-        Assert.Equal("new-access", token);
+        Assert.Equal("new-access", token); // resolve returns the decrypted token (proves round-trip)
         var stored = await db.Sessions.SingleAsync();
-        Assert.Equal("new-access", stored.AccessToken);
-        Assert.Equal("new-refresh", stored.RefreshToken);
+        Assert.NotEqual("new-access", stored.AccessToken); // re-encrypted at rest
+        Assert.NotEqual("new-refresh", stored.RefreshToken);
     }
 
     [Fact]
@@ -75,7 +83,7 @@ public class SessionServiceTests
         keycloak.Setup(k => k.RefreshAsync("refresh-token", It.IsAny<CancellationToken>()))
             .ReturnsAsync(new TokenSet("new-access", "new-refresh",
                 DateTimeOffset.UtcNow.AddMinutes(10), RefreshExpiresAt: null));
-        var service = new SessionService(db, keycloak.Object);
+        var service = Svc(db, keycloak.Object);
         var raw = await service.CreateAsync("sub-1",
             Tokens(accessMinutes: -1, refreshMinutes: null), CancellationToken.None);
 
@@ -91,7 +99,7 @@ public class SessionServiceTests
         var keycloak = new Mock<IKeycloakClient>();
         keycloak.Setup(k => k.RefreshAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((TokenSet?)null);
-        var service = new SessionService(db, keycloak.Object);
+        var service = Svc(db, keycloak.Object);
         var raw = await service.CreateAsync("sub-1",
             Tokens(accessMinutes: -1, refreshMinutes: 60), CancellationToken.None);
 
@@ -122,15 +130,15 @@ public class SessionServiceTests
         string raw;
         await using (var seed = new PccDbContext(Opts()))
         {
-            raw = await new SessionService(seed, keycloak.Object)
+            raw = await Svc(seed, keycloak.Object)
                 .CreateAsync("sub", Tokens(accessMinutes: -1, refreshMinutes: 60), CancellationToken.None);
         }
 
         await using var dbA = new PccDbContext(Opts());
         await using var dbB = new PccDbContext(Opts());
         var results = await Task.WhenAll(
-            new SessionService(dbA, keycloak.Object).ResolveAccessTokenAsync(raw, CancellationToken.None),
-            new SessionService(dbB, keycloak.Object).ResolveAccessTokenAsync(raw, CancellationToken.None));
+            Svc(dbA, keycloak.Object).ResolveAccessTokenAsync(raw, CancellationToken.None),
+            Svc(dbB, keycloak.Object).ResolveAccessTokenAsync(raw, CancellationToken.None));
 
         Assert.All(results, r => Assert.Equal("new-access", r));
         Assert.Equal(1, refreshes);
@@ -140,7 +148,7 @@ public class SessionServiceTests
     public async Task Revoke_then_resolve_returns_null()
     {
         await using var db = NewDb();
-        var service = new SessionService(db, Mock.Of<IKeycloakClient>());
+        var service = Svc(db, Mock.Of<IKeycloakClient>());
         var raw = await service.CreateAsync("sub-1", Tokens(), CancellationToken.None);
 
         await service.RevokeAsync(raw, CancellationToken.None);
@@ -152,7 +160,7 @@ public class SessionServiceTests
     public async Task Purge_removes_revoked_and_expired_sessions()
     {
         await using var db = NewDb();
-        var service = new SessionService(db, Mock.Of<IKeycloakClient>());
+        var service = Svc(db, Mock.Of<IKeycloakClient>());
         var live = await service.CreateAsync("live", Tokens(), CancellationToken.None);
         var revoked = await service.CreateAsync("revoked", Tokens(), CancellationToken.None);
         await service.CreateAsync("expired", Tokens(accessMinutes: -10, refreshMinutes: -5), CancellationToken.None);
@@ -169,7 +177,7 @@ public class SessionServiceTests
     public async Task Purge_removes_a_session_with_no_refresh_token_and_an_expired_access_token()
     {
         await using var db = NewDb();
-        var service = new SessionService(db, Mock.Of<IKeycloakClient>());
+        var service = Svc(db, Mock.Of<IKeycloakClient>());
         // No refresh token at all + expired access → unresolvable; must be reaped.
         await service.CreateAsync(
             "orphan",
@@ -188,7 +196,7 @@ public class SessionServiceTests
         // An offline session (refresh token present, no expiry, recently used) is still usable even with
         // an expired access token — it must NOT be reaped.
         await using var db = NewDb();
-        var service = new SessionService(db, Mock.Of<IKeycloakClient>());
+        var service = Svc(db, Mock.Of<IKeycloakClient>());
         await service.CreateAsync("offline", Tokens(accessMinutes: -10, refreshMinutes: null), CancellationToken.None);
 
         var removed = await service.PurgeAsync(CancellationToken.None);
@@ -201,7 +209,7 @@ public class SessionServiceTests
     public async Task Purge_removes_an_offline_session_idle_past_the_offline_window()
     {
         await using var db = NewDb();
-        var service = new SessionService(db, Mock.Of<IKeycloakClient>());
+        var service = Svc(db, Mock.Of<IKeycloakClient>());
         await service.CreateAsync("stale", Tokens(accessMinutes: -10, refreshMinutes: null), CancellationToken.None);
         var session = await db.Sessions.SingleAsync();
         session.UpdatedAt = DateTimeOffset.UtcNow.AddDays(-120); // beyond the 90-day offline idle cap

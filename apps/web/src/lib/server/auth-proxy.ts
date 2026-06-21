@@ -20,10 +20,22 @@ export async function proxyAuth(
   const { search } = new URL(request.url)
   const cookie = forwardCookieHeader(request.headers.get('cookie'), secure)
 
+  // Forward the request body for non-GET methods so a future POST auth endpoint (e.g. back-channel
+  // logout) isn't silently emptied. Auth is GET-only today, so this is a latent safety net.
+  const forwardsBody = request.method !== 'GET' && request.method !== 'HEAD'
+  const requestHeaders: Record<string, string> = {}
+  if (cookie) requestHeaders.cookie = cookie
+  const requestContentType = request.headers.get('content-type')
+  if (forwardsBody && requestContentType)
+    requestHeaders['content-type'] = requestContentType
+
   const upstream = await fetch(`${apiUrl()}/api/auth/${splat}${search}`, {
     method: request.method,
-    headers: cookie ? { cookie } : {},
+    headers: requestHeaders,
     redirect: 'manual', // we relay the 302s to the browser ourselves
+    ...(forwardsBody && request.body
+      ? { body: request.body, duplex: 'half' }
+      : {}),
   })
 
   const headers = new Headers()
