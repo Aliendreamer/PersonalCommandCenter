@@ -1,6 +1,6 @@
 services:
-  # Reverse proxy — the ONLY published port. Routes *.pcc.localhost to the services below
-  # (docker provider) and the standalone Portainer (file provider, see harness/traefik).
+  # Reverse proxy — the ONLY published port. Routes *.pcc.localhost via the FILE provider
+  # only (harness/traefik/dynamic.yml) — no docker provider, no docker.sock mount here.
   proxy:
     image: traefik:v3.2
     command:
@@ -40,10 +40,7 @@ services:
       KC_PROXY_HEADERS: xforwarded
     volumes:
       - ./harness/keycloak:/opt/keycloak/data/import:ro
-    labels:
-      - traefik.enable=true
-      - 'traefik.http.routers.keycloak.rule=Host(`keycloak.pcc.localhost`)'
-      - traefik.http.services.keycloak.loadbalancer.server.port=8080
+    # Routed via the Traefik file provider (harness/traefik/dynamic.yml), not docker labels.
 
   core-api:
     build:
@@ -87,18 +84,15 @@ services:
     # `core-api:8080` on the compose network, from the web SSR server.
 
   home-assistant:
-    image: ghcr.io/home-assistant/home-assistant:stable
+    image: ghcr.io/home-assistant/home-assistant:2026.6.3
     volumes:
       - ha-config:/config
       # Reverse-proxy config managed in git (overlays the volume's configuration.yaml).
       - ./harness/home-assistant/configuration.yaml:/config/configuration.yaml:ro
-    labels:
-      - traefik.enable=true
-      - 'traefik.http.routers.ha.rule=Host(`ha.pcc.localhost`)'
-      - traefik.http.services.ha.loadbalancer.server.port=8123
+    # Routed via the Traefik file provider (harness/traefik/dynamic.yml), not docker labels.
 
   radicale:
-    image: tomsquest/docker-radicale:latest
+    image: tomsquest/docker-radicale:3.7.3.0
     # Internal-only CalDAV (no Traefik route) — core-api reaches it as `radicale:5232`.
     volumes:
       - radicale-data:/data
@@ -106,7 +100,7 @@ services:
       - ./harness/radicale/users:/config/users:ro
 
   searxng:
-    image: searxng/searxng:latest
+    image: searxng/searxng:2026.6.16-502c820a2
     # Internal metasearch — core-api reaches it as `http://searxng:8080`; UI at searxng.pcc.localhost.
     volumes:
       - ./harness/searxng/settings.yml:/etc/searxng/settings.yml:ro
@@ -114,7 +108,7 @@ services:
       SEARXNG_BASE_URL: 'http://searxng.pcc.localhost/'
 
   ntfy:
-    image: binwiederhier/ntfy:latest
+    image: binwiederhier/ntfy:v2.24.0
     command: serve
     # core-api publishes to it as `http://ntfy:80`; the web UI is at ntfy.pcc.localhost (Traefik).
     # External reachability (phone push from outside) is deferred — internal-only for now.
@@ -128,7 +122,7 @@ services:
 
   # --- Base-infra shared stack (leading compose; router-only, no host ports except Redis-TCP) ---
   ollama:
-    image: ollama/ollama:latest
+    image: ollama/ollama:0.30.9
     # GPU-accelerated local LLM. Reached via ollama.pcc.localhost (Traefik); no host port.
     deploy:
       resources:
@@ -141,7 +135,7 @@ services:
       - ollama-data:/root/.ollama
 
   qdrant:
-    image: qdrant/qdrant:latest
+    image: qdrant/qdrant:v1.18.2
     # Vector DB. REST via qdrant.pcc.localhost (Traefik); gRPC 6334 in-compose only; no host port.
     volumes:
       - qdrant-data:/qdrant/storage
@@ -163,12 +157,12 @@ services:
       - portainer-data:/data
 
   wakapi:
-    image: ghcr.io/muety/wakapi:latest
+    image: ghcr.io/muety/wakapi:2.17.4
     # WakaTime-compatible coding-activity tracker. Reached via wakapi.pcc.localhost AND on host
     # localhost:3030 — the WakaTime CLI (Go, in WSL) needs a plain localhost host:port because it
     # doesn't resolve *.pcc.localhost. Editor api_url -> http://localhost:3030/api.
     ports:
-      - '3030:3000'
+      - '127.0.0.1:3030:3000'
     environment:
       WAKAPI_PASSWORD_SALT: '${WAKAPI_PASSWORD_SALT:-pcc-dev-salt}'
       WAKAPI_LISTEN_IPV4: '0.0.0.0'
@@ -177,7 +171,7 @@ services:
       - wakapi-data:/data
 
   pgadmin:
-    image: dpage/pgadmin4:latest
+    image: dpage/pgadmin4:9.15
     # Postgres admin console. Reached via pgadmin.pcc.localhost (Traefik); no host port.
     # Pre-wired to the PCC Postgres via servers.json (the user supplies the DB password on connect).
     environment:
@@ -192,19 +186,19 @@ services:
 
   # --- Observability: OTLP collector -> Tempo (traces) + Prometheus (metrics) -> Grafana ---
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:latest
+    image: otel/opentelemetry-collector-contrib:0.154.0
     command: ['--config=/etc/otelcol-contrib/config.yaml']
     # OTLP in on host 4317 (gRPC) / 4318 (HTTP) so PCC AND other projects can send telemetry here.
     ports:
-      - '4317:4317'
-      - '4318:4318'
+      - '127.0.0.1:4317:4317'
+      - '127.0.0.1:4318:4318'
     volumes:
       - ./harness/otel/config.yaml:/etc/otelcol-contrib/config.yaml:ro
     depends_on:
       - tempo
 
   tempo:
-    image: grafana/tempo:latest
+    image: grafana/tempo:3.0.0
     command: ['-config.file=/etc/tempo.yaml']
     # Trace store. Reached via tempo.pcc.localhost (Traefik); no host port.
     volumes:
@@ -212,7 +206,7 @@ services:
       - tempo-data:/var/tempo
 
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus:v3.5.4
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -222,7 +216,7 @@ services:
       - prometheus-data:/prometheus
 
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:13.0.2
     # Dashboards. Reached via grafana.pcc.localhost (Traefik); no host port.
     environment:
       GF_SECURITY_ADMIN_PASSWORD: '${GRAFANA_ADMIN_PASSWORD:-pcc-grafana-dev}'
@@ -235,7 +229,7 @@ services:
       - tempo
 
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:latest
+    image: gcr.io/cadvisor/cadvisor:v0.55.1
     # Per-container metrics, scraped by Prometheus (internal).
     privileged: true
     volumes:
@@ -246,7 +240,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
 
   node-exporter:
-    image: prom/node-exporter:latest
+    image: prom/node-exporter:v1.11.1
     # Host metrics, scraped by Prometheus (internal). Plain ro bind — WSL2 rejects rslave on /.
     command:
       - '--path.rootfs=/host'
@@ -278,10 +272,7 @@ services:
       API_URL: 'http://core-api:8080'
     depends_on:
       - core-api
-    labels:
-      - traefik.enable=true
-      - 'traefik.http.routers.app.rule=Host(`app.pcc.localhost`)'
-      - traefik.http.services.app.loadbalancer.server.port=3000
+    # Routed via the Traefik file provider (harness/traefik/dynamic.yml), not docker labels.
 
 volumes:
   ha-config:
