@@ -1,11 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { MantineProvider } from '@mantine/core'
+import { cleanup, fireEvent, render, screen } from '../test/render'
 import { TaskForm } from './task-form'
-import { mantineTheme } from '../lib/theme'
 
 function renderForm(ui: React.ReactNode) {
-  return render(<MantineProvider theme={mantineTheme}>{ui}</MantineProvider>)
+  return render(ui)
 }
 
 afterEach(cleanup)

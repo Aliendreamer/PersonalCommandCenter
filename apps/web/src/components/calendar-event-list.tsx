@@ -69,7 +69,7 @@ export function CalendarEventList({
     <Stack gap="lg">
       {[...byDay.values()].map((list) => (
         <section
-          key={list[0].start}
+          key={new Date(list[0].start).toDateString()}
           data-testid={`day-${new Date(list[0].start).toDateString()}`}
         >
           <Title order={5} mb="xs">

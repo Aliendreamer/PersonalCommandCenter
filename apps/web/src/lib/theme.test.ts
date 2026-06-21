@@ -13,10 +13,10 @@ describe('parseThemeCookie', () => {
     expect(parseThemeCookie('pcc_theme=system')).toBe('system')
   })
 
-  it('defaults to system when missing or invalid', () => {
-    expect(parseThemeCookie(undefined)).toBe('system')
-    expect(parseThemeCookie('foo=bar')).toBe('system')
-    expect(parseThemeCookie('pcc_theme=neon')).toBe('system')
+  it('defaults to dark when missing or invalid (matches the documented no-cookie default)', () => {
+    expect(parseThemeCookie(undefined)).toBe('dark')
+    expect(parseThemeCookie('foo=bar')).toBe('dark')
+    expect(parseThemeCookie('pcc_theme=neon')).toBe('dark')
   })
 
   it('exposes the cookie name', () => {
@@ -64,7 +64,8 @@ describe('pccColorSchemeManager', () => {
     const mgr = pccColorSchemeManager()
     mgr.set('dark')
     mgr.clear()
-    expect(parseThemeCookie(document.cookie)).toBe('system')
+    // With the cookie gone, the no-cookie default applies (documented: dark).
+    expect(parseThemeCookie(document.cookie)).toBe('dark')
   })
 })
 

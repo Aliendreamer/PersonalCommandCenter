@@ -1,8 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { MantineProvider } from '@mantine/core'
+import { cleanup, fireEvent, render, screen } from '../test/render'
 import { ThemeToggle } from './theme-toggle'
-import { mantineTheme, pccColorSchemeManager } from '../lib/theme'
+import { pccColorSchemeManager } from '../lib/theme'
 
 function setSystemPrefersDark(prefersDark: boolean) {
   window.matchMedia = vi.fn().mockImplementation((query: string) => ({
@@ -18,15 +17,12 @@ function setSystemPrefersDark(prefersDark: boolean) {
 }
 
 function renderToggle() {
-  return render(
-    <MantineProvider
-      theme={mantineTheme}
-      colorSchemeManager={pccColorSchemeManager()}
-      defaultColorScheme="auto"
-    >
-      <ThemeToggle />
-    </MantineProvider>,
-  )
+  return render(<ThemeToggle />, {
+    mantineProps: {
+      colorSchemeManager: pccColorSchemeManager(),
+      defaultColorScheme: 'auto',
+    },
+  })
 }
 
 beforeEach(() => {

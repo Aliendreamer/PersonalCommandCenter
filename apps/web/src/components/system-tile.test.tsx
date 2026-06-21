@@ -1,9 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { cleanup, render, screen } from '@testing-library/react'
-import { MantineProvider } from '@mantine/core'
+import { cleanup, render, screen } from '../test/render'
 import type { SystemStatus } from '@pcc/contracts'
 import { SystemTile } from './system-tile'
-import { mantineTheme } from '../lib/theme'
 
 const status: SystemStatus = {
   apiHealthy: true,
@@ -13,7 +11,7 @@ const status: SystemStatus = {
 }
 
 function renderTile(ui: React.ReactNode) {
-  return render(<MantineProvider theme={mantineTheme}>{ui}</MantineProvider>)
+  return render(ui)
 }
 
 afterEach(cleanup)

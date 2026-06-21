@@ -17,19 +17,23 @@ function isThemePref(value: string | undefined): value is ThemePref {
   return value !== undefined && (PREFS as readonly string[]).includes(value)
 }
 
-/** Read the `pcc_theme` preference from a Cookie header; defaults to `system`. */
+/**
+ * Read the `pcc_theme` preference from a Cookie header; defaults to `dark` when the cookie is
+ * absent or invalid — matching the documented "no cookie → dark" default used by
+ * `initialColorScheme` and the blocking inline head script in `__root.tsx`.
+ */
 export function parseThemeCookie(cookieHeader: string | undefined): ThemePref {
   if (!cookieHeader) {
-    return 'system'
+    return 'dark'
   }
   for (const part of cookieHeader.split(';')) {
     const [name, ...rest] = part.trim().split('=')
     if (name === THEME_COOKIE) {
       const value = rest.join('=')
-      return isThemePref(value) ? value : 'system'
+      return isThemePref(value) ? value : 'dark'
     }
   }
-  return 'system'
+  return 'dark'
 }
 
 // ── Mantine integration ───────────────────────────────────────────────────────

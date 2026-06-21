@@ -1,11 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { MantineProvider } from '@mantine/core'
+import { cleanup, fireEvent, render, screen } from '../test/render'
 import { CalendarEventForm } from './calendar-event-form'
-import { mantineTheme } from '../lib/theme'
 
 function renderForm(ui: React.ReactNode) {
-  return render(<MantineProvider theme={mantineTheme}>{ui}</MantineProvider>)
+  return render(ui)
 }
 
 afterEach(cleanup)
@@ -38,6 +36,25 @@ describe('CalendarEventForm', () => {
       new Date('2026-06-15T12:00').getTime(),
     )
     expect(input.allDay).toBe(false)
+  })
+
+  it('blocks submit and shows an error when end is not after start', () => {
+    const onSubmit = vi.fn()
+    renderForm(<CalendarEventForm onSubmit={onSubmit} />)
+
+    fireEvent.change(screen.getByLabelText(/Title/), {
+      target: { value: 'Bad range' },
+    })
+    fireEvent.change(screen.getByLabelText(/Start/), {
+      target: { value: '2026-06-15T13:00' },
+    })
+    fireEvent.change(screen.getByLabelText(/End/), {
+      target: { value: '2026-06-15T12:00' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+    expect(onSubmit).not.toHaveBeenCalled()
+    expect(screen.getByText(/end must be after start/i)).toBeDefined()
   })
 
   it('pre-fills when editing an existing event', () => {

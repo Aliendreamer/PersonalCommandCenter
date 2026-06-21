@@ -25,13 +25,46 @@ import { CalendarEventList } from '../../components/calendar-event-list'
 import { CalendarEventForm } from '../../components/calendar-event-form'
 import { PluginPage } from '../../components/plugin-page'
 
+// The viewed month is JSON-validated search-param state (`year`/`month`, month 1-12) so the loader
+// refetches the visible month's events as the user navigates — even across years. Absent/invalid
+// params fall back to the current month (resolved server-side, so SSR matches the URL default).
+interface CalendarSearch {
+  year: number
+  month: number
+}
+
+function isMonth(value: unknown): value is number {
+  return (
+    typeof value === 'number' &&
+    Number.isInteger(value) &&
+    value >= 1 &&
+    value <= 12
+  )
+}
+
+function isYear(value: unknown): value is number {
+  return (
+    typeof value === 'number' &&
+    Number.isInteger(value) &&
+    value >= 1970 &&
+    value <= 9999
+  )
+}
+
 export const Route = createFileRoute('/_authenticated/calendar')({
-  // Load a browsing window (previous month through +3 months) so the month grid can show event
-  // dots and the selected day's events across the navigable range — not just the next few days.
-  loader: async () => {
+  validateSearch: (search: Record<string, unknown>): CalendarSearch => {
     const now = new Date()
-    const from = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-    const to = new Date(now.getFullYear(), now.getMonth() + 4, 1)
+    return {
+      year: isYear(search.year) ? search.year : now.getFullYear(),
+      month: isMonth(search.month) ? search.month : now.getMonth() + 1,
+    }
+  },
+  loaderDeps: ({ search: { year, month } }) => ({ year, month }),
+  // Load a browsing window (previous month through +1 month around the viewed month) so the grid can
+  // show event dots for the visible month plus a little context, refetched as the user navigates.
+  loader: async ({ deps: { year, month } }) => {
+    const from = new Date(year, month - 2, 1)
+    const to = new Date(year, month + 1, 1)
     return settle(
       getCalendarEventsRange({
         data: { from: from.toISOString(), to: to.toISOString() },
@@ -55,21 +88,32 @@ function sameDay(a: string | Date, b: Date): boolean {
 
 function CalendarPage() {
   const events = Route.useLoaderData()
+  const { year, month: monthNum } = Route.useSearch()
+  const navigate = Route.useNavigate()
   const router = useRouter()
 
-  // Dates are resolved on the client (after mount) so SSR/local-timezone differences can't cause a
-  // hydration mismatch in the "today"/selected highlighting — mirrors the dashboard hero's clock.
+  // The viewed month is driven by the URL search params, so SSR + the refetched loader stay
+  // consistent and year navigation refetches the visible window (the 1st of the viewed month).
+  const month = new Date(year, monthNum - 1, 1)
+
+  // `today`/`selected` are resolved on the client (after mount) so SSR/local-timezone differences
+  // can't cause a hydration mismatch in the "today"/selected highlighting — mirrors the hero clock.
   const [today, setToday] = useState<Date | null>(null)
-  const [month, setMonth] = useState<Date | null>(null)
   const [selected, setSelected] = useState<Date | null>(null)
   const [editor, setEditor] = useState<Editor>({ mode: 'closed' })
 
   useEffect(() => {
     const now = new Date()
     setToday(now)
-    setMonth(now)
     setSelected(now)
   }, [])
+
+  // Navigate the viewed month through the URL so the loader refetches that month's window.
+  function goToMonth(target: Date) {
+    void navigate({
+      search: { year: target.getFullYear(), month: target.getMonth() + 1 },
+    })
+  }
 
   async function refresh() {
     setEditor({ mode: 'closed' })
@@ -93,13 +137,15 @@ function CalendarPage() {
 
   function selectDay(day: Date) {
     setSelected(day)
-    setMonth(new Date(day.getFullYear(), day.getMonth(), 1))
     setEditor({ mode: 'closed' })
+    if (day.getFullYear() !== year || day.getMonth() + 1 !== monthNum) {
+      goToMonth(day)
+    }
   }
 
   const allEvents = events.data ?? []
 
-  if (!today || !month || !selected) {
+  if (!today || !selected) {
     return (
       <PluginPage title="Calendar">
         <Text size="sm" c="dimmed">
@@ -149,16 +195,16 @@ function CalendarPage() {
             events={allEvents}
             onSelectDay={selectDay}
             onPrevMonth={() =>
-              setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))
+              goToMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))
             }
             onNextMonth={() =>
-              setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))
+              goToMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))
             }
             onPrevYear={() =>
-              setMonth(new Date(month.getFullYear() - 1, month.getMonth(), 1))
+              goToMonth(new Date(month.getFullYear() - 1, month.getMonth(), 1))
             }
             onNextYear={() =>
-              setMonth(new Date(month.getFullYear() + 1, month.getMonth(), 1))
+              goToMonth(new Date(month.getFullYear() + 1, month.getMonth(), 1))
             }
             onToday={() => selectDay(today)}
           />

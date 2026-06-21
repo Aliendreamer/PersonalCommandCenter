@@ -48,6 +48,13 @@ export function CalendarEventForm({
       allDay: initial?.allDay ?? false,
       location: initial?.location ?? '',
     },
+    validate: {
+      // The end of an event must come strictly after its start.
+      end: (value, values) =>
+        value && values.start && new Date(value) <= new Date(values.start)
+          ? 'End must be after start'
+          : null,
+    },
   })
 
   return (
