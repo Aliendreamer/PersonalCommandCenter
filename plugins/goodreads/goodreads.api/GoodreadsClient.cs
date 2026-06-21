@@ -16,7 +16,15 @@ public sealed class GoodreadsClient(HttpClient http, IOptions<GoodreadsOptions> 
             throw new InvalidOperationException("Goodreads:UserId is not configured.");
         }
 
-        var url = $"{_options.BaseUrl.TrimEnd('/')}/review/list_rss/{_options.UserId}?shelf={Uri.EscapeDataString(_options.Shelf)}";
+        // Defense-in-depth (the server-side analogue of the FE safeHref rule): only dereference an
+        // http(s) base URL, so a misconfigured BaseUrl can't point the outbound fetch at another scheme.
+        if (!Uri.TryCreate(_options.BaseUrl, UriKind.Absolute, out var baseUri)
+            || (baseUri.Scheme != Uri.UriSchemeHttp && baseUri.Scheme != Uri.UriSchemeHttps))
+        {
+            throw new InvalidOperationException("Goodreads:BaseUrl must be an http(s) URL.");
+        }
+
+        var url = $"{_options.BaseUrl.TrimEnd('/')}/review/list_rss/{Uri.EscapeDataString(_options.UserId)}?shelf={Uri.EscapeDataString(_options.Shelf)}";
         // Goodreads serves 403 to clients without a browser-like User-Agent, so set one explicitly.
         using var request = new HttpRequestMessage(HttpMethod.Get, new Uri(url));
         request.Headers.UserAgent.ParseAdd("PersonalCommandCenter/1.0 (+https://github.com/PersonalCommandCenter)");

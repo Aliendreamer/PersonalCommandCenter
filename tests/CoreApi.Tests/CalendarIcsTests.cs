@@ -76,4 +76,20 @@ public class CalendarIcsTests
         Assert.Equal(new DateTimeOffset(2026, 6, 15, 14, 0, 0, TimeSpan.Zero), parsed.Start);
         Assert.Equal("line one and the rest", parsed.Description);
     }
+
+    [Fact]
+    public void Skips_an_event_with_an_unparseable_date_instead_of_throwing()
+    {
+        // One good event and one whose DTSTART/DTEND can't be parsed — the bad one is skipped so a
+        // single malformed event doesn't fail the whole listing.
+        const string data =
+            "BEGIN:VCALENDAR\r\n" +
+            "BEGIN:VEVENT\r\nUID:good\r\nSUMMARY:Good\r\nDTSTART:20260615T140000Z\r\nDTEND:20260615T150000Z\r\nEND:VEVENT\r\n" +
+            "BEGIN:VEVENT\r\nUID:bad\r\nSUMMARY:Bad\r\nDTSTART:not-a-date\r\nDTEND:also-bad\r\nEND:VEVENT\r\n" +
+            "END:VCALENDAR\r\n";
+
+        var parsed = Assert.Single(CalendarIcs.ParseEvents(data));
+
+        Assert.Equal("good", parsed.Uid);
+    }
 }

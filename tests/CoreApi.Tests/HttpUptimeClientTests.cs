@@ -61,6 +61,23 @@ public class HttpUptimeClientTests
     }
 
     [Fact]
+    public async Task Reports_down_for_a_malformed_target_url_without_failing_the_board()
+    {
+        // A bad target URL is that target's problem: it's reported down, the board still returns the rest.
+        var client = Create(new RoutingHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)),
+            new UptimeTarget { Name = "ok", Url = "https://ok.test" },
+            new UptimeTarget { Name = "bad", Url = "not a url" });
+
+        var checks = await client.CheckAllAsync();
+
+        Assert.Equal(2, checks.Count);
+        Assert.True(checks.Single(c => c.Name == "ok").Up);
+        var bad = checks.Single(c => c.Name == "bad");
+        Assert.False(bad.Up);
+        Assert.Null(bad.StatusCode);
+    }
+
+    [Fact]
     public async Task Throws_when_no_targets_configured()
     {
         var client = new HttpUptimeClient(new HttpClient(new RoutingHandler(_ => new HttpResponseMessage())),

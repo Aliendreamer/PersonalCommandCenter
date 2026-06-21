@@ -47,10 +47,13 @@ public sealed class CodingClient(HttpClient http, IOptions<CodingOptions> option
                 Top(d.Languages, PerDayTop)))
             .ToList();
 
+        // Today's seconds = the latest day, but only when it is actually today (UTC): a day with no
+        // activity yet is absent from the Wakapi response, so `days[^1]` would otherwise be a prior day.
+        var today = DateTimeOffset.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         return new CodingStatus(
             range,
             summary?.CumulativeTotal?.Seconds ?? 0,
-            days.Count > 0 ? days[^1].Seconds : 0,
+            days.Count > 0 && days[^1].Date == today ? days[^1].Seconds : 0,
             days,
             Aggregate(summary?.Data, d => d.Projects),
             Aggregate(summary?.Data, d => d.Languages));

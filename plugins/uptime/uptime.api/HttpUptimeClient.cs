@@ -25,10 +25,16 @@ public sealed class HttpUptimeClient(HttpClient http, IOptions<UptimeOptions> op
 
     private async Task<UptimeCheck> PingAsync(UptimeTarget target, CancellationToken cancellationToken)
     {
+        // A malformed/scheme-less target URL is that target's problem, not the whole board's: report it
+        // "down" rather than letting the parse throw out of CheckAllAsync and 502 every target.
+        if (!Uri.TryCreate(target.Url, UriKind.Absolute, out var uri))
+        {
+            return new UptimeCheck(target.Name, target.Url, false, null, 0);
+        }
+
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeout.CancelAfter(TimeSpan.FromSeconds(_options.TimeoutSeconds));
 
-        var uri = new Uri(target.Url);
         return uri.Scheme == "tcp"
             ? await TcpPingAsync(target, uri, timeout.Token)
             : await HttpPingAsync(target, uri, timeout.Token);
@@ -57,6 +63,11 @@ public sealed class HttpUptimeClient(HttpClient http, IOptions<UptimeOptions> op
     // socket connects within the timeout, so StatusCode is always null for these.
     private async Task<UptimeCheck> TcpPingAsync(UptimeTarget target, Uri uri, CancellationToken cancellationToken)
     {
+        if (uri.Port <= 0)
+        {
+            return new UptimeCheck(target.Name, target.Url, false, null, 0); // tcp:// target with no port
+        }
+
         var stopwatch = Stopwatch.StartNew();
         try
         {

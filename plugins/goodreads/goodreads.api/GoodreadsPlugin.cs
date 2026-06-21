@@ -32,8 +32,9 @@ internal sealed class GetGoodreadsEndpoint : EndpointWithoutRequest<IReadOnlyLis
         {
             await Send.OkAsync(await client.GetShelfAsync(ct), ct);
         }
-        catch (Exception)
+        catch (Exception) when (!ct.IsCancellationRequested)
         {
+            // A real upstream failure degrades to 502; a client-cancelled request propagates.
             await Send.ResultAsync(Results.StatusCode(StatusCodes.Status502BadGateway));
         }
     }

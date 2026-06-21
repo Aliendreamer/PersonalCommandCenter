@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using System.Text;
 using Microsoft.Extensions.Options;
@@ -40,7 +41,7 @@ public class CodingClientTests
 
         Assert.Equal("week", status.Range);
         Assert.Equal(1612, status.TotalSeconds);
-        Assert.Equal(200, status.TodaySeconds); // last day element
+        Assert.Equal(0, status.TodaySeconds); // neither fixed day (2026-06-15/18) is today → 0
         Assert.Equal(["2026-06-15", "2026-06-18"], status.Days.Select(d => d.Date));
         Assert.Equal([1412, 200], status.Days.Select(d => d.Seconds));
 
@@ -57,6 +58,38 @@ public class CodingClientTests
 
         Assert.Equal("Markdown", status.Languages[0].Name);
         Assert.Equal(1412, status.Languages[0].Seconds);
+    }
+
+    [Fact]
+    public async Task TodaySeconds_is_zero_when_today_has_no_entry()
+    {
+        // Wakapi omits days with no activity, so a range whose latest day is in the past must report 0
+        // for today — not silently surface the latest (prior) day's seconds.
+        var client = Create(out _, Week);
+
+        var status = await client.GetStatusAsync("week");
+
+        Assert.Equal(0, status.TodaySeconds);
+    }
+
+    [Fact]
+    public async Task TodaySeconds_reflects_todays_entry_when_present()
+    {
+        var today = DateTimeOffset.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var body = $$"""
+            {
+              "data": [
+                { "grand_total": { "total_seconds": 50 }, "range": { "start": "2026-01-01T00:00:00Z" }, "projects": [], "languages": [] },
+                { "grand_total": { "total_seconds": 777 }, "range": { "start": "{{today}}T08:00:00Z" }, "projects": [], "languages": [] }
+              ],
+              "cumulative_total": { "seconds": 827 }
+            }
+            """;
+        var client = Create(out _, body);
+
+        var status = await client.GetStatusAsync("week");
+
+        Assert.Equal(777, status.TodaySeconds);
     }
 
     [Fact]

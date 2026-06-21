@@ -16,6 +16,7 @@ public sealed class CalDavClient : ICalendarClient
 
     private readonly HttpClient _http;
     private readonly CalendarOptions _options;
+    private readonly Uri _collectionUri;
 
     public CalDavClient(HttpClient http, IOptions<CalendarOptions> options)
     {
@@ -26,14 +27,21 @@ public sealed class CalDavClient : ICalendarClient
             throw new InvalidOperationException("Calendar:BaseUrl is not configured.");
         }
 
+        // Parse the collection URI once, up front: a malformed BaseUrl fails fast here with a clear
+        // message instead of throwing an opaque UriFormatException deep inside every request.
+        if (!Uri.TryCreate($"{_options.BaseUrl.TrimEnd('/')}/{_options.Collection.Trim('/')}/", UriKind.Absolute, out var collectionUri))
+        {
+            throw new InvalidOperationException("Calendar:BaseUrl is not a valid absolute URL.");
+        }
+
+        _collectionUri = collectionUri;
+
         var credentials = Convert.ToBase64String(
             Encoding.UTF8.GetBytes($"{_options.Username}:{_options.Password}"));
         _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", credentials);
     }
 
-    private Uri CollectionUri => new($"{_options.BaseUrl.TrimEnd('/')}/{_options.Collection.Trim('/')}/");
-
-    private Uri EventUri(string uid) => new(CollectionUri, $"{uid}.ics");
+    private Uri EventUri(string uid) => new(_collectionUri, $"{uid}.ics");
 
     public async Task<IReadOnlyList<CalendarEvent>> ListAsync(DateTimeOffset from, DateTimeOffset to, CancellationToken cancellationToken = default)
     {
@@ -49,7 +57,7 @@ public sealed class CalDavClient : ICalendarClient
             </c:calendar-query>
             """;
 
-        using var request = new HttpRequestMessage(Report, CollectionUri)
+        using var request = new HttpRequestMessage(Report, _collectionUri)
         {
             Content = new StringContent(body, Encoding.UTF8, "application/xml"),
         };
@@ -117,7 +125,7 @@ public sealed class CalDavClient : ICalendarClient
 
     private async Task EnsureCollectionAsync(CancellationToken cancellationToken)
     {
-        using var request = new HttpRequestMessage(MkCalendar, CollectionUri);
+        using var request = new HttpRequestMessage(MkCalendar, _collectionUri);
         using var response = await _http.SendAsync(request, cancellationToken);
         // The collection already exists when MKCALENDAR is rejected with 405 (Method Not Allowed,
         // per RFC 4791) or 409 (Conflict, as Radicale reports it); both are fine. Anything else

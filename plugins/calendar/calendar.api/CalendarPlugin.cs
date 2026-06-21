@@ -53,8 +53,10 @@ internal sealed class ListCalendarEventsEndpoint : EndpointWithoutRequest<IReadO
             var events = await client.ListAsync(rangeFrom, rangeTo, ct);
             await Send.OkAsync(events, ct);
         }
-        catch (Exception)
+        catch (Exception) when (!ct.IsCancellationRequested)
         {
+            // A real upstream failure degrades to 502; a client-cancelled request propagates instead of
+            // being rewritten into a 502 written to an already-closed connection.
             await Send.ResultAsync(Results.StatusCode(StatusCodes.Status502BadGateway));
         }
     }
@@ -79,8 +81,10 @@ internal sealed class CreateCalendarEventEndpoint : Endpoint<CalendarEventInput,
             var created = await client.CreateAsync(req, ct);
             await Send.ResultAsync(Results.Created($"/api/calendar/events/{created.Uid}", created));
         }
-        catch (Exception)
+        catch (Exception) when (!ct.IsCancellationRequested)
         {
+            // A real upstream failure degrades to 502; a client-cancelled request propagates instead of
+            // being rewritten into a 502 written to an already-closed connection.
             await Send.ResultAsync(Results.StatusCode(StatusCodes.Status502BadGateway));
         }
     }
@@ -114,8 +118,10 @@ internal sealed class UpdateCalendarEventEndpoint : Endpoint<UpdateCalendarEvent
 
             await Send.OkAsync(updated, ct);
         }
-        catch (Exception)
+        catch (Exception) when (!ct.IsCancellationRequested)
         {
+            // A real upstream failure degrades to 502; a client-cancelled request propagates instead of
+            // being rewritten into a 502 written to an already-closed connection.
             await Send.ResultAsync(Results.StatusCode(StatusCodes.Status502BadGateway));
         }
     }
@@ -141,8 +147,10 @@ internal sealed class DeleteCalendarEventEndpoint : EndpointWithoutRequest
 
             await Send.NoContentAsync(ct);
         }
-        catch (Exception)
+        catch (Exception) when (!ct.IsCancellationRequested)
         {
+            // A real upstream failure degrades to 502; a client-cancelled request propagates instead of
+            // being rewritten into a 502 written to an already-closed connection.
             await Send.ResultAsync(Results.StatusCode(StatusCodes.Status502BadGateway));
         }
     }

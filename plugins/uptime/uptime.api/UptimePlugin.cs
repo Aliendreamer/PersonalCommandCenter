@@ -31,8 +31,9 @@ internal sealed class GetUptimeEndpoint : EndpointWithoutRequest<IReadOnlyList<U
         {
             await Send.OkAsync(await client.CheckAllAsync(ct), ct);
         }
-        catch (Exception)
+        catch (Exception) when (!ct.IsCancellationRequested)
         {
+            // A real upstream failure degrades to 502; a client-cancelled request propagates.
             await Send.ResultAsync(Results.StatusCode(StatusCodes.Status502BadGateway));
         }
     }

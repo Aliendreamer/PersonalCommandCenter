@@ -81,6 +81,43 @@ public class GoodreadsClientTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetShelfAsync());
     }
 
+    [Fact]
+    public async Task Escapes_the_user_id_in_the_url()
+    {
+        var handler = new StubHandler(Rss);
+        var client = new GoodreadsClient(new HttpClient(handler), Options.Create(new GoodreadsOptions
+        {
+            BaseUrl = "https://goodreads.test",
+            UserId = "a b/c",
+            Shelf = "currently-reading",
+        }));
+
+        await client.GetShelfAsync();
+
+        Assert.Contains("/review/list_rss/a%20b%2Fc", handler.LastRequest!.RequestUri!.AbsoluteUri, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Throws_when_the_feed_returns_an_error_status()
+    {
+        // A 403 (e.g. Goodreads blocking the request) must surface as a failure → the endpoint degrades to 502.
+        var client = new GoodreadsClient(
+            new HttpClient(new StatusHandler(HttpStatusCode.Forbidden)),
+            Options.Create(new GoodreadsOptions { BaseUrl = "https://goodreads.test", UserId = "42", Shelf = "read" }));
+
+        await Assert.ThrowsAnyAsync<Exception>(() => client.GetShelfAsync());
+    }
+
+    [Fact]
+    public async Task Throws_when_base_url_is_not_http()
+    {
+        var client = new GoodreadsClient(
+            new HttpClient(new StubHandler(Rss)),
+            Options.Create(new GoodreadsOptions { BaseUrl = "file:///etc/passwd", UserId = "42", Shelf = "read" }));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetShelfAsync());
+    }
+
     private static GoodreadsClient Create(string rss, out StubHandler handler)
     {
         handler = new StubHandler(rss);
@@ -105,5 +142,11 @@ public class GoodreadsClientTests
                 Content = new StringContent(rss, System.Text.Encoding.UTF8, "application/xml"),
             });
         }
+    }
+
+    private sealed class StatusHandler(HttpStatusCode status) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct) =>
+            Task.FromResult(new HttpResponseMessage(status));
     }
 }

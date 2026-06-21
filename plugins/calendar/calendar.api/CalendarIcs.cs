@@ -112,34 +112,47 @@ public static class CalendarIcs
         }
 
         var allDay = dtStart.Param.Contains("VALUE=DATE", StringComparison.OrdinalIgnoreCase);
+
+        // Skip an event we can't parse (e.g. a non-UTC/TZID or otherwise malformed DTSTART/DTEND)
+        // rather than throwing — one bad event must not fail the whole listing.
+        if (!TryParseDate(dtStart.Value, allDay, out var start) || !TryParseDate(dtEnd.Value, allDay, out var end))
+        {
+            return null;
+        }
+
         var title = fields.TryGetValue("SUMMARY", out var summary) ? Unescape(summary.Value) : "";
         var location = fields.TryGetValue("LOCATION", out var loc) ? Unescape(loc.Value) : null;
         var description = fields.TryGetValue("DESCRIPTION", out var desc) ? Unescape(desc.Value) : null;
 
-        return new CalendarEvent(
-            uid.Value,
-            title,
-            ParseDate(dtStart.Value, allDay),
-            ParseDate(dtEnd.Value, allDay),
-            allDay,
-            location,
-            description);
+        return new CalendarEvent(uid.Value, title, start, end, allDay, location, description);
     }
 
     private static string FormatTimed(DateTimeOffset value) =>
         value.ToUniversalTime().ToString(DateTimeFormat, CultureInfo.InvariantCulture) + "Z";
 
-    private static DateTimeOffset ParseDate(string value, bool allDay)
+    private static bool TryParseDate(string value, bool allDay, out DateTimeOffset result)
     {
         if (allDay)
         {
-            var date = DateTime.ParseExact(value, DateFormat, CultureInfo.InvariantCulture, DateTimeStyles.None);
-            return new DateTimeOffset(date.Year, date.Month, date.Day, 0, 0, 0, TimeSpan.Zero);
+            if (DateTime.TryParseExact(value, DateFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+            {
+                result = new DateTimeOffset(date.Year, date.Month, date.Day, 0, 0, 0, TimeSpan.Zero);
+                return true;
+            }
+
+            result = default;
+            return false;
         }
 
         var trimmed = value.EndsWith('Z') ? value[..^1] : value;
-        var dt = DateTime.ParseExact(trimmed, DateTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.None);
-        return new DateTimeOffset(dt, TimeSpan.Zero);
+        if (DateTime.TryParseExact(trimmed, DateTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dt))
+        {
+            result = new DateTimeOffset(dt, TimeSpan.Zero);
+            return true;
+        }
+
+        result = default;
+        return false;
     }
 
     // RFC 5545 line unfolding: a CRLF followed by a space or tab continues the previous line.
