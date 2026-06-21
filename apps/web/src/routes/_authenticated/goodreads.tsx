@@ -13,7 +13,7 @@ export const Route = createFileRoute('/_authenticated/goodreads')({
 function GoodreadsPage() {
   const result = Route.useLoaderData()
   return (
-    <PluginPage title="Reading">
+    <PluginPage title="Reading" fill>
       <BookList
         books={result.data ?? []}
         error={result.error ? 'unreachable' : undefined}

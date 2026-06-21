@@ -57,6 +57,7 @@ function TasksPage() {
   return (
     <PluginPage
       title="Tasks"
+      fill
       actions={
         !creating && (
           <Button size="sm" onClick={() => setCreating(true)}>

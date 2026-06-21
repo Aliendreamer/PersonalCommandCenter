@@ -13,7 +13,7 @@ export const Route = createFileRoute('/_authenticated/rss')({
 function RssPage() {
   const result = Route.useLoaderData()
   return (
-    <PluginPage title="Feeds">
+    <PluginPage title="Feeds" fill>
       <RssItemList
         items={result.data ?? []}
         error={result.error ? 'unreachable' : undefined}

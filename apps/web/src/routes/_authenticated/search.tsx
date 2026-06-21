@@ -27,7 +27,7 @@ function SearchPage() {
   const [input, setInput] = useState(q ?? '')
 
   return (
-    <PluginPage title="Search">
+    <PluginPage title="Search" fill>
       <form
         onSubmit={(e) => {
           e.preventDefault()

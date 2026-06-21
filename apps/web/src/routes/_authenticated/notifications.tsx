@@ -34,6 +34,8 @@ function NotificationsPage() {
   return (
     <PluginPage
       title="Notifications"
+      fill
+      scroll={false}
       actions={
         data &&
         data.unread > 0 && (

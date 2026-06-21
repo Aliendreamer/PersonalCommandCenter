@@ -13,7 +13,7 @@ export const Route = createFileRoute('/_authenticated/uptime')({
 function UptimePage() {
   const result = Route.useLoaderData()
   return (
-    <PluginPage title="Uptime">
+    <PluginPage title="Uptime" fill>
       <UptimeList
         checks={result.data ?? []}
         error={result.error ? 'unreachable' : undefined}

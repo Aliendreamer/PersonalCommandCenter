@@ -13,7 +13,7 @@ export const Route = createFileRoute('/_authenticated/devices')({
 function DevicesPage() {
   const entities = Route.useLoaderData()
   return (
-    <PluginPage title="Devices">
+    <PluginPage title="Devices" fill>
       <IotDeviceList
         entities={entities.data ?? []}
         error={entities.error ? 'unreachable' : undefined}
