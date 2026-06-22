@@ -23,6 +23,9 @@ export interface IotEntity {
   unit?: string | null;
 }
 
+/** The calendar backend an event lives in. */
+export type CalendarSource = 'pcc' | 'google';
+
 /** Mirrors the backend `CalendarEvent` returned by `GET /api/calendar/events`. */
 export interface CalendarEvent {
   uid: string;
@@ -33,6 +36,9 @@ export interface CalendarEvent {
   allDay: boolean;
   location?: string | null;
   description?: string | null;
+  /** Which backend owns this event ('pcc' CalDAV or 'google'); writes route here. Always sent by the
+   *  backend; optional in the type so existing fixtures keep compiling during the rollout. */
+  source?: CalendarSource;
 }
 
 /** The writable fields of a calendar event (create/update); the server owns the `uid`. */
@@ -43,6 +49,8 @@ export interface CalendarEventInput {
   allDay?: boolean;
   location?: string | null;
   description?: string | null;
+  /** Target calendar for a create (defaults to 'pcc' when omitted). */
+  calendar?: CalendarSource;
 }
 
 /** Mirrors the backend `TodoItem` returned by `GET /api/tasks`. */
