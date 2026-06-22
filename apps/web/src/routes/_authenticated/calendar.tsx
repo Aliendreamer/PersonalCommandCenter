@@ -1,13 +1,27 @@
 import { useEffect, useState } from 'react'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { Box, Button, Flex, Group, Paper, Text, Title } from '@mantine/core'
+import {
+  Box,
+  Button,
+  Flex,
+  Group,
+  Paper,
+  SegmentedControl,
+  Text,
+  Title,
+} from '@mantine/core'
 import { Plus } from 'lucide-react'
-import type { CalendarEvent, CalendarEventInput } from '@pcc/contracts'
+import type {
+  CalendarEvent,
+  CalendarEventInput,
+  CalendarSource,
+} from '@pcc/contracts'
 
 import {
   createCalendarEvent,
   deleteCalendarEvent,
   getCalendarEventsRange,
+  getCalendarSources,
   updateCalendarEvent,
 } from '../../lib/server/api'
 import { settle } from '../../lib/server/api-loaders'
@@ -69,7 +83,7 @@ export const Route = createFileRoute('/_authenticated/calendar')({
       now.getMonth(),
       now.getDate(),
     )
-    const [monthWindow, upcoming] = await Promise.all([
+    const [monthWindow, upcoming, sources] = await Promise.all([
       settle(
         getCalendarEventsRange({
           data: { from: from.toISOString(), to: to.toISOString() },
@@ -83,8 +97,9 @@ export const Route = createFileRoute('/_authenticated/calendar')({
           },
         }),
       ),
+      settle(getCalendarSources()),
     ])
-    return { monthWindow, upcoming }
+    return { monthWindow, upcoming, sources }
   },
   component: CalendarPage,
 })
@@ -112,6 +127,11 @@ function CalendarPage() {
   const [today, setToday] = useState<Date | null>(null)
   const [selected, setSelected] = useState<Date | null>(null)
   const [editor, setEditor] = useState<Editor>({ mode: 'closed' })
+  // Which calendar a new event is created in (only meaningful when Google is also configured).
+  const [createTarget, setCreateTarget] = useState<CalendarSource>('pcc')
+
+  const sources = data.sources.data ?? ['pcc']
+  const googleEnabled = sources.includes('google')
 
   useEffect(() => {
     const now = new Date()
@@ -132,17 +152,23 @@ function CalendarPage() {
   }
 
   async function onCreate(input: CalendarEventInput) {
-    await createCalendarEvent({ data: input })
+    await createCalendarEvent({ data: { ...input, calendar: createTarget } })
     await refresh()
   }
 
-  async function onUpdate(uid: string, input: CalendarEventInput) {
-    await updateCalendarEvent({ data: { uid, event: input } })
+  async function onUpdate(
+    uid: string,
+    input: CalendarEventInput,
+    source: string,
+  ) {
+    await updateCalendarEvent({ data: { uid, event: input, source } })
     await refresh()
   }
 
   async function onDelete(event: CalendarEvent) {
-    await deleteCalendarEvent({ data: event.uid })
+    await deleteCalendarEvent({
+      data: { uid: event.uid, source: event.source ?? 'pcc' },
+    })
     await refresh()
   }
 
@@ -246,18 +272,42 @@ function CalendarPage() {
             </Group>
 
             {editor.mode === 'create' && (
-              <CalendarEventForm
-                submitLabel="Create"
-                initialStart={seedStart}
-                onSubmit={onCreate}
-                onCancel={() => setEditor({ mode: 'closed' })}
-              />
+              <>
+                {googleEnabled && (
+                  <Group gap="xs" mb="sm" align="center">
+                    <Text size="sm" c="dimmed">
+                      Calendar
+                    </Text>
+                    <SegmentedControl
+                      size="xs"
+                      value={createTarget}
+                      onChange={(v) => setCreateTarget(v)}
+                      data={[
+                        { label: 'PCC', value: 'pcc' },
+                        { label: 'Google', value: 'google' },
+                      ]}
+                    />
+                  </Group>
+                )}
+                <CalendarEventForm
+                  submitLabel="Create"
+                  initialStart={seedStart}
+                  onSubmit={onCreate}
+                  onCancel={() => setEditor({ mode: 'closed' })}
+                />
+              </>
             )}
             {editor.mode === 'edit' && (
               <CalendarEventForm
                 submitLabel="Update"
                 initial={editor.event}
-                onSubmit={(input) => onUpdate(editor.event.uid, input)}
+                onSubmit={(input) =>
+                  onUpdate(
+                    editor.event.uid,
+                    input,
+                    editor.event.source ?? 'pcc',
+                  )
+                }
                 onCancel={() => setEditor({ mode: 'closed' })}
               />
             )}

@@ -34,6 +34,20 @@ public sealed class CalendarPlugin : IPlugin
     }
 }
 
+/// <summary><c>GET /api/calendar/sources</c> — the writable calendars (<c>"pcc"</c>, plus <c>"google"</c>
+/// when configured) so the UI can offer a target on create.</summary>
+internal sealed class CalendarSourcesEndpoint : EndpointWithoutRequest<IReadOnlyList<string>>
+{
+    public override void Configure() => Get("/calendar/sources");
+
+    public override async Task HandleAsync(CancellationToken ct)
+    {
+        var google = Resolve<IOptions<CalendarOptions>>().Value.Google;
+        string[] sources = google.IsConfigured ? ["pcc", "google"] : ["pcc"];
+        await Send.OkAsync(sources, ct);
+    }
+}
+
 /// <summary>
 /// <c>GET /api/calendar/events</c> — events in a window. Defaults to <c>[now, now+WindowDays)</c>;
 /// pass <c>?days=N</c> to widen forward, or an explicit <c>?from=ISO&amp;to=ISO</c> range (e.g. the

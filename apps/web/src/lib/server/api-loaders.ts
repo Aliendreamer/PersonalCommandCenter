@@ -185,16 +185,29 @@ export const putCalendarEvent = (
   fetchImpl: FetchLike,
   uid: string,
   input: CalendarEventInput,
+  source = 'pcc',
 ) =>
   sendProtected<CalendarEvent>(
     fetchImpl,
     'PUT',
-    `/api/calendar/events/${uid}`,
+    `/api/calendar/events/${uid}?source=${encodeURIComponent(source)}`,
     input,
   )
 
-export const removeCalendarEvent = (fetchImpl: FetchLike, uid: string) =>
-  sendProtected<null>(fetchImpl, 'DELETE', `/api/calendar/events/${uid}`)
+export const removeCalendarEvent = (
+  fetchImpl: FetchLike,
+  uid: string,
+  source = 'pcc',
+) =>
+  sendProtected<null>(
+    fetchImpl,
+    'DELETE',
+    `/api/calendar/events/${uid}?source=${encodeURIComponent(source)}`,
+  )
+
+/** The writable calendars ('pcc', plus 'google' when configured). */
+export const loadCalendarSources = (fetchImpl: FetchLike): Promise<string[]> =>
+  loadProtected<string[]>(fetchImpl, '/api/calendar/sources')
 
 export const postTask = (fetchImpl: FetchLike, input: TodoInput) =>
   sendProtected<TodoItem>(fetchImpl, 'POST', '/api/tasks', input)

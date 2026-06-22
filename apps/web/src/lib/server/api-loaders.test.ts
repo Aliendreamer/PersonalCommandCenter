@@ -152,7 +152,7 @@ describe('calendar mutations', () => {
 
     await expect(putCalendarEvent(fetchImpl, 'nope', input)).resolves.toBeNull()
     const [url, init] = fetchImpl.mock.calls[0]
-    expect(url).toBe('http://core-api:8080/api/calendar/events/nope')
+    expect(url).toBe('http://core-api:8080/api/calendar/events/nope?source=pcc')
     expect(init.method).toBe('PUT')
   })
 
@@ -163,7 +163,7 @@ describe('calendar mutations', () => {
 
     await expect(removeCalendarEvent(fetchImpl, 'abc')).resolves.toBeNull()
     const [url, init] = fetchImpl.mock.calls[0]
-    expect(url).toBe('http://core-api:8080/api/calendar/events/abc')
+    expect(url).toBe('http://core-api:8080/api/calendar/events/abc?source=pcc')
     expect(init.method).toBe('DELETE')
   })
 

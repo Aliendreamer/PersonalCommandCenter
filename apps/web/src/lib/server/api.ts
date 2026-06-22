@@ -7,6 +7,7 @@ import { cookiesAreSecure, forwardCookieHeader } from './cookies'
 import {
   loadCalendarEvents,
   loadCalendarEventsRange,
+  loadCalendarSources,
   loadCoding,
   loadGoodreads,
   loadModels,
@@ -137,9 +138,20 @@ export const createCalendarEvent = createServerFn({ method: 'POST' })
   .handler(({ data }) => postCalendarEvent(serverFetch(), data))
 
 export const updateCalendarEvent = createServerFn({ method: 'POST' })
-  .validator((input: { uid: string; event: CalendarEventInput }) => input)
-  .handler(({ data }) => putCalendarEvent(serverFetch(), data.uid, data.event))
+  .validator(
+    (input: { uid: string; event: CalendarEventInput; source?: string }) =>
+      input,
+  )
+  .handler(({ data }) =>
+    putCalendarEvent(serverFetch(), data.uid, data.event, data.source),
+  )
 
 export const deleteCalendarEvent = createServerFn({ method: 'POST' })
-  .validator((uid: string) => uid)
-  .handler(({ data }) => removeCalendarEvent(serverFetch(), data))
+  .validator((input: { uid: string; source?: string }) => input)
+  .handler(({ data }) =>
+    removeCalendarEvent(serverFetch(), data.uid, data.source),
+  )
+
+export const getCalendarSources = createServerFn({ method: 'GET' }).handler(
+  () => loadCalendarSources(serverFetch()),
+)

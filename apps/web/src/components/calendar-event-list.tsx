@@ -1,4 +1,13 @@
-import { Anchor, Box, Group, Paper, Stack, Text, Title } from '@mantine/core'
+import {
+  Anchor,
+  Badge,
+  Box,
+  Group,
+  Paper,
+  Stack,
+  Text,
+  Title,
+} from '@mantine/core'
 import type { CalendarEvent } from '@pcc/contracts'
 
 export interface CalendarEventListProps {
@@ -80,12 +89,24 @@ export function CalendarEventList({
               {list.map((event, i) => (
                 <Box component="li" key={event.uid} style={rowBorder(i)}>
                   <Group justify="space-between" wrap="nowrap" px="sm" py="xs">
-                    <Text size="sm" truncate>
-                      <Text span c="dimmed">
-                        {timeLabel(event)}
-                      </Text>{' '}
-                      {event.title}
-                    </Text>
+                    <Group gap="xs" wrap="nowrap" style={{ minWidth: 0 }}>
+                      <Text size="sm" truncate>
+                        <Text span c="dimmed">
+                          {timeLabel(event)}
+                        </Text>{' '}
+                        {event.title}
+                      </Text>
+                      {event.source === 'google' && (
+                        <Badge
+                          size="xs"
+                          variant="light"
+                          color="grape"
+                          style={{ flex: 'none' }}
+                        >
+                          Google
+                        </Badge>
+                      )}
+                    </Group>
                     {(onEdit || onDelete) && (
                       <Group gap="sm" wrap="nowrap" style={{ flex: 'none' }}>
                         {onEdit && (

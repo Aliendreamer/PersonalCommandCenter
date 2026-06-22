@@ -2,6 +2,7 @@ export type {
   Book,
   CalendarEvent,
   CalendarEventInput,
+  CalendarSource,
   IotEntity,
   Notification,
   NotificationList,
