@@ -7,9 +7,12 @@ using Microsoft.Extensions.Options;
 
 namespace Pcc.Plugins.Calendar;
 
-/// <summary>Talks CalDAV to the configured collection (e.g. Radicale) and maps VEVENTs.</summary>
-public sealed class CalDavClient : ICalendarClient
+/// <summary>Talks CalDAV to the configured collection (e.g. Radicale) and maps VEVENTs. The PCC
+/// (Radicale) calendar source.</summary>
+public sealed class CalDavClient : ICalendarClient, ICalendarSourceClient
 {
+    public string Source => "pcc";
+
     private static readonly XNamespace Caldav = "urn:ietf:params:xml:ns:caldav";
     private static readonly HttpMethod Report = new("REPORT");
     private static readonly HttpMethod MkCalendar = new("MKCALENDAR");
