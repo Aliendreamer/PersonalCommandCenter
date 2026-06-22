@@ -9,7 +9,7 @@ namespace Pcc.Plugins.Calendar;
 
 /// <summary>Talks CalDAV to the configured collection (e.g. Radicale) and maps VEVENTs. The PCC
 /// (Radicale) calendar source.</summary>
-public sealed class CalDavClient : ICalendarClient, ICalendarSourceClient
+public sealed class CalDavClient : ICalendarSourceClient
 {
     public string Source => "pcc";
 

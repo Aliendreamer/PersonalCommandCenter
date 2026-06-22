@@ -173,7 +173,7 @@ public class CalendarEndpointTests(WebApplicationFactory<Program> factory)
         public Task<IReadOnlyList<CalendarEvent>> ListAsync(DateTimeOffset from, DateTimeOffset to, CancellationToken ct = default) =>
             Task.FromResult<IReadOnlyList<CalendarEvent>>(_events.ToList());
 
-        public Task<CalendarEvent> CreateAsync(CalendarEventInput input, CancellationToken ct = default)
+        public Task<CalendarEvent> CreateAsync(CalendarEventInput input, string target, CancellationToken ct = default)
         {
             var ev = new CalendarEvent(
                 Guid.NewGuid().ToString("N"), input.Title, input.Start, input.End,
@@ -182,7 +182,7 @@ public class CalendarEndpointTests(WebApplicationFactory<Program> factory)
             return Task.FromResult(ev);
         }
 
-        public Task<CalendarEvent?> UpdateAsync(string uid, CalendarEventInput input, CancellationToken ct = default)
+        public Task<CalendarEvent?> UpdateAsync(string uid, CalendarEventInput input, string source, CancellationToken ct = default)
         {
             var index = _events.FindIndex(e => e.Uid == uid);
             if (index < 0)
@@ -195,7 +195,7 @@ public class CalendarEndpointTests(WebApplicationFactory<Program> factory)
             return Task.FromResult<CalendarEvent?>(ev);
         }
 
-        public Task<bool> DeleteAsync(string uid, CancellationToken ct = default) =>
+        public Task<bool> DeleteAsync(string uid, string source, CancellationToken ct = default) =>
             Task.FromResult(_events.RemoveAll(e => e.Uid == uid) > 0);
     }
 
@@ -208,13 +208,13 @@ public class CalendarEndpointTests(WebApplicationFactory<Program> factory)
             Task.FromResult<IReadOnlyList<CalendarEvent>>(
                 _events.Where(e => e.Start >= from && e.Start < to).ToList());
 
-        public Task<CalendarEvent> CreateAsync(CalendarEventInput input, CancellationToken ct = default) =>
+        public Task<CalendarEvent> CreateAsync(CalendarEventInput input, string target, CancellationToken ct = default) =>
             throw new NotSupportedException();
 
-        public Task<CalendarEvent?> UpdateAsync(string uid, CalendarEventInput input, CancellationToken ct = default) =>
+        public Task<CalendarEvent?> UpdateAsync(string uid, CalendarEventInput input, string source, CancellationToken ct = default) =>
             throw new NotSupportedException();
 
-        public Task<bool> DeleteAsync(string uid, CancellationToken ct = default) =>
+        public Task<bool> DeleteAsync(string uid, string source, CancellationToken ct = default) =>
             throw new NotSupportedException();
     }
 
@@ -223,13 +223,13 @@ public class CalendarEndpointTests(WebApplicationFactory<Program> factory)
         public Task<IReadOnlyList<CalendarEvent>> ListAsync(DateTimeOffset from, DateTimeOffset to, CancellationToken ct = default) =>
             throw new HttpRequestException("CalDAV unreachable");
 
-        public Task<CalendarEvent> CreateAsync(CalendarEventInput input, CancellationToken ct = default) =>
+        public Task<CalendarEvent> CreateAsync(CalendarEventInput input, string target, CancellationToken ct = default) =>
             throw new HttpRequestException("CalDAV unreachable");
 
-        public Task<CalendarEvent?> UpdateAsync(string uid, CalendarEventInput input, CancellationToken ct = default) =>
+        public Task<CalendarEvent?> UpdateAsync(string uid, CalendarEventInput input, string source, CancellationToken ct = default) =>
             throw new HttpRequestException("CalDAV unreachable");
 
-        public Task<bool> DeleteAsync(string uid, CancellationToken ct = default) =>
+        public Task<bool> DeleteAsync(string uid, string source, CancellationToken ct = default) =>
             throw new HttpRequestException("CalDAV unreachable");
     }
 }

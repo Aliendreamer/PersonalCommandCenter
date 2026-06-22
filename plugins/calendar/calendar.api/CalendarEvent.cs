@@ -19,4 +19,7 @@ public sealed record CalendarEventInput(
     DateTimeOffset End,
     bool AllDay = false,
     string? Location = null,
-    string? Description = null);
+    string? Description = null,
+    /// <summary>Target calendar for a create (<c>"pcc"</c> default, or <c>"google"</c>); ignored by the
+    /// per-source clients (each already knows its backend).</summary>
+    string? Calendar = null);

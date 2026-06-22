@@ -16,7 +16,21 @@ public sealed class CalendarPlugin : IPlugin
     public void Configure(IServiceCollection services, IConfiguration config)
     {
         services.Configure<CalendarOptions>(config);
-        services.AddHttpClient<ICalendarClient, CalDavClient>();
+        services.AddHttpClient<CalDavClient>();
+        services.AddHttpClient<GoogleCalendarClient>();
+        // The endpoint-facing client merges the configured sources: always CalDAV ("pcc"), plus Google
+        // when its credentials are present.
+        services.AddScoped<ICalendarClient>(sp =>
+        {
+            var google = sp.GetRequiredService<IOptions<CalendarOptions>>().Value.Google;
+            var sources = new List<ICalendarSourceClient> { sp.GetRequiredService<CalDavClient>() };
+            if (google.IsConfigured)
+            {
+                sources.Add(sp.GetRequiredService<GoogleCalendarClient>());
+            }
+
+            return new AggregateCalendarClient(sources);
+        });
     }
 }
 
@@ -78,7 +92,7 @@ internal sealed class CreateCalendarEventEndpoint : Endpoint<CalendarEventInput,
         var client = Resolve<ICalendarClient>();
         try
         {
-            var created = await client.CreateAsync(req, ct);
+            var created = await client.CreateAsync(req, req.Calendar ?? "pcc", ct);
             await Send.ResultAsync(Results.Created($"/api/calendar/events/{created.Uid}", created));
         }
         catch (Exception) when (!ct.IsCancellationRequested)
@@ -103,12 +117,14 @@ internal sealed class UpdateCalendarEventEndpoint : Endpoint<UpdateCalendarEvent
             return;
         }
 
+        var source = Query<string?>("source", isRequired: false) ?? "pcc";
         var client = Resolve<ICalendarClient>();
         try
         {
             var updated = await client.UpdateAsync(
                 req.Uid,
                 new CalendarEventInput(req.Title, req.Start, req.End, req.AllDay, req.Location, req.Description),
+                source,
                 ct);
             if (updated is null)
             {
@@ -135,10 +151,11 @@ internal sealed class DeleteCalendarEventEndpoint : EndpointWithoutRequest
     public override async Task HandleAsync(CancellationToken ct)
     {
         var uid = Route<string>("uid")!;
+        var source = Query<string?>("source", isRequired: false) ?? "pcc";
         var client = Resolve<ICalendarClient>();
         try
         {
-            var deleted = await client.DeleteAsync(uid, ct);
+            var deleted = await client.DeleteAsync(uid, source, ct);
             if (!deleted)
             {
                 await Send.NotFoundAsync(ct);
