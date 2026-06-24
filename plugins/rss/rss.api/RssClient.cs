@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace Pcc.Plugins.Rss;
 
-/// <summary>Fetches each configured feed, tags items with the feed's topic, caps per topic.</summary>
+/// <summary>Fetches each configured feed, tags items with the feed's topic, caps per feed, filters stale.</summary>
 public sealed partial class RssClient : IFeedClient
 {
     // A neutral feed-reader User-Agent. Some feeds (e.g. Novinite) 403 a UA-less request, while a
@@ -15,11 +15,13 @@ public sealed partial class RssClient : IFeedClient
 
     private readonly HttpClient _http;
     private readonly RssOptions _options;
+    private readonly TimeProvider _time;
 
-    public RssClient(HttpClient http, IOptions<RssOptions> options)
+    public RssClient(HttpClient http, IOptions<RssOptions> options, TimeProvider time)
     {
         _http = http;
         _options = options.Value;
+        _time = time;
         if (_http.DefaultRequestHeaders.UserAgent.Count == 0)
         {
             _http.DefaultRequestHeaders.UserAgent.ParseAdd(UserAgent);
@@ -33,6 +35,7 @@ public sealed partial class RssClient : IFeedClient
             throw new InvalidOperationException("Rss:Feeds is not configured.");
         }
 
+        var cutoff = _time.GetUtcNow().AddDays(-_options.MaxAgeDays);
         var perFeed = await Task.WhenAll(_options.Feeds.Select(feed => FetchOneAsync(feed, cancellationToken)));
         if (!perFeed.Any(items => items is not null))
         {
@@ -41,11 +44,10 @@ public sealed partial class RssClient : IFeedClient
 
         return perFeed
             .Where(items => items is not null)
-            .SelectMany(items => items!)
-            .GroupBy(item => item.Topic)
-            .SelectMany(group => group
+            .SelectMany(items => items!
+                .Where(item => item.Published >= cutoff)
                 .OrderByDescending(item => item.Published)
-                .Take(_options.MaxItemsPerTopic))
+                .Take(_options.MaxItemsPerFeed))
             .OrderByDescending(item => item.Published)
             .ToList();
     }

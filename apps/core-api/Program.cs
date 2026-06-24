@@ -107,6 +107,7 @@ var available = PluginDiscovery.Discover(pluginAssemblies, bootstrapLogger);
 var registry = new PluginRegistry();
 registry.ActivateEnabled(available, builder.Services, builder.Configuration, bootstrapLogger);
 builder.Services.AddSingleton(registry);
+builder.Services.AddSingleton(TimeProvider.System);
 
 builder.Services.AddFastEndpoints(o => o.Assemblies = pluginAssemblies);
 

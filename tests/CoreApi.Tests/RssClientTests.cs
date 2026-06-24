@@ -6,24 +6,39 @@ namespace CoreApi.Tests;
 
 public class RssClientTests
 {
+    // Fake "now" for all tests — items dated within 3 days of this are fresh.
+    private static readonly DateTimeOffset FakeNow = new(2026, 6, 24, 12, 0, 0, TimeSpan.Zero);
+
+    // Jun 23 = Tuesday, Jun 22 = Monday (within 3 days of FakeNow)
     private const string TechRss = """
         <?xml version="1.0"?>
         <rss version="2.0"><channel>
           <title>TechSite</title>
           <item><title>Tech A</title><link>https://t.test/a</link>
             <description><![CDATA[<p>Hello <b>world</b></p>]]></description>
-            <pubDate>Mon, 15 Jun 2026 10:00:00 GMT</pubDate></item>
+            <pubDate>Tue, 23 Jun 2026 10:00:00 GMT</pubDate></item>
           <item><title>Tech B</title><link>https://t.test/b</link>
-            <pubDate>Mon, 15 Jun 2026 09:00:00 GMT</pubDate></item>
+            <pubDate>Mon, 22 Jun 2026 09:00:00 GMT</pubDate></item>
         </channel></rss>
         """;
 
+    // Jun 22 = Monday (within 3 days)
     private const string BgRss = """
         <?xml version="1.0"?>
         <rss version="2.0"><channel>
           <title>BgSite</title>
-          <item><title>Bg Old</title><link>https://b.test/1</link>
-            <pubDate>Mon, 01 Jun 2026 08:00:00 GMT</pubDate></item>
+          <item><title>Bg Recent</title><link>https://b.test/1</link>
+            <pubDate>Mon, 22 Jun 2026 08:00:00 GMT</pubDate></item>
+        </channel></rss>
+        """;
+
+    // Jun 20 = Saturday (4 days before FakeNow → stale with MaxAgeDays=3)
+    private const string StaleRss = """
+        <?xml version="1.0"?>
+        <rss version="2.0"><channel>
+          <title>StaleSite</title>
+          <item><title>Stale Item</title><link>https://s.test/1</link>
+            <pubDate>Sat, 20 Jun 2026 08:00:00 GMT</pubDate></item>
         </channel></rss>
         """;
 
@@ -52,9 +67,9 @@ public class RssClientTests
     }
 
     [Fact]
-    public async Task Caps_items_per_topic()
+    public async Task Caps_items_per_feed()
     {
-        var client = Create(maxPerTopic: 1, feeds: ("https://t.test/rss", "technology", TechRss));
+        var client = Create(maxPerFeed: 1, feeds: ("https://t.test/rss", "technology", TechRss));
 
         var items = await client.GetItemsAsync();
 
@@ -63,10 +78,10 @@ public class RssClientTests
     }
 
     [Fact]
-    public async Task Low_volume_topic_is_not_starved_by_a_busy_one()
+    public async Task Caps_each_feed_independently_so_all_feeds_keep_their_slot()
     {
-        // technology has 2 newer items, bulgaria has 1 older item; cap=2 → bulgaria still present.
-        var client = Create(maxPerTopic: 2,
+        // technology has 2 items, bulgaria has 1; per-feed cap=1 → exactly 1 from each feed
+        var client = Create(maxPerFeed: 1,
             feeds: new (string, string, string?)[]
             {
                 ("https://t.test/rss", "technology", TechRss),
@@ -75,8 +90,22 @@ public class RssClientTests
 
         var items = await client.GetItemsAsync();
 
-        Assert.Contains(items, i => i.Topic == "bulgaria");
-        Assert.Equal(2, items.Count(i => i.Topic == "technology"));
+        Assert.Single(items, i => i.Topic == "technology");
+        Assert.Single(items, i => i.Topic == "bulgaria");
+    }
+
+    [Fact]
+    public async Task Filters_out_items_older_than_max_age_days()
+    {
+        // TechRss items are within 3 days; StaleRss item is 4 days old → filtered out
+        var client = Create(maxPerFeed: 10, maxAgeDays: 3,
+            ("https://t.test/rss", "technology", TechRss),
+            ("https://s.test/rss", "world", StaleRss));
+
+        var items = await client.GetItemsAsync();
+
+        Assert.NotEmpty(items);
+        Assert.All(items, i => Assert.NotEqual("world", i.Topic));
     }
 
     [Fact]
@@ -95,7 +124,10 @@ public class RssClientTests
     [Fact]
     public async Task Throws_when_no_feeds_configured()
     {
-        var client = new RssClient(new HttpClient(new StubHandler([])), Options.Create(new RssOptions()));
+        var client = new RssClient(
+            new HttpClient(new StubHandler([])),
+            Options.Create(new RssOptions()),
+            new FakeTimeProvider(FakeNow));
         await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetItemsAsync());
     }
 
@@ -108,7 +140,8 @@ public class RssClientTests
             Options.Create(new RssOptions
             {
                 Feeds = [new FeedConfig { Url = "https://t.test/rss", Topic = "technology" }],
-            }));
+            }),
+            new FakeTimeProvider(FakeNow));
 
         await client.GetItemsAsync();
 
@@ -116,17 +149,26 @@ public class RssClientTests
     }
 
     private static RssClient Create(params (string Url, string Topic, string? Body)[] feeds) =>
-        Create(25, feeds);
+        Create(maxPerFeed: 10, feeds);
 
-    private static RssClient Create(int maxPerTopic, params (string Url, string Topic, string? Body)[] feeds)
+    private static RssClient Create(int maxPerFeed, params (string Url, string Topic, string? Body)[] feeds) =>
+        Create(maxPerFeed, maxAgeDays: 3, feeds);
+
+    private static RssClient Create(int maxPerFeed, int maxAgeDays, params (string Url, string Topic, string? Body)[] feeds)
     {
         var handler = new StubHandler(feeds.ToDictionary(f => f.Url, f => f.Body));
         var options = Options.Create(new RssOptions
         {
-            MaxItemsPerTopic = maxPerTopic,
+            MaxItemsPerFeed = maxPerFeed,
+            MaxAgeDays = maxAgeDays,
             Feeds = [.. feeds.Select(f => new FeedConfig { Url = f.Url, Topic = f.Topic })],
         });
-        return new RssClient(new HttpClient(handler), options);
+        return new RssClient(new HttpClient(handler), options, new FakeTimeProvider(FakeNow));
+    }
+
+    private sealed class FakeTimeProvider(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
     }
 
     private sealed class StubHandler(Dictionary<string, string?> responses) : HttpMessageHandler
