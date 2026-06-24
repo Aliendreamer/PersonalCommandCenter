@@ -3,6 +3,7 @@ import {
   Bell,
   BookOpen,
   Boxes,
+  BrainCircuit,
   Calendar,
   Cloud,
   Code2,
@@ -29,6 +30,7 @@ const ICONS: Record<string, LucideIcon> = {
   uptime: Activity,
   models: Boxes,
   coding: Code2,
+  memory: BrainCircuit,
 }
 
 export function iconFor(id: string): LucideIcon {

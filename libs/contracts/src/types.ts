@@ -186,6 +186,19 @@ export interface CodingStatus {
   languages: CodingBucket[];
 }
 
+/** Mirrors the backend `MemoryItem` from `GET /api/memory`. */
+export interface MemoryItem {
+  id: string;
+  content: string;
+  tags: string[];
+  createdAt: string; // ISO date string
+}
+
+/** A memory item with a semantic similarity score (0.0–1.0). Score is 0 for recent-scroll results. */
+export interface MemoryEntry extends MemoryItem {
+  score: number;
+}
+
 /** Mirrors the backend `Book` from `GET /api/goodreads`. */
 export interface Book {
   title: string;

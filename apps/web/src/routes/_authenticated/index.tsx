@@ -5,6 +5,7 @@ import {
   getCalendarEvents,
   getCoding,
   getIotEntities,
+  getMemory,
   getNotifications,
   getPlugins,
   getSystemStatus,
@@ -32,6 +33,7 @@ import { GoodreadsReadingTile } from '../../components/goodreads-reading-tile'
 import { UptimeStatusTile } from '../../components/uptime-status-tile'
 import { ModelsStatusTile } from '../../components/models-status-tile'
 import { CodingStatusTile } from '../../components/coding-status-tile'
+import { MemoryCountTile } from '../../components/memory-count-tile'
 
 export const Route = createFileRoute('/_authenticated/')({
   // SSR-with-data: the dashboard renders fully populated. Each source is settled independently so
@@ -50,6 +52,7 @@ export const Route = createFileRoute('/_authenticated/')({
       uptime,
       models,
       coding,
+      memory,
     ] = await Promise.all([
       settle(getPlugins()),
       settle(getSystemStatus()),
@@ -63,6 +66,7 @@ export const Route = createFileRoute('/_authenticated/')({
       settle(getUptime()),
       settle(getModels()),
       settle(getCoding({ data: 'week' })),
+      settle(getMemory()),
     ])
     return {
       plugins,
@@ -77,6 +81,7 @@ export const Route = createFileRoute('/_authenticated/')({
       uptime,
       models,
       coding,
+      memory,
     }
   },
   component: Home,
@@ -96,6 +101,7 @@ function Home() {
     uptime,
     models,
     coding,
+    memory,
   } = Route.useLoaderData()
   const navigate = useNavigate()
 
@@ -114,6 +120,7 @@ function Home() {
     if (manifest.widgets.includes('uptime-status')) return uptime
     if (manifest.widgets.includes('models-status')) return models
     if (manifest.widgets.includes('coding-status')) return coding
+    if (manifest.widgets.includes('memory-count')) return memory
     return okSource
   }
 
@@ -187,6 +194,9 @@ function Home() {
         }
         if (manifest.widgets.includes('coding-status')) {
           return <CodingStatusTile status={coding.data} error={coding.error} />
+        }
+        if (manifest.widgets.includes('memory-count')) {
+          return <MemoryCountTile entries={memory.data} error={memory.error} />
         }
         return null
       }}

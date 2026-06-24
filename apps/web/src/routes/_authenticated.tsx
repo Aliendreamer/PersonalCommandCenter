@@ -32,7 +32,10 @@ export const Route = createFileRoute('/_authenticated')({
     return { me }
   },
   loader: async () => {
-    const [plugins, weather] = await Promise.all([settle(getPlugins()), settle(getWeather())])
+    const [plugins, weather] = await Promise.all([
+      settle(getPlugins()),
+      settle(getWeather()),
+    ])
     return { plugins, weather }
   },
   component: AuthenticatedLayout,

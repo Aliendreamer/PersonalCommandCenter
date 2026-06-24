@@ -27,23 +27,25 @@ export function Sidebar({ manifests, activePath }: SidebarProps) {
       </Anchor>
       <Divider />
       <Stack gap={4} component="nav" aria-label="Plugins">
-        {manifests.filter((m) => m.id !== 'weather').map((manifest) => {
-          const Icon = iconFor(manifest.id)
-          return (
-            <NavLink
-              key={manifest.id}
-              component="a"
-              href={manifest.routeBase}
-              label={manifest.navLabel}
-              active={isActive(manifest.routeBase)}
-              leftSection={<Icon size={18} aria-hidden />}
-              styles={{
-                root: { borderRadius: 'var(--mantine-radius-md)' },
-                label: { fontSize: 'var(--mantine-font-size-sm)' },
-              }}
-            />
-          )
-        })}
+        {manifests
+          .filter((m) => m.id !== 'weather')
+          .map((manifest) => {
+            const Icon = iconFor(manifest.id)
+            return (
+              <NavLink
+                key={manifest.id}
+                component="a"
+                href={manifest.routeBase}
+                label={manifest.navLabel}
+                active={isActive(manifest.routeBase)}
+                leftSection={<Icon size={18} aria-hidden />}
+                styles={{
+                  root: { borderRadius: 'var(--mantine-radius-md)' },
+                  label: { fontSize: 'var(--mantine-font-size-sm)' },
+                }}
+              />
+            )
+          })}
       </Stack>
     </Stack>
   )

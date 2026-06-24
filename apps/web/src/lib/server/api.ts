@@ -9,7 +9,9 @@ import {
   loadCalendarEventsRange,
   loadCalendarSources,
   loadCoding,
+  loadDeleteMemory,
   loadGoodreads,
+  loadMemory,
   loadModels,
   loadUptime,
   loadIotEntities,
@@ -19,6 +21,7 @@ import {
   loadRss,
   loadRssRefresh,
   loadSearch,
+  loadStoreMemory,
   loadWeather,
   loadSystemStatus,
   loadTasks,
@@ -160,3 +163,15 @@ export const deleteCalendarEvent = createServerFn({ method: 'POST' })
 export const getCalendarSources = createServerFn({ method: 'GET' }).handler(
   () => loadCalendarSources(serverFetch()),
 )
+
+export const getMemory = createServerFn({ method: 'GET' })
+  .validator((q?: string) => q)
+  .handler((ctx) => loadMemory(serverFetch(), ctx.data ?? undefined))
+
+export const storeMemory = createServerFn({ method: 'POST' })
+  .validator((d: { content: string; tags?: string[] }) => d)
+  .handler((ctx) => loadStoreMemory(serverFetch(), ctx.data))
+
+export const deleteMemory = createServerFn({ method: 'POST' })
+  .validator((id: string) => id)
+  .handler((ctx) => loadDeleteMemory(serverFetch(), ctx.data))

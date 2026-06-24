@@ -4,6 +4,8 @@ export type {
   CalendarEventInput,
   CalendarSource,
   IotEntity,
+  MemoryEntry,
+  MemoryItem,
   Notification,
   NotificationList,
   NotificationSeverity,

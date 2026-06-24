@@ -4,6 +4,7 @@ import type {
   CalendarEvent,
   CalendarEventInput,
   IotEntity,
+  MemoryEntry,
   NotificationList,
   PluginManifest,
   RssItem,
@@ -226,6 +227,29 @@ export const postMarkNotificationRead = (fetchImpl: FetchLike, id: string) =>
 
 export const postMarkAllNotificationsRead = (fetchImpl: FetchLike) =>
   sendProtected<null>(fetchImpl, 'POST', '/api/notifications/read-all')
+
+export const loadMemory = (
+  fetchImpl: FetchLike,
+  q?: string,
+): Promise<MemoryEntry[]> =>
+  loadProtected<MemoryEntry[]>(
+    fetchImpl,
+    q
+      ? `/api/memory?q=${encodeURIComponent(q)}&limit=20`
+      : '/api/memory?limit=20',
+  )
+
+export const loadStoreMemory = (
+  fetchImpl: FetchLike,
+  body: { content: string; tags?: string[] },
+): Promise<{ id: string } | null> =>
+  sendProtected<{ id: string }>(fetchImpl, 'POST', '/api/memory', body)
+
+export const loadDeleteMemory = (
+  fetchImpl: FetchLike,
+  id: string,
+): Promise<null> =>
+  sendProtected<null>(fetchImpl, 'DELETE', `/api/memory/${id}`)
 
 /** A loaded value or a degraded marker. */
 export type Settled<T> =
