@@ -8,6 +8,8 @@ const item: RssItem = {
   link: 'https://e.test/1',
   published: '2026-06-15T10:00:00Z',
   source: 'Example',
+  topic: 'technology',
+  summary: '',
 }
 
 afterEach(cleanup)
