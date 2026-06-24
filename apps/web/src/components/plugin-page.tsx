@@ -15,6 +15,8 @@ export interface PluginPageProps {
    * owns its own scrolling (e.g. a virtualized list).
    */
   scroll?: boolean
+  /** Expand the container to the full available width instead of the default lg (~1200px) cap. */
+  fluid?: boolean
   children: ReactNode
 }
 
@@ -28,6 +30,7 @@ export function PluginPage({
   actions,
   fill,
   scroll = true,
+  fluid,
   children,
 }: PluginPageProps) {
   const header = (
@@ -41,7 +44,7 @@ export function PluginPage({
 
   if (!fill) {
     return (
-      <Container size="lg" px={0}>
+      <Container fluid={fluid} size={fluid ? undefined : 'lg'} px={0}>
         {header}
         {children}
       </Container>
@@ -50,7 +53,8 @@ export function PluginPage({
 
   return (
     <Container
-      size="lg"
+      fluid={fluid}
+      size={fluid ? undefined : 'lg'}
       px={0}
       style={{
         // Fit the window: the dynamic viewport height minus the app-shell header and its padding.

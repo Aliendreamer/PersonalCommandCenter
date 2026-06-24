@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { Stack } from '@mantine/core'
+import { Box, ScrollArea } from '@mantine/core'
 
 import { getRss, refreshRss } from '../../lib/server/api'
 import { settle } from '../../lib/server/api-loaders'
@@ -34,15 +34,29 @@ function RssPage() {
     <PluginPage
       title="Feeds"
       fill
+      scroll={false}
+      fluid
       actions={<RssRefreshButton onRefresh={onRefresh} loading={refreshing} />}
     >
-      <Stack gap="lg">
-        {!result.error ? <RssTopicCards items={items} /> : null}
-        <RssItemList
-          items={items}
-          error={result.error ? 'unreachable' : undefined}
-        />
-      </Stack>
+      <Box
+        style={{
+          flex: 1,
+          minHeight: 0,
+          display: 'flex',
+          gap: 'var(--mantine-spacing-lg)',
+          overflow: 'hidden',
+        }}
+      >
+        <ScrollArea style={{ flex: '0 0 62%' }} type="auto" pr="xs">
+          {!result.error ? <RssTopicCards items={items} /> : null}
+        </ScrollArea>
+        <ScrollArea style={{ flex: 1 }} type="auto">
+          <RssItemList
+            items={items}
+            error={result.error ? 'unreachable' : undefined}
+          />
+        </ScrollArea>
+      </Box>
     </PluginPage>
   )
 }
