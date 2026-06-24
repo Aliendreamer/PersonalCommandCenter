@@ -24,21 +24,22 @@ Traefik (the `proxy` service) is the **only** published HTTP port (`:80`). It ro
 
 ## Public routes (`*.pcc.localhost` via Traefik)
 
-| Host                      | Service        | Upstream              |
-| ------------------------- | -------------- | --------------------- |
-| `app.pcc.localhost`       | Web app (BFF)  | `web:3000`            |
-| `keycloak.pcc.localhost`  | Keycloak       | `keycloak:8080`       |
-| `ollama.pcc.localhost`    | Ollama (GPU)   | `ollama:11434`        |
-| `qdrant.pcc.localhost`    | Qdrant (REST)  | `qdrant:6333`         |
-| `portainer.pcc.localhost` | Portainer      | `portainer:9000`      |
-| `pgadmin.pcc.localhost`   | pgAdmin        | `pgadmin:80`          |
-| `grafana.pcc.localhost`   | Grafana        | `grafana:3000`        |
-| `prometheus.pcc.localhost`| Prometheus     | `prometheus:9090`     |
-| `tempo.pcc.localhost`     | Tempo (traces) | `tempo:3200`          |
-| `wakapi.pcc.localhost`    | Wakapi         | `wakapi:3000`         |
-| `searxng.pcc.localhost`   | SearXNG        | `searxng:8080`        |
-| `ntfy.pcc.localhost`      | ntfy           | `ntfy:80`             |
-| `ha.pcc.localhost`        | Home Assistant | `home-assistant:8123` |
+| Host                         | Service        | Upstream              |
+| ---------------------------- | -------------- | --------------------- |
+| `app.pcc.localhost`          | Web app (BFF)  | `web:3000`            |
+| `keycloak.pcc.localhost`     | Keycloak       | `keycloak:8080`       |
+| `ollama.pcc.localhost`       | Ollama (GPU)   | `ollama:11434`        |
+| `qdrant.pcc.localhost`       | Qdrant (REST)  | `qdrant:6333`         |
+| `portainer.pcc.localhost`    | Portainer      | `portainer:9000`      |
+| `pgadmin.pcc.localhost`      | pgAdmin        | `pgadmin:80`          |
+| `redisinsight.pcc.localhost` | RedisInsight   | `redisinsight:5540`   |
+| `grafana.pcc.localhost`      | Grafana        | `grafana:3000`        |
+| `prometheus.pcc.localhost`   | Prometheus     | `prometheus:9090`     |
+| `tempo.pcc.localhost`        | Tempo (traces) | `tempo:3200`          |
+| `wakapi.pcc.localhost`       | Wakapi         | `wakapi:3000`         |
+| `searxng.pcc.localhost`      | SearXNG        | `searxng:8080`        |
+| `ntfy.pcc.localhost`         | ntfy           | `ntfy:80`             |
+| `ha.pcc.localhost`           | Home Assistant | `home-assistant:8123` |
 
 The web app is behind Keycloak login (the only public app surface); the rest are raw infra, reached
 directly (not gated by the app login).
