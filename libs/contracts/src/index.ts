@@ -9,6 +9,7 @@ export type {
   NotificationSeverity,
   PluginManifest,
   RssItem,
+  RssTopic,
   SearchResult,
   ModelsStatus,
   GpuStat,

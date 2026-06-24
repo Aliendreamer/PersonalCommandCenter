@@ -112,12 +112,16 @@ export interface ForecastDay {
   lowC: number;
 }
 
+export type RssTopic = 'technology' | 'bulgaria' | 'world' | 'sports';
+
 /** Mirrors the backend `RssItem` from `GET /api/rss`. */
 export interface RssItem {
   title: string;
   link: string;
   published: string;
   source: string;
+  topic: RssTopic;
+  summary: string;
 }
 
 /** Mirrors the backend `UptimeCheck` from `GET /api/uptime`. */
