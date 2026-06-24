@@ -9,10 +9,14 @@ import {
   loadCalendarEventsRange,
   loadCalendarSources,
   loadCoding,
+  loadCompareModels,
   loadDeleteMemory,
+  loadDeleteModel,
   loadGoodreads,
   loadMemory,
+  loadModelLibrary,
   loadModels,
+  loadPullModel,
   loadUptime,
   loadIotEntities,
   loadMe,
@@ -134,6 +138,22 @@ export const getUptime = createServerFn({ method: 'GET' }).handler(() =>
 export const getModels = createServerFn({ method: 'GET' }).handler(() =>
   loadModels(serverFetch()),
 )
+
+export const getModelLibrary = createServerFn({ method: 'GET' }).handler(() =>
+  loadModelLibrary(serverFetch()),
+)
+
+export const compareModels = createServerFn({ method: 'POST' })
+  .validator((d: { prompt: string; models: string[] }) => d)
+  .handler((ctx) => loadCompareModels(serverFetch(), ctx.data))
+
+export const pullModel = createServerFn({ method: 'POST' })
+  .validator((name: string) => name)
+  .handler((ctx) => loadPullModel(serverFetch(), ctx.data))
+
+export const deleteModel = createServerFn({ method: 'POST' })
+  .validator((name: string) => name)
+  .handler((ctx) => loadDeleteModel(serverFetch(), ctx.data))
 
 export const getCoding = createServerFn({ method: 'GET' })
   .validator((range: CodingRange) => range)

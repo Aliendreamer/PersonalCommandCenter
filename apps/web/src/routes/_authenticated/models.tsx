@@ -1,22 +1,29 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { getModels } from '../../lib/server/api'
+import { getModelLibrary, getModels } from '../../lib/server/api'
 import { settle } from '../../lib/server/api-loaders'
 import { ModelsView } from '../../components/models-view'
 import { PluginPage } from '../../components/plugin-page'
 
 export const Route = createFileRoute('/_authenticated/models')({
-  loader: async () => settle(getModels()),
+  loader: async () => {
+    const [status, library] = await Promise.all([
+      settle(getModels()),
+      settle(getModelLibrary()),
+    ])
+    return { status, library }
+  },
   component: ModelsPage,
 })
 
 function ModelsPage() {
-  const result = Route.useLoaderData()
+  const { status, library } = Route.useLoaderData()
   return (
     <PluginPage title="Models">
       <ModelsView
-        status={result.data ?? null}
-        error={result.error ? 'unreachable' : undefined}
+        status={status.data ?? null}
+        error={status.error ? 'unreachable' : undefined}
+        library={library.data ?? []}
       />
     </PluginPage>
   )

@@ -3,6 +3,8 @@ import type {
   Book,
   CalendarEvent,
   CalendarEventInput,
+  CatalogueEntry,
+  CompareResult,
   IotEntity,
   MemoryEntry,
   NotificationList,
@@ -141,6 +143,38 @@ export const loadUptime = (fetchImpl: FetchLike): Promise<UptimeCheck[]> =>
 
 export const loadModels = (fetchImpl: FetchLike): Promise<ModelsStatus> =>
   loadProtected<ModelsStatus>(fetchImpl, '/api/models')
+
+export const loadModelLibrary = (
+  fetchImpl: FetchLike,
+): Promise<CatalogueEntry[]> =>
+  loadProtected<CatalogueEntry[]>(fetchImpl, '/api/models/library')
+
+export const loadCompareModels = (
+  fetchImpl: FetchLike,
+  body: { prompt: string; models: string[] },
+): Promise<CompareResult[]> =>
+  sendProtected<CompareResult[]>(
+    fetchImpl,
+    'POST',
+    '/api/models/compare',
+    body,
+  ).then((r) => r ?? [])
+
+export const loadPullModel = (
+  fetchImpl: FetchLike,
+  name: string,
+): Promise<null> =>
+  sendProtected<null>(fetchImpl, 'POST', '/api/models/pull', { name })
+
+export const loadDeleteModel = (
+  fetchImpl: FetchLike,
+  name: string,
+): Promise<null> =>
+  sendProtected<null>(
+    fetchImpl,
+    'DELETE',
+    `/api/models/${encodeURIComponent(name)}`,
+  )
 
 export const loadCoding = (
   fetchImpl: FetchLike,

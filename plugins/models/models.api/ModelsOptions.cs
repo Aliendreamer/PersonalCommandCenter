@@ -11,6 +11,8 @@ public sealed class ModelsOptions
 public sealed class OllamaOptions
 {
     public string BaseUrl { get; set; } = "http://ollama:11434";
+
+    public int LibraryCacheHours { get; set; } = 24;
 }
 
 public sealed class GpuOptions

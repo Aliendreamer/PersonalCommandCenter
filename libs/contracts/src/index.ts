@@ -3,6 +3,8 @@ export type {
   CalendarEvent,
   CalendarEventInput,
   CalendarSource,
+  CatalogueEntry,
+  CompareResult,
   IotEntity,
   MemoryEntry,
   MemoryItem,

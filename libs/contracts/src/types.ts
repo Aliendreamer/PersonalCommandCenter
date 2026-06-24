@@ -217,3 +217,23 @@ export interface Weather {
   current: WeatherCurrent;
   daily: ForecastDay[];
 }
+
+/** The result of running a prompt against one model in a multi-model comparison. */
+export interface CompareResult {
+  model: string;
+  content: string | null;
+  error: string | null;
+  durationMs: number;
+}
+
+/** An entry in the Ollama model catalogue (library endpoint). */
+export interface CatalogueEntry {
+  name: string;
+  description: string;
+  parameterSize: string;
+  quantization: string;
+  sizeGb: number;
+  family: string;
+  tags: string[];
+  fits: 'yes' | 'marginal' | 'no' | 'unknown';
+}
