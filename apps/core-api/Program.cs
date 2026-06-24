@@ -36,7 +36,21 @@ builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection("Auth")
 var connectionString = builder.Configuration.GetConnectionString("Postgres")
     ?? "Host=postgres;Database=pcc;Username=pcc;Password=pcc-dev";
 builder.Services.AddDbContext<PccDbContext>(o => o.UseNpgsql(connectionString));
-builder.Services.AddFusionCache();
+var redisConnection = builder.Configuration["Redis:Connection"] ?? "redis:6379,abortConnect=false";
+builder.Services.AddStackExchangeRedisCache(o => o.Configuration = redisConnection);
+builder.Services
+    .AddFusionCache()
+    .WithDefaultEntryOptions(new FusionCacheEntryOptions
+    {
+        Duration = TimeSpan.FromHours(1),
+        IsFailSafeEnabled = true,
+        FailSafeMaxDuration = TimeSpan.FromHours(6),
+        FailSafeThrottleDuration = TimeSpan.FromSeconds(30),
+        FactorySoftTimeout = TimeSpan.FromSeconds(2),
+        FactoryHardTimeout = TimeSpan.FromSeconds(30),
+    })
+    .WithSerializer(new ZiggyCreatures.Caching.Fusion.Serialization.SystemTextJson.FusionCacheSystemTextJsonSerializer())
+    .WithRegisteredDistributedCache();
 builder.Services.AddHttpClient<IKeycloakClient, KeycloakClient>();
 builder.Services.AddScoped<ISessionService, SessionService>();
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();
