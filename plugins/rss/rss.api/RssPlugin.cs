@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Pcc.Plugins.Rss;
 
-/// <summary>Read-only RSS/Atom feed aggregator.</summary>
+/// <summary>Read-only RSS/Atom feed aggregator with a Redis-cached, hourly-refreshed result.</summary>
 public sealed class RssPlugin : IPlugin
 {
     public string Id => "rss";
@@ -16,20 +16,24 @@ public sealed class RssPlugin : IPlugin
     {
         services.Configure<RssOptions>(config);
         services.AddHttpClient<IFeedClient, RssClient>();
+        services.AddScoped<RssFeedCache>();
+        services.AddHostedService<RssRefreshService>();
     }
 }
 
-/// <summary><c>GET /api/rss</c> — newest items aggregated across the configured feeds.</summary>
+/// <summary><c>GET /api/rss?refresh=&lt;bool&gt;</c> — cached aggregate; refresh forces a live pull.</summary>
 internal sealed class GetRssEndpoint : EndpointWithoutRequest<IReadOnlyList<RssItem>>
 {
     public override void Configure() => Get("/rss");
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var client = Resolve<IFeedClient>();
+        var cache = Resolve<RssFeedCache>();
+        var refresh = Query<bool>("refresh", isRequired: false);
         try
         {
-            await Send.OkAsync(await client.GetItemsAsync(ct), ct);
+            var items = refresh ? await cache.RefreshAsync(ct) : await cache.GetAsync(ct);
+            await Send.OkAsync(items, ct);
         }
         catch (Exception)
         {
