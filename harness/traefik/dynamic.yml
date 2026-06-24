@@ -45,6 +45,10 @@ http:
       rule: 'Host(`pgadmin.pcc.localhost`)'
       entryPoints: ['web']
       service: pgadmin
+    redisinsight:
+      rule: 'Host(`redisinsight.pcc.localhost`)'
+      entryPoints: ['web']
+      service: redisinsight
     grafana:
       rule: 'Host(`grafana.pcc.localhost`)'
       entryPoints: ['web']
@@ -98,6 +102,10 @@ http:
       loadBalancer:
         servers:
           - url: 'http://pgadmin:80'
+    redisinsight:
+      loadBalancer:
+        servers:
+          - url: 'http://redisinsight:5540'
     grafana:
       loadBalancer:
         servers:

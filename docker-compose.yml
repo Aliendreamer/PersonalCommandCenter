@@ -212,6 +212,15 @@ services:
     depends_on:
       - postgres
 
+  redisinsight:
+    image: redis/redisinsight:latest
+    # Redis GUI. Reached via redisinsight.pcc.localhost (Traefik); no host port. The added Redis
+    # connection persists in the redisinsight-data volume (no need to re-add it each restart).
+    volumes:
+      - redisinsight-data:/data
+    depends_on:
+      - redis
+
   # --- Observability: OTLP collector -> Tempo (traces) + Prometheus (metrics) -> Grafana ---
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.154.0
@@ -314,6 +323,7 @@ volumes:
   portainer-data:
   wakapi-data:
   pgadmin-data:
+  redisinsight-data:
   tempo-data:
   prometheus-data:
   grafana-data:
