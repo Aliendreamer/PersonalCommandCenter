@@ -7,4 +7,7 @@ public sealed class RssOptions
 
     /// <summary>Newest items kept per topic (cards use the top 10; the rest feed the list).</summary>
     public int MaxItemsPerTopic { get; set; } = 25;
+
+    /// <summary>How often the background service re-pulls all feeds into the cache.</summary>
+    public int RefreshIntervalMinutes { get; set; } = 60;
 }
