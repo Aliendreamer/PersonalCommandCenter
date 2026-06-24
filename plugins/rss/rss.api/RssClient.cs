@@ -1,11 +1,13 @@
+using System.Net;
 using System.ServiceModel.Syndication;
+using System.Text.RegularExpressions;
 using System.Xml;
 using Microsoft.Extensions.Options;
 
 namespace Pcc.Plugins.Rss;
 
-/// <summary>Fetches each configured feed, parses RSS/Atom, and aggregates newest-first.</summary>
-public sealed class RssClient(HttpClient http, IOptions<RssOptions> options) : IFeedClient
+/// <summary>Fetches each configured feed, tags items with the feed's topic, caps per topic.</summary>
+public sealed partial class RssClient(HttpClient http, IOptions<RssOptions> options) : IFeedClient
 {
     private readonly RssOptions _options = options.Value;
 
@@ -25,34 +27,56 @@ public sealed class RssClient(HttpClient http, IOptions<RssOptions> options) : I
         return perFeed
             .Where(items => items is not null)
             .SelectMany(items => items!)
+            .GroupBy(item => item.Topic)
+            .SelectMany(group => group
+                .OrderByDescending(item => item.Published)
+                .Take(_options.MaxItemsPerTopic))
             .OrderByDescending(item => item.Published)
-            .Take(_options.MaxItems)
             .ToList();
     }
 
     // Returns null when the feed couldn't be fetched/parsed (skipped); an empty list = parsed, no items.
-    private async Task<List<RssItem>?> FetchOneAsync(string feedUrl, CancellationToken cancellationToken)
+    private async Task<List<RssItem>?> FetchOneAsync(FeedConfig feed, CancellationToken cancellationToken)
     {
         try
         {
-            // Buffer the response fully before parsing: SyndicationFeed reads the XmlReader
-            // synchronously, and sync reads over a live HttpClient response stream are unreliable
-            // (they throw under the container runtime). Buffering also frees the connection sooner.
-            var bytes = await http.GetByteArrayAsync(new Uri(feedUrl), cancellationToken);
+            // Buffer fully before parsing: SyndicationFeed reads synchronously, and sync reads over a
+            // live HttpClient stream throw under the container runtime. Buffering frees the connection sooner.
+            var bytes = await http.GetByteArrayAsync(new Uri(feed.Url), cancellationToken);
             using var stream = new MemoryStream(bytes);
             using var reader = XmlReader.Create(stream);
-            var feed = SyndicationFeed.Load(reader);
-            var source = feed.Title?.Text ?? feedUrl;
+            var parsed = SyndicationFeed.Load(reader);
+            var source = parsed.Title?.Text ?? feed.Url;
 
-            return feed.Items.Select(item => new RssItem(
+            return parsed.Items.Select(item => new RssItem(
                 item.Title?.Text ?? "",
                 item.Links.FirstOrDefault()?.Uri?.ToString() ?? "",
                 item.PublishDate != default ? item.PublishDate : item.LastUpdatedTime,
-                source)).ToList();
+                source,
+                feed.Topic,
+                StripHtml(item.Summary?.Text))).ToList();
         }
         catch (Exception)
         {
             return null;
         }
     }
+
+    private static string StripHtml(string? html)
+    {
+        if (string.IsNullOrEmpty(html))
+        {
+            return "";
+        }
+
+        var text = TagRegex().Replace(html, " ");
+        text = WebUtility.HtmlDecode(text);
+        return WhitespaceRegex().Replace(text, " ").Trim();
+    }
+
+    [GeneratedRegex("<[^>]+>")]
+    private static partial Regex TagRegex();
+
+    [GeneratedRegex(@"\s+")]
+    private static partial Regex WhitespaceRegex();
 }
