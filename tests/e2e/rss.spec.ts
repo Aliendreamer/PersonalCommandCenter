@@ -24,10 +24,14 @@ test('rss: SSR page lists feed items through the BFF, app-only', async ({ page }
 
   await page.goto(`${APP}/rss`, { waitUntil: 'domcontentloaded' })
   await expect(page.getByRole('heading', { name: 'Feeds' })).toBeVisible()
-  // SSR renders the list server-side. The public HN feed aggressively rate-limits (429), so accept
-  // either an item link or the graceful degraded notice — both prove the page rendered through the BFF.
+  // SSR renders server-side. When at least one feed is reachable the page shows the curated topic
+  // columns + filter (a 'Technology' column heading); public feeds aggressively rate-limit (429), so
+  // when every feed degrades the BFF returns 502 and the page shows the graceful notice instead.
+  // Accept either — both prove the page rendered through the BFF.
   await expect(
-    page.getByRole('link', { name: /.+/ }).or(page.getByText(/unavailable|No items/i)),
+    page
+      .getByRole('heading', { name: 'Technology' })
+      .or(page.getByText(/unavailable/i)),
   ).toBeVisible({ timeout: 20_000 })
 
   expect(foreign, `browser hit non-app hosts: ${foreign.join(', ')}`).toEqual([])
