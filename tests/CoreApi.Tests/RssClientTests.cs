@@ -99,6 +99,22 @@ public class RssClientTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetItemsAsync());
     }
 
+    [Fact]
+    public async Task Sends_a_neutral_user_agent_so_UA_blocking_feeds_are_not_403d()
+    {
+        var handler = new StubHandler(new Dictionary<string, string?> { ["https://t.test/rss"] = TechRss });
+        var client = new RssClient(
+            new HttpClient(handler),
+            Options.Create(new RssOptions
+            {
+                Feeds = [new FeedConfig { Url = "https://t.test/rss", Topic = "technology" }],
+            }));
+
+        await client.GetItemsAsync();
+
+        Assert.Contains("PCC-RSS", handler.LastUserAgent ?? "");
+    }
+
     private static RssClient Create(params (string Url, string Topic, string? Body)[] feeds) =>
         Create(25, feeds);
 
@@ -115,8 +131,11 @@ public class RssClientTests
 
     private sealed class StubHandler(Dictionary<string, string?> responses) : HttpMessageHandler
     {
+        public string? LastUserAgent { get; private set; }
+
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
         {
+            LastUserAgent = request.Headers.UserAgent.ToString();
             var body = responses.TryGetValue(request.RequestUri!.AbsoluteUri, out var content) ? content : null;
             if (body is null)
             {

@@ -7,9 +7,24 @@ using Microsoft.Extensions.Options;
 namespace Pcc.Plugins.Rss;
 
 /// <summary>Fetches each configured feed, tags items with the feed's topic, caps per topic.</summary>
-public sealed partial class RssClient(HttpClient http, IOptions<RssOptions> options) : IFeedClient
+public sealed partial class RssClient : IFeedClient
 {
-    private readonly RssOptions _options = options.Value;
+    // A neutral feed-reader User-Agent. Some feeds (e.g. Novinite) 403 a UA-less request, while a
+    // browser UA makes others (e.g. ESPN) return empty — this string satisfies both.
+    private const string UserAgent = "PCC-RSS/1.0 (+feed reader)";
+
+    private readonly HttpClient _http;
+    private readonly RssOptions _options;
+
+    public RssClient(HttpClient http, IOptions<RssOptions> options)
+    {
+        _http = http;
+        _options = options.Value;
+        if (_http.DefaultRequestHeaders.UserAgent.Count == 0)
+        {
+            _http.DefaultRequestHeaders.UserAgent.ParseAdd(UserAgent);
+        }
+    }
 
     public async Task<IReadOnlyList<RssItem>> GetItemsAsync(CancellationToken cancellationToken = default)
     {
@@ -42,7 +57,7 @@ public sealed partial class RssClient(HttpClient http, IOptions<RssOptions> opti
         {
             // Buffer fully before parsing: SyndicationFeed reads synchronously, and sync reads over a
             // live HttpClient stream throw under the container runtime. Buffering frees the connection sooner.
-            var bytes = await http.GetByteArrayAsync(new Uri(feed.Url), cancellationToken);
+            var bytes = await _http.GetByteArrayAsync(new Uri(feed.Url), cancellationToken);
             using var stream = new MemoryStream(bytes);
             using var reader = XmlReader.Create(stream);
             var parsed = SyndicationFeed.Load(reader);
