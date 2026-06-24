@@ -24,6 +24,8 @@ test('rss: SSR page lists feed items through the BFF, app-only', async ({ page }
 
   await page.goto(`${APP}/rss`, { waitUntil: 'domcontentloaded' })
   await expect(page.getByRole('heading', { name: 'Feeds' })).toBeVisible()
+  // The force-refresh button renders regardless of feed health (re-pulls feeds into the Redis cache).
+  await expect(page.getByRole('button', { name: /refresh/i })).toBeVisible()
   // SSR renders server-side. When at least one feed is reachable the page shows the curated topic
   // columns + filter (a 'Technology' column heading); public feeds aggressively rate-limit (429), so
   // when every feed degrades the BFF returns 502 and the page shows the graceful notice instead.
