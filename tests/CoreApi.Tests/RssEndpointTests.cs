@@ -13,16 +13,19 @@ public class RssEndpointTests(WebApplicationFactory<Program> factory)
     private readonly WebApplicationFactory<Program> _factory = factory;
 
     [Fact]
-    public async Task Returns_aggregated_items()
+    public async Task Returns_aggregated_items_with_topic_and_summary()
     {
         var client = AuthedWith(new FakeFeed([
-            new RssItem("First", "https://e.test/1", DateTimeOffset.UtcNow, "Example"),
+            new RssItem("First", "https://e.test/1", DateTimeOffset.UtcNow, "Example", "technology", "A summary"),
         ]));
 
         var items = await client.GetFromJsonAsync<List<ItemDto>>("/api/rss");
 
         Assert.NotNull(items);
-        Assert.Contains(items!, i => i.Title == "First");
+        var first = Assert.Single(items!);
+        Assert.Equal("First", first.Title);
+        Assert.Equal("technology", first.Topic);
+        Assert.Equal("A summary", first.Summary);
     }
 
     [Fact]
@@ -68,7 +71,7 @@ public class RssEndpointTests(WebApplicationFactory<Program> factory)
         return client;
     }
 
-    private sealed record ItemDto(string Title, string Link, string Source);
+    private sealed record ItemDto(string Title, string Link, string Source, string Topic, string Summary);
 
     private sealed record PluginDto(string Id);
 
