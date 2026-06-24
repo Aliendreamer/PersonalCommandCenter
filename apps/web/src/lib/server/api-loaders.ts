@@ -129,6 +129,9 @@ export const loadWeather = (fetchImpl: FetchLike): Promise<Weather> =>
 export const loadRss = (fetchImpl: FetchLike): Promise<RssItem[]> =>
   loadProtected<RssItem[]>(fetchImpl, '/api/rss')
 
+export const loadRssRefresh = (fetchImpl: FetchLike): Promise<RssItem[]> =>
+  loadProtected<RssItem[]>(fetchImpl, '/api/rss?refresh=true')
+
 export const loadGoodreads = (fetchImpl: FetchLike): Promise<Book[]> =>
   loadProtected<Book[]>(fetchImpl, '/api/goodreads')
 

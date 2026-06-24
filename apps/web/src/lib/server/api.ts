@@ -17,6 +17,7 @@ import {
   loadPlugins,
   loadNotifications,
   loadRss,
+  loadRssRefresh,
   loadSearch,
   loadWeather,
   loadSystemStatus,
@@ -113,6 +114,10 @@ export const getWeather = createServerFn({ method: 'GET' }).handler(() =>
 
 export const getRss = createServerFn({ method: 'GET' }).handler(() =>
   loadRss(serverFetch()),
+)
+
+export const refreshRss = createServerFn({ method: 'POST' }).handler(() =>
+  loadRssRefresh(serverFetch()),
 )
 
 export const getGoodreads = createServerFn({ method: 'GET' }).handler(() =>
