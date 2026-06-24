@@ -27,7 +27,7 @@ export function Sidebar({ manifests, activePath }: SidebarProps) {
       </Anchor>
       <Divider />
       <Stack gap={4} component="nav" aria-label="Plugins">
-        {manifests.map((manifest) => {
+        {manifests.filter((m) => m.id !== 'weather').map((manifest) => {
           const Icon = iconFor(manifest.id)
           return (
             <NavLink

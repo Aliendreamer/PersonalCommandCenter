@@ -8,11 +8,12 @@ import { AppShell, Anchor, Burger, Group, Text } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { CircleUser } from 'lucide-react'
 
-import { getMe, getPlugins } from '../lib/server/api'
+import { getMe, getPlugins, getWeather } from '../lib/server/api'
 import { settle } from '../lib/server/api-loaders'
 import { logout } from '../lib/auth/session'
 import { ThemeToggle } from '../components/theme-toggle'
 import { Sidebar } from '../components/sidebar'
+import { WeatherStrip } from '../components/weather-strip'
 
 /**
  * Whole-app auth gate + persistent app shell. `beforeLoad` runs server-side on SSR (and via RPC on
@@ -30,13 +31,16 @@ export const Route = createFileRoute('/_authenticated')({
     }
     return { me }
   },
-  loader: async () => settle(getPlugins()),
+  loader: async () => {
+    const [plugins, weather] = await Promise.all([settle(getPlugins()), settle(getWeather())])
+    return { plugins, weather }
+  },
   component: AuthenticatedLayout,
 })
 
 function AuthenticatedLayout() {
   const { me } = Route.useRouteContext()
-  const plugins = Route.useLoaderData()
+  const { plugins, weather } = Route.useLoaderData()
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const [opened, { toggle }] = useDisclosure()
 
@@ -55,7 +59,8 @@ function AuthenticatedLayout() {
             size="sm"
             aria-label="Toggle navigation"
           />
-          <Group gap="md" align="center" ml="auto" wrap="nowrap">
+          <WeatherStrip days={weather.data?.daily ?? []} />
+          <Group gap="md" align="center" wrap="nowrap">
             <Group gap={6} align="center">
               <CircleUser size={18} aria-hidden />
               {/* Show the email when known; never surface the raw subject GUID or internal roles. */}
