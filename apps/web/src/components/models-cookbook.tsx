@@ -33,7 +33,12 @@ const fitsBadgeLabel: Record<CatalogueEntry['fits'], string> = {
   yes: 'Fits VRAM',
   marginal: 'Marginal VRAM',
   no: 'Exceeds VRAM',
-  unknown: 'VRAM unknown',
+  unknown: 'VRAM ?',
+}
+
+function fitsLabel(entry: CatalogueEntry): string {
+  const gb = `${entry.sizeGb.toFixed(1)} GB`
+  return `${gb} · ${fitsBadgeLabel[entry.fits]}`
 }
 
 /** Model catalogue / cookbook tab: browse, pull, and delete Ollama models. */
@@ -137,12 +142,9 @@ export function ModelsCookbook({
                       color={fitsBadgeColor[entry.fits]}
                       variant="light"
                     >
-                      {fitsBadgeLabel[entry.fits]}
+                      {fitsLabel(entry)}
                     </Badge>
                   </Group>
-                  <Text size="xs" c="dimmed">
-                    {entry.sizeGb.toFixed(1)} GB
-                  </Text>
                   <Group mt="xs">
                     {installed ? (
                       <Button
