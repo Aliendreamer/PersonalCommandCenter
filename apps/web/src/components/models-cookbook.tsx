@@ -11,6 +11,7 @@ import {
   Stack,
   Text,
   TextInput,
+  Title,
 } from '@mantine/core'
 import type { CatalogueEntry } from '@pcc/contracts'
 
@@ -34,11 +35,6 @@ const fitsBadgeLabel: Record<CatalogueEntry['fits'], string> = {
   marginal: 'Marginal VRAM',
   no: 'Exceeds VRAM',
   unknown: 'VRAM ?',
-}
-
-function fitsLabel(entry: CatalogueEntry): string {
-  const gb = `${entry.sizeGb.toFixed(1)} GB`
-  return `${gb} · ${fitsBadgeLabel[entry.fits]}`
 }
 
 /** Model catalogue / cookbook tab: browse, pull, and delete Ollama models. */
@@ -124,9 +120,23 @@ export function ModelsCookbook({
             return (
               <Card key={entry.name} withBorder radius="md" p="md">
                 <Stack gap="xs">
-                  <Text fw={700} size="sm">
-                    {entry.name}
-                  </Text>
+                  <Group
+                    justify="space-between"
+                    align="flex-start"
+                    wrap="nowrap"
+                  >
+                    <Text fw={700} size="sm">
+                      {entry.name}
+                    </Text>
+                    <Stack gap={0} align="flex-end" style={{ flexShrink: 0 }}>
+                      <Title order={4} size="h5" lh={1.2}>
+                        {entry.sizeGb.toFixed(1)} GB
+                      </Title>
+                      <Text size="xs" c="dimmed" lh={1.2}>
+                        VRAM
+                      </Text>
+                    </Stack>
+                  </Group>
                   <Text size="xs" c="dimmed" lineClamp={2}>
                     {entry.description}
                   </Text>
@@ -142,7 +152,7 @@ export function ModelsCookbook({
                       color={fitsBadgeColor[entry.fits]}
                       variant="light"
                     >
-                      {fitsLabel(entry)}
+                      {fitsBadgeLabel[entry.fits]}
                     </Badge>
                   </Group>
                   <Group mt="xs">
