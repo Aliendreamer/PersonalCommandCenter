@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import {
   Anchor,
+  Badge,
   Box,
   Chip,
   Group,
@@ -106,10 +107,26 @@ export function RssItemList({ items, error }: RssItemListProps) {
                 >
                   {item.title}
                 </Anchor>
-                <Text size="xs" c="dimmed">
-                  {item.source}
-                  {when(item.published) ? ` · ${when(item.published)}` : ''}
-                </Text>
+                <Group gap={6} mt={2}>
+                  <Badge
+                    size="xs"
+                    variant="light"
+                    radius="sm"
+                    maw={180}
+                    style={{
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {item.source}
+                  </Badge>
+                  {when(item.published) && (
+                    <Text size="xs" c="dimmed">
+                      {when(item.published)}
+                    </Text>
+                  )}
+                </Group>
               </Box>
             ))}
           </Box>
