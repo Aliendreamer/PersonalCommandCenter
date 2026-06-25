@@ -106,26 +106,15 @@ internal sealed class LibraryEndpoint : EndpointWithoutRequest<IReadOnlyList<Cat
         var cache = Resolve<IFusionCache>();
         var options = Resolve<IOptions<ModelsOptions>>().Value;
 
-        var entries = await cache.GetOrSetAsync<IReadOnlyList<CatalogueEntry>>(
-            "models:library",
-            async (_, innerCt) => await BuildCatalogueAsync(options, innerCt),
+        // Cache only the raw catalogue (static data, 24 h TTL).
+        // GPU-fit annotation is computed per-request so it reflects current VRAM.
+        var raw = await cache.GetOrSetAsync<IReadOnlyList<LibraryEntryRaw>>(
+            "models:library:raw",
+            async (_, innerCt) => await LoadRawCatalogueAsync(innerCt),
             new FusionCacheEntryOptions(TimeSpan.FromHours(options.Ollama.LibraryCacheHours)),
             ct);
 
-        await Send.OkAsync(entries, ct);
-    }
-
-    private async Task<IReadOnlyList<CatalogueEntry>> BuildCatalogueAsync(ModelsOptions options, CancellationToken ct)
-    {
-        // Load embedded JSON
-        var asm = typeof(ModelsPlugin).Assembly;
-        var resourceName = asm.GetManifestResourceNames()
-            .First(n => n.EndsWith("ModelLibrary.json", StringComparison.Ordinal));
-
-        await using var stream = asm.GetManifestResourceStream(resourceName)!;
-        var raw = await JsonSerializer.DeserializeAsync<List<LibraryEntryRaw>>(stream, Json, ct) ?? [];
-
-        // Try to get GPU data for fits computation
+        // Resolve IModelsClient here (on the request thread) — safe for HttpContext access.
         double? gpuTotalMb = null;
         try
         {
@@ -138,10 +127,10 @@ internal sealed class LibraryEndpoint : EndpointWithoutRequest<IReadOnlyList<Cat
         }
         catch (Exception)
         {
-            // GPU data unavailable — all entries get "unknown"
+            // GPU exporter down — fits will be "unknown", catalogue still returns.
         }
 
-        return raw.Select(r => new CatalogueEntry(
+        var entries = raw.Select(r => new CatalogueEntry(
             r.Name,
             r.Description,
             r.ParameterSize,
@@ -150,6 +139,17 @@ internal sealed class LibraryEndpoint : EndpointWithoutRequest<IReadOnlyList<Cat
             r.Family,
             r.Tags,
             ComputeFits(r.SizeGb, gpuTotalMb))).ToList();
+
+        await Send.OkAsync(entries, ct);
+    }
+
+    private static async Task<IReadOnlyList<LibraryEntryRaw>> LoadRawCatalogueAsync(CancellationToken ct)
+    {
+        var asm = typeof(ModelsPlugin).Assembly;
+        var resourceName = asm.GetManifestResourceNames()
+            .First(n => n.EndsWith("ModelLibrary.json", StringComparison.Ordinal));
+        await using var stream = asm.GetManifestResourceStream(resourceName)!;
+        return await JsonSerializer.DeserializeAsync<List<LibraryEntryRaw>>(stream, Json, ct) ?? [];
     }
 
     private static string ComputeFits(double sizeGb, double? gpuTotalMb)
