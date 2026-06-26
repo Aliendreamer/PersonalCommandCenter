@@ -9,7 +9,7 @@ namespace Pcc.Plugins.Uptime;
 /// HTTP(S) targets are GET-pinged (up = status &lt; 400); <c>tcp://host:port</c> targets are probed by
 /// opening a socket (up = connect succeeds) so HTTP-less services like Postgres/Redis can be monitored.
 /// </summary>
-public sealed class HttpUptimeClient(HttpClient http, IOptions<UptimeOptions> options) : IUptimeClient
+public sealed class HttpUptimeClient(HttpClient http, IOptions<UptimeOptions> options, IUptimeTracker tracker) : IUptimeClient
 {
     private readonly UptimeOptions _options = options.Value;
 
@@ -49,13 +49,15 @@ public sealed class HttpUptimeClient(HttpClient http, IOptions<UptimeOptions> op
             using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
             stopwatch.Stop();
             var status = (int)response.StatusCode;
-            return new UptimeCheck(target.Name, target.Url, status < 400, status, stopwatch.ElapsedMilliseconds);
+            var up = status < 400;
+            return new UptimeCheck(target.Name, target.Url, up, status, stopwatch.ElapsedMilliseconds,
+                tracker.RecordAndGetUpSince(target.Name, up));
         }
         catch (Exception)
         {
-            // A timeout or connection failure is a "down" data point, not an endpoint error.
             stopwatch.Stop();
-            return new UptimeCheck(target.Name, target.Url, false, null, stopwatch.ElapsedMilliseconds);
+            return new UptimeCheck(target.Name, target.Url, false, null, stopwatch.ElapsedMilliseconds,
+                tracker.RecordAndGetUpSince(target.Name, false));
         }
     }
 
@@ -65,7 +67,8 @@ public sealed class HttpUptimeClient(HttpClient http, IOptions<UptimeOptions> op
     {
         if (uri.Port <= 0)
         {
-            return new UptimeCheck(target.Name, target.Url, false, null, 0); // tcp:// target with no port
+            return new UptimeCheck(target.Name, target.Url, false, null, 0,
+                tracker.RecordAndGetUpSince(target.Name, false));
         }
 
         var stopwatch = Stopwatch.StartNew();
@@ -74,12 +77,14 @@ public sealed class HttpUptimeClient(HttpClient http, IOptions<UptimeOptions> op
             using var tcp = new TcpClient();
             await tcp.ConnectAsync(uri.Host, uri.Port, cancellationToken);
             stopwatch.Stop();
-            return new UptimeCheck(target.Name, target.Url, true, null, stopwatch.ElapsedMilliseconds);
+            return new UptimeCheck(target.Name, target.Url, true, null, stopwatch.ElapsedMilliseconds,
+                tracker.RecordAndGetUpSince(target.Name, true));
         }
         catch (Exception)
         {
             stopwatch.Stop();
-            return new UptimeCheck(target.Name, target.Url, false, null, stopwatch.ElapsedMilliseconds);
+            return new UptimeCheck(target.Name, target.Url, false, null, stopwatch.ElapsedMilliseconds,
+                tracker.RecordAndGetUpSince(target.Name, false));
         }
     }
 }

@@ -15,6 +15,7 @@ public sealed class UptimePlugin : IPlugin
     public void Configure(IServiceCollection services, IConfiguration config)
     {
         services.Configure<UptimeOptions>(config);
+        services.AddSingleton<IUptimeTracker, UptimeTracker>();
         services.AddHttpClient<IUptimeClient, HttpUptimeClient>();
     }
 }

@@ -81,7 +81,7 @@ public class HttpUptimeClientTests
     public async Task Throws_when_no_targets_configured()
     {
         var client = new HttpUptimeClient(new HttpClient(new RoutingHandler(_ => new HttpResponseMessage())),
-            Options.Create(new UptimeOptions()));
+            Options.Create(new UptimeOptions()), new UptimeTracker());
         await Assert.ThrowsAsync<InvalidOperationException>(() => client.CheckAllAsync());
     }
 
@@ -120,7 +120,7 @@ public class HttpUptimeClientTests
     }
 
     private static HttpUptimeClient Create(RoutingHandler handler, params UptimeTarget[] targets) =>
-        new(new HttpClient(handler), Options.Create(new UptimeOptions { Targets = targets, TimeoutSeconds = 5 }));
+        new(new HttpClient(handler), Options.Create(new UptimeOptions { Targets = targets, TimeoutSeconds = 5 }), new UptimeTracker());
 
     private sealed class RoutingHandler(Func<HttpRequestMessage, HttpResponseMessage> respond) : HttpMessageHandler
     {

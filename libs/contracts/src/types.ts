@@ -160,6 +160,7 @@ export interface UptimeCheck {
   up: boolean;
   statusCode?: number | null;
   latencyMs: number;
+  upSince?: string | null;
 }
 
 /** Mirrors the backend `CodingStatus` from `GET /api/coding`. Raw seconds; the web layer formats. */

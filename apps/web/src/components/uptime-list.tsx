@@ -1,9 +1,28 @@
-import { Badge, Box, Group, Paper, SimpleGrid, Text } from '@mantine/core'
+import {
+  Badge,
+  Box,
+  Group,
+  Paper,
+  SimpleGrid,
+  Stack,
+  Text,
+} from '@mantine/core'
 import type { UptimeCheck } from '@pcc/contracts'
 
 export interface UptimeListProps {
   checks: UptimeCheck[]
   error?: string
+}
+
+function uptimeDuration(upSince: string): string {
+  const ms = Date.now() - new Date(upSince).getTime()
+  const totalMinutes = Math.floor(ms / 60000)
+  const days = Math.floor(totalMinutes / 1440)
+  const hours = Math.floor((totalMinutes % 1440) / 60)
+  const mins = totalMinutes % 60
+  if (days > 0) return `${days}d ${hours}h`
+  if (hours > 0) return `${hours}h ${mins}m`
+  return `${mins}m`
 }
 
 /** A responsive grid of status tiles — one per target — each with an up/down accent, badge + latency. */
@@ -70,9 +89,16 @@ export function UptimeList({ checks, error }: UptimeListProps) {
             <Text size="xs" c="dimmed" truncate title={check.url}>
               {check.url}
             </Text>
-            <Text size="xs" c="dimmed">
-              {check.latencyMs} ms
-            </Text>
+            <Stack gap={0} mt={4}>
+              <Text size="xs" c="dimmed">
+                {check.latencyMs} ms
+              </Text>
+              {check.upSince ? (
+                <Text size="xs" fw={500} c="green.5">
+                  up {uptimeDuration(check.upSince)}
+                </Text>
+              ) : null}
+            </Stack>
           </Paper>
         )
       })}
