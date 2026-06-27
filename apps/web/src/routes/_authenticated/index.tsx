@@ -6,6 +6,7 @@ import {
   getCoding,
   getIotEntities,
   getMemory,
+  getNetwork,
   getNotifications,
   getPlugins,
   getSystemStatus,
@@ -34,6 +35,7 @@ import { UptimeStatusTile } from '../../components/uptime-status-tile'
 import { ModelsStatusTile } from '../../components/models-status-tile'
 import { CodingStatusTile } from '../../components/coding-status-tile'
 import { MemoryCountTile } from '../../components/memory-count-tile'
+import { NetworkDevicesTile } from '../../components/network-devices-tile'
 
 export const Route = createFileRoute('/_authenticated/')({
   // SSR-with-data: the dashboard renders fully populated. Each source is settled independently so
@@ -53,6 +55,7 @@ export const Route = createFileRoute('/_authenticated/')({
       models,
       coding,
       memory,
+      network,
     ] = await Promise.all([
       settle(getPlugins()),
       settle(getSystemStatus()),
@@ -67,6 +70,7 @@ export const Route = createFileRoute('/_authenticated/')({
       settle(getModels()),
       settle(getCoding({ data: 'week' })),
       settle(getMemory()),
+      settle(getNetwork()),
     ])
     return {
       plugins,
@@ -82,6 +86,7 @@ export const Route = createFileRoute('/_authenticated/')({
       models,
       coding,
       memory,
+      network,
     }
   },
   component: Home,
@@ -102,6 +107,7 @@ function Home() {
     models,
     coding,
     memory,
+    network,
   } = Route.useLoaderData()
   const navigate = useNavigate()
 
@@ -121,6 +127,7 @@ function Home() {
     if (manifest.widgets.includes('models-status')) return models
     if (manifest.widgets.includes('coding-status')) return coding
     if (manifest.widgets.includes('memory-count')) return memory
+    if (manifest.widgets.includes('network-devices')) return network
     return okSource
   }
 
@@ -197,6 +204,11 @@ function Home() {
         }
         if (manifest.widgets.includes('memory-count')) {
           return <MemoryCountTile entries={memory.data} error={memory.error} />
+        }
+        if (manifest.widgets.includes('network-devices')) {
+          return (
+            <NetworkDevicesTile status={network.data} error={network.error} />
+          )
         }
         return null
       }}

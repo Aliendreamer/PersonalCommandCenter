@@ -16,6 +16,7 @@ import {
   loadMemory,
   loadModelLibrary,
   loadModels,
+  loadNetwork,
   loadPullModel,
   loadUptime,
   loadIotEntities,
@@ -133,6 +134,10 @@ export const getGoodreads = createServerFn({ method: 'GET' }).handler(() =>
 
 export const getUptime = createServerFn({ method: 'GET' }).handler(() =>
   loadUptime(serverFetch()),
+)
+
+export const getNetwork = createServerFn({ method: 'GET' }).handler(() =>
+  loadNetwork(serverFetch()),
 )
 
 export const getModels = createServerFn({ method: 'GET' }).handler(() =>

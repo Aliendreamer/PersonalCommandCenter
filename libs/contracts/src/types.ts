@@ -238,3 +238,29 @@ export interface CatalogueEntry {
   tags: string[];
   fits: 'yes' | 'marginal' | 'no' | 'unknown';
 }
+
+export interface NetworkDevice {
+  name: string;
+  ip?: string | null;
+  mac?: string | null;
+  home: boolean;
+  connectionType?: string | null;
+  downKbps?: number | null;
+  upKbps?: number | null;
+  rssiDbm?: number | null;
+}
+
+export interface NetworkNode {
+  name: string;
+  online: boolean;
+  cpuPct?: number | null;
+  memPct?: number | null;
+  connectedDevices?: number | null;
+  downKbps?: number | null;
+  upKbps?: number | null;
+}
+
+export interface NetworkStatus {
+  devices: NetworkDevice[];
+  nodes: NetworkNode[];
+}

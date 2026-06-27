@@ -10,6 +10,7 @@ import {
   Cpu,
   LayoutGrid,
   ListChecks,
+  Network,
   Rss,
   Search,
   Server,
@@ -29,6 +30,7 @@ const ICONS: Record<string, LucideIcon> = {
   goodreads: BookOpen,
   uptime: Activity,
   models: Boxes,
+  network: Network,
   coding: Code2,
   memory: BrainCircuit,
 }

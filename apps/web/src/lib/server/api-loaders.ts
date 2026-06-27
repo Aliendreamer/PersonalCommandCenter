@@ -7,6 +7,7 @@ import type {
   CompareResult,
   IotEntity,
   MemoryEntry,
+  NetworkStatus,
   NotificationList,
   PluginManifest,
   RssItem,
@@ -181,6 +182,9 @@ export const loadCoding = (
   range: CodingRange,
 ): Promise<CodingStatus> =>
   loadProtected<CodingStatus>(fetchImpl, `/api/coding?range=${range}`)
+
+export const loadNetwork = (fetchImpl: FetchLike): Promise<NetworkStatus> =>
+  loadProtected<NetworkStatus>(fetchImpl, '/api/network')
 
 /**
  * Sends a protected mutation server-to-server. 401 → login redirect (revoked session); 404 → null
