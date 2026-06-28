@@ -6,12 +6,15 @@ import type {
   CatalogueEntry,
   CompareResult,
   IotEntity,
+  MailHeader,
+  MailMessage,
   MemoryEntry,
   NetworkStatus,
   NotificationList,
   PluginManifest,
   RssItem,
   SearchResult,
+  SendMailRequest,
   ModelsStatus,
   CodingStatus,
   CodingRange,
@@ -288,6 +291,65 @@ export const loadDeleteMemory = (
   id: string,
 ): Promise<null> =>
   sendProtected<null>(fetchImpl, 'DELETE', `/api/memory/${id}`)
+
+export const loadMailMessages = (
+  fetchImpl: FetchLike,
+  folder = 'INBOX',
+  limit = 20,
+  offset = 0,
+): Promise<MailHeader[]> =>
+  loadProtected<MailHeader[]>(
+    fetchImpl,
+    `/api/mail/messages?folder=${encodeURIComponent(folder)}&limit=${limit}&offset=${offset}`,
+  )
+
+export const loadMailMessage = (
+  fetchImpl: FetchLike,
+  uid: number,
+  folder = 'INBOX',
+): Promise<MailMessage> =>
+  loadProtected<MailMessage>(
+    fetchImpl,
+    `/api/mail/messages/${uid}?folder=${encodeURIComponent(folder)}`,
+  )
+
+export const sendMailMessage = (
+  fetchImpl: FetchLike,
+  req: SendMailRequest,
+): Promise<null> =>
+  sendProtected<null>(fetchImpl, 'POST', '/api/mail/send', req)
+
+export const summariseMail = (
+  fetchImpl: FetchLike,
+  uid: number,
+  folder = 'INBOX',
+): Promise<{ summary: string }> =>
+  sendProtected<{ summary: string }>(fetchImpl, 'POST', '/api/mail/summarise', {
+    uid,
+    folder,
+  }).then((r) => r ?? { summary: '' })
+
+export const draftMailReply = (
+  fetchImpl: FetchLike,
+  uid: number,
+  instruction?: string,
+  folder = 'INBOX',
+): Promise<{ draft: string }> =>
+  sendProtected<{ draft: string }>(fetchImpl, 'POST', '/api/mail/draft', {
+    uid,
+    instruction,
+    folder,
+  }).then((r) => r ?? { draft: '' })
+
+export const tagMail = (
+  fetchImpl: FetchLike,
+  uid: number,
+  folder = 'INBOX',
+): Promise<{ tag: string }> =>
+  sendProtected<{ tag: string }>(fetchImpl, 'POST', '/api/mail/tag', {
+    uid,
+    folder,
+  }).then((r) => r ?? { tag: '' })
 
 /** A loaded value or a degraded marker. */
 export type Settled<T> =

@@ -10,7 +10,7 @@
       "Bash(docker *)",
       "Bash(openspec *)",
       "Bash(curl *)",
-      "mcp__plugin_serena_serena__*"
+      "mcp__plugin_serena__*"
     ],
     "deny": [
       "Bash(rm -rf*)",
@@ -18,32 +18,10 @@
       "Bash(git push -f*)",
       "Bash(git reset --hard*)",
       "Bash(git branch -D*)",
-      "Bash(git branch --delete --force*)"
+      "Bash(git branch --delete --force*)",
+      "Read(apps/core-api/Config/**)",
+      "Read(config.conf)"
     ]
-  },
-  "sandbox": {
-    "enabled": false,
-    "network": {
-      "allowedDomains": [
-        "localhost",
-        "127.0.0.1",
-        "*.pcc.localhost",
-        "registry.npmjs.org",
-        "*.nuget.org",
-        "github.com",
-        "*.githubusercontent.com",
-        "ghcr.io",
-        "quay.io",
-        "*.docker.io"
-      ],
-      "allowAllUnixSockets": true
-    },
-    "filesystem": {
-      "allowWrite": [
-        "/home/aliendreamer/projects/PersonalCommandCenter",
-        "/tmp"
-      ]
-    }
   },
   "hooks": {
     "PreToolUse": [
@@ -95,6 +73,45 @@
         "source": "github",
         "repo": "dotnet/skills"
       }
+    }
+  },
+  "sandbox": {
+    "enabled": true,
+    "failIfUnavailable": true,
+    "allowUnsandboxedCommands": true,
+    "network": {
+      "allowedDomains": [
+        "registry.yarnpkg.com",
+        "registry.npmjs.org",
+        "*.npmjs.org",
+        "github.com",
+        "codeload.github.com",
+        "*.githubusercontent.com",
+        "pypi.org",
+        "files.pythonhosted.org",
+        "api.nuget.org",
+        "*.nuget.org",
+        "nuget.org",
+        "dist.nuget.org",
+        "localhost",
+        "127.0.0.1"
+      ]
+    },
+    "filesystem": {
+      "denyRead": [
+        ".env",
+        ".env.*",
+        "config.conf",
+        "Config/appsettings.json",
+        "Config/appsettings.*.json"
+      ],
+      "allowWrite": [
+        "/usr/local/share/.yarn-global",
+        "~/.npm",
+        "~/.cache",
+        "~/.local/share/pnpm",
+        "/var/run/docker.sock"
+      ]
     }
   }
 }

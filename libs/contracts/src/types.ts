@@ -239,6 +239,39 @@ export interface CatalogueEntry {
   fits: 'yes' | 'marginal' | 'no' | 'unknown';
 }
 
+/** Mirrors the backend `MessageHeader` from `GET /api/mail/messages`. */
+export interface MailHeader {
+  uid: number;
+  subject: string;
+  from: string;
+  to: string;
+  date: string;
+  isRead: boolean;
+  tag?: string | null;
+  folder: string;
+}
+
+export interface AttachmentInfo {
+  name: string;
+  size: number;
+}
+
+/** Mirrors the backend `MessageBody` from `GET /api/mail/messages/{uid}`. */
+export interface MailMessage extends MailHeader {
+  body: string;
+  attachments: AttachmentInfo[];
+}
+
+/** Body for `POST /api/mail/send`. */
+export interface SendMailRequest {
+  to: string[];
+  subject: string;
+  body: string;
+  replyToUid?: number | null;
+  replyToMessageId?: string | null;
+  folder?: string;
+}
+
 export interface NetworkDevice {
   name: string;
   ip?: string | null;

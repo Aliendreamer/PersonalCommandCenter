@@ -10,6 +10,7 @@ import {
   Cpu,
   LayoutGrid,
   ListChecks,
+  Mail,
   Network,
   Rss,
   Search,
@@ -33,6 +34,7 @@ const ICONS: Record<string, LucideIcon> = {
   network: Network,
   coding: Code2,
   memory: BrainCircuit,
+  mail: Mail,
 }
 
 export function iconFor(id: string): LucideIcon {

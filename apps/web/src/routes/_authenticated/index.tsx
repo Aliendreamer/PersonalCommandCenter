@@ -5,6 +5,7 @@ import {
   getCalendarEvents,
   getCoding,
   getIotEntities,
+  getMailMessages,
   getMemory,
   getNetwork,
   getNotifications,
@@ -34,6 +35,7 @@ import { GoodreadsReadingTile } from '../../components/goodreads-reading-tile'
 import { UptimeStatusTile } from '../../components/uptime-status-tile'
 import { ModelsStatusTile } from '../../components/models-status-tile'
 import { CodingStatusTile } from '../../components/coding-status-tile'
+import { MailUnreadTile } from '../../components/mail-unread-tile'
 import { MemoryCountTile } from '../../components/memory-count-tile'
 import { NetworkDevicesTile } from '../../components/network-devices-tile'
 
@@ -56,6 +58,7 @@ export const Route = createFileRoute('/_authenticated/')({
       coding,
       memory,
       network,
+      mail,
     ] = await Promise.all([
       settle(getPlugins()),
       settle(getSystemStatus()),
@@ -71,6 +74,9 @@ export const Route = createFileRoute('/_authenticated/')({
       settle(getCoding({ data: 'week' })),
       settle(getMemory()),
       settle(getNetwork()),
+      settle(
+        getMailMessages({ data: { folder: 'INBOX', limit: 50, offset: 0 } }),
+      ),
     ])
     return {
       plugins,
@@ -87,6 +93,7 @@ export const Route = createFileRoute('/_authenticated/')({
       coding,
       memory,
       network,
+      mail,
     }
   },
   component: Home,
@@ -108,6 +115,7 @@ function Home() {
     coding,
     memory,
     network,
+    mail,
   } = Route.useLoaderData()
   const navigate = useNavigate()
 
@@ -128,6 +136,7 @@ function Home() {
     if (manifest.widgets.includes('coding-status')) return coding
     if (manifest.widgets.includes('memory-count')) return memory
     if (manifest.widgets.includes('network-devices')) return network
+    if (manifest.widgets.includes('mail-unread')) return mail
     return okSource
   }
 
@@ -209,6 +218,9 @@ function Home() {
           return (
             <NetworkDevicesTile status={network.data} error={network.error} />
           )
+        }
+        if (manifest.widgets.includes('mail-unread')) {
+          return <MailUnreadTile messages={mail.data} error={mail.error} />
         }
         return null
       }}

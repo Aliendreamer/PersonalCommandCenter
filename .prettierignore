@@ -6,6 +6,22 @@ coverage
 **/obj
 pnpm-lock.yaml
 
+# Secrets / config (sandbox-masked character devices — not real project files)
+config.conf
+.env
+.env.*
+.zshrc
+.zprofile
+.bashrc
+.bash_profile
+.profile
+.gitconfig
+.gitmodules
+.ripgreprc
+.mcp.json
+.vscode
+.idea
+
 # Tooling, memory, and spec/doc dirs (not application source)
 .claude
 .remember

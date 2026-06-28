@@ -1,4 +1,5 @@
 export type {
+  AttachmentInfo,
   Book,
   CalendarEvent,
   CalendarEventInput,
@@ -13,6 +14,8 @@ export type {
   GpuStat,
   InstalledModel,
   IotEntity,
+  MailHeader,
+  MailMessage,
   MemoryEntry,
   MemoryItem,
   ModelsStatus,
@@ -27,6 +30,7 @@ export type {
   RssTopic,
   RunningModel,
   SearchResult,
+  SendMailRequest,
   SystemStatus,
   TodoInput,
   TodoItem,

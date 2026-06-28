@@ -1,10 +1,16 @@
 import { createServerFn } from '@tanstack/react-start'
 import { getRequestHeader } from '@tanstack/react-start/server'
 
-import type { CalendarEventInput, CodingRange, TodoInput } from '@pcc/contracts'
+import type {
+  CalendarEventInput,
+  CodingRange,
+  SendMailRequest,
+  TodoInput,
+} from '@pcc/contracts'
 
 import { cookiesAreSecure, forwardCookieHeader } from './cookies'
 import {
+  draftMailReply as loaderDraftMailReply,
   loadCalendarEvents,
   loadCalendarEventsRange,
   loadCalendarSources,
@@ -13,6 +19,8 @@ import {
   loadDeleteMemory,
   loadDeleteModel,
   loadGoodreads,
+  loadMailMessage,
+  loadMailMessages,
   loadMemory,
   loadModelLibrary,
   loadModels,
@@ -38,6 +46,9 @@ import {
   putTask,
   removeCalendarEvent,
   removeTask,
+  sendMailMessage,
+  summariseMail as loaderSummariseMail,
+  tagMail as loaderTagMail,
 } from './api-loaders'
 
 /**
@@ -200,3 +211,38 @@ export const storeMemory = createServerFn({ method: 'POST' })
 export const deleteMemory = createServerFn({ method: 'POST' })
   .validator((id: string) => id)
   .handler((ctx) => loadDeleteMemory(serverFetch(), ctx.data))
+
+export const getMailMessages = createServerFn({ method: 'GET' })
+  .validator((d: { folder?: string; limit?: number; offset?: number }) => d)
+  .handler(({ data }) =>
+    loadMailMessages(serverFetch(), data.folder, data.limit, data.offset),
+  )
+
+export const getMailMessage = createServerFn({ method: 'GET' })
+  .validator((d: { uid: number; folder?: string }) => d)
+  .handler(({ data }) => loadMailMessage(serverFetch(), data.uid, data.folder))
+
+export const sendMail = createServerFn({ method: 'POST' })
+  .validator((req: SendMailRequest) => req)
+  .handler(({ data }) => sendMailMessage(serverFetch(), data))
+
+export const summariseMail = createServerFn({ method: 'POST' })
+  .validator((d: { uid: number; folder?: string }) => d)
+  .handler(({ data }) =>
+    loaderSummariseMail(serverFetch(), data.uid, data.folder),
+  )
+
+export const draftMailReply = createServerFn({ method: 'POST' })
+  .validator((d: { uid: number; instruction?: string; folder?: string }) => d)
+  .handler(({ data }) =>
+    loaderDraftMailReply(
+      serverFetch(),
+      data.uid,
+      data.instruction,
+      data.folder,
+    ),
+  )
+
+export const tagMail = createServerFn({ method: 'POST' })
+  .validator((d: { uid: number; folder?: string }) => d)
+  .handler(({ data }) => loaderTagMail(serverFetch(), data.uid, data.folder))
