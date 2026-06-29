@@ -162,6 +162,24 @@ services:
     volumes:
       - ollama-data:/root/.ollama
 
+  mineru:
+    build: ./docker/mineru
+    # MinerU PDF structure parser (pipeline + OCR backend). In-compose only: the
+    # DndMcpAICsharpFun app reaches it at http://mineru:8000. GPU-accelerated; shares the
+    # GPU with ollama — MinerU conversion and qwen3 extraction run sequentially per book.
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    ipc: host
+    shm_size: '8gb'
+    environment:
+      MINERU_MODEL_SOURCE: local
+    restart: unless-stopped
+
   qdrant:
     image: qdrant/qdrant:v1.18.2
     # Vector DB. REST via qdrant.pcc.localhost (Traefik); gRPC 6334 in-compose only; no host port.
