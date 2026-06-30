@@ -22,7 +22,7 @@ internal sealed partial class ImapMailClient(IOptions<MailOptions> opts) : IImap
         using var client = new ImapClient();
         await ConnectAsync(client, ct);
 
-        var mailbox = await client.GetFolderAsync(folder, ct);
+        var mailbox = await client.GetFolderAsync(_opts.Imap.Resolve(folder), ct);
         await mailbox.OpenAsync(FolderAccess.ReadOnly, ct);
 
         var uids = await mailbox.SearchAsync(SearchQuery.All, ct);
@@ -73,7 +73,7 @@ internal sealed partial class ImapMailClient(IOptions<MailOptions> opts) : IImap
         using var client = new ImapClient();
         await ConnectAsync(client, ct);
 
-        var mailbox = await client.GetFolderAsync(folder, ct);
+        var mailbox = await client.GetFolderAsync(_opts.Imap.Resolve(folder), ct);
         await mailbox.OpenAsync(FolderAccess.ReadOnly, ct);
 
         var message = await mailbox.GetMessageAsync(new UniqueId(uid), ct);
