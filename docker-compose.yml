@@ -13,20 +13,55 @@ services:
       - ./harness/traefik:/etc/traefik/dynamic:ro
     extra_hosts:
       - 'host.docker.internal:host-gateway'
+    restart: unless-stopped
 
   postgres:
-    image: postgres:18-alpine
+    build: harness/postgres
+    command: postgres -c shared_preload_libraries=pg_stat_statements
     environment:
       POSTGRES_USER: pcc
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pcc-dev}
       POSTGRES_DB: pcc
     volumes:
-      - pcc-postgres:/var/lib/postgresql/data
+      # pg18 images moved the data layout: mount the volume at /var/lib/postgresql (data lives in
+      # 18/docker/ inside it), NOT /var/lib/postgresql/data — the 17-era path trips the 18 entrypoint.
+      - pcc-postgres:/var/lib/postgresql
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U pcc -d pcc']
       interval: 5s
       timeout: 3s
       retries: 15
+    restart: unless-stopped
+
+  # One-shot: create pg_stat_statements + hypopg extensions (idempotent).
+  postgres-ext-init:
+    image: postgres:18-alpine
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD:-pcc-dev}
+    command:
+      - sh
+      - -c
+      - >
+        psql -h postgres -U pcc -d pcc
+        -c "CREATE EXTENSION IF NOT EXISTS pg_stat_statements"
+        -c "CREATE EXTENSION IF NOT EXISTS hypopg"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: 'no'
+
+  # postgres-mcp MCP server (crystaldba) — stdio transport, kept alive by stdin_open; Claude Code
+  # connects per-session via `docker exec -i <container> postgres-mcp` (reads DATABASE_URI).
+  # Internal-only: no Traefik route, no host port. See openspec/changes/postgres-mcp/design.md.
+  postgres-mcp:
+    image: crystaldba/postgres-mcp:latest
+    stdin_open: true
+    environment:
+      DATABASE_URI: postgresql://pcc:${POSTGRES_PASSWORD:-pcc-dev}@postgres:5432/pcc
+    depends_on:
+      postgres-ext-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
 
   # One-shot: ensure Keycloak's dedicated database exists in the shared Postgres (idempotent, runs on
   # both fresh and existing volumes since the Postgres initdb hook only fires on an empty data dir).
@@ -68,6 +103,7 @@ services:
         condition: service_completed_successfully
     volumes:
       - ./harness/keycloak:/opt/keycloak/data/import:ro
+    restart: unless-stopped
     # Routed via the Traefik file provider (harness/traefik/dynamic.yml), not docker labels.
 
   core-api:
@@ -108,6 +144,7 @@ services:
     # The Keycloak issuer URL must resolve to the same host from inside this container.
     extra_hosts:
       - 'keycloak.pcc.localhost:host-gateway'
+    restart: unless-stopped
     # No Traefik route — core-api is internal-only (SSR-BFF). It's reachable solely as
     # `core-api:8080` on the compose network, from the web SSR server.
 
@@ -117,6 +154,7 @@ services:
       - ha-config:/config
       # Reverse-proxy config managed in git (overlays the volume's configuration.yaml).
       - ./harness/home-assistant/configuration.yaml:/config/configuration.yaml:ro
+    restart: unless-stopped
     # Routed via the Traefik file provider (harness/traefik/dynamic.yml), not docker labels.
 
   radicale:
@@ -126,6 +164,7 @@ services:
       - radicale-data:/data
       - ./harness/radicale/config:/config/config:ro
       - ./harness/radicale/users:/config/users:ro
+    restart: unless-stopped
 
   searxng:
     image: searxng/searxng:2026.6.16-502c820a2
@@ -134,6 +173,7 @@ services:
       - ./harness/searxng/settings.yml:/etc/searxng/settings.yml:ro
     environment:
       SEARXNG_BASE_URL: 'http://searxng.pcc.localhost/'
+    restart: unless-stopped
 
   ntfy:
     image: binwiederhier/ntfy:v2.24.0
@@ -147,6 +187,7 @@ services:
       NTFY_ATTACHMENT_CACHE_DIR: '/var/lib/ntfy/attachments'
     volumes:
       - ntfy-data:/var/lib/ntfy
+    restart: unless-stopped
 
   # --- Base-infra shared stack (leading compose; router-only, no host ports except Redis-TCP) ---
   ollama:
@@ -161,6 +202,7 @@ services:
               capabilities: [gpu]
     volumes:
       - ollama-data:/root/.ollama
+    restart: unless-stopped
 
   mineru:
     build: ./docker/mineru
@@ -185,6 +227,7 @@ services:
     # Vector DB. REST via qdrant.pcc.localhost (Traefik); gRPC 6334 in-compose only; no host port.
     volumes:
       - qdrant-data:/qdrant/storage
+    restart: unless-stopped
 
   redis:
     image: redis:7-alpine
@@ -194,6 +237,7 @@ services:
       - '6379:6379'
     volumes:
       - redis-data:/data
+    restart: unless-stopped
 
   portainer:
     image: portainer/portainer-ce:lts
@@ -201,6 +245,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer-data:/data
+    restart: unless-stopped
 
   wakapi:
     image: ghcr.io/muety/wakapi:2.17.4
@@ -215,6 +260,7 @@ services:
       WAKAPI_BASE_URL: 'http://wakapi.pcc.localhost'
     volumes:
       - wakapi-data:/data
+    restart: unless-stopped
 
   pgadmin:
     image: dpage/pgadmin4:9.15
@@ -229,6 +275,7 @@ services:
       - ./harness/pgadmin/servers.json:/pgadmin4/servers.json:ro
     depends_on:
       - postgres
+    restart: unless-stopped
 
   redisinsight:
     image: redis/redisinsight:latest
@@ -238,6 +285,7 @@ services:
       - redisinsight-data:/data
     depends_on:
       - redis
+    restart: unless-stopped
 
   # --- Observability: OTLP collector -> Tempo (traces) + Prometheus (metrics) -> Grafana ---
   otel-collector:
@@ -251,6 +299,7 @@ services:
       - ./harness/otel/config.yaml:/etc/otelcol-contrib/config.yaml:ro
     depends_on:
       - tempo
+    restart: unless-stopped
 
   tempo:
     image: grafana/tempo:3.0.0
@@ -259,6 +308,7 @@ services:
     volumes:
       - ./harness/tempo/tempo.yaml:/etc/tempo.yaml:ro
       - tempo-data:/var/tempo
+    restart: unless-stopped
 
   prometheus:
     image: prom/prometheus:v3.5.4
@@ -269,6 +319,7 @@ services:
     volumes:
       - ./harness/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus-data:/prometheus
+    restart: unless-stopped
 
   grafana:
     image: grafana/grafana:13.0.2
@@ -282,6 +333,7 @@ services:
     depends_on:
       - prometheus
       - tempo
+    restart: unless-stopped
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.55.1
@@ -293,6 +345,7 @@ services:
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
 
   node-exporter:
     image: prom/node-exporter:v1.11.1
@@ -301,6 +354,7 @@ services:
       - '--path.rootfs=/host'
     volumes:
       - /:/host:ro
+    restart: unless-stopped
 
   gpu-exporter:
     image: utkuozdemir/nvidia_gpu_exporter:1.4.1
@@ -315,6 +369,7 @@ services:
               capabilities: [gpu]
     volumes:
       - /usr/lib/wsl:/usr/lib/wsl:ro
+    restart: unless-stopped
 
   web:
     build:
@@ -327,6 +382,7 @@ services:
       API_URL: 'http://core-api:8080'
     depends_on:
       - core-api
+    restart: unless-stopped
     # Routed via the Traefik file provider (harness/traefik/dynamic.yml), not docker labels.
 
 volumes:
