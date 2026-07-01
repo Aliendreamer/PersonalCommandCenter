@@ -15,7 +15,7 @@ services:
       - 'host.docker.internal:host-gateway'
 
   postgres:
-    image: postgres:17-alpine
+    image: postgres:18-alpine
     environment:
       POSTGRES_USER: pcc
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pcc-dev}
@@ -31,7 +31,7 @@ services:
   # One-shot: ensure Keycloak's dedicated database exists in the shared Postgres (idempotent, runs on
   # both fresh and existing volumes since the Postgres initdb hook only fires on an empty data dir).
   keycloak-db-init:
-    image: postgres:17-alpine
+    image: postgres:18-alpine
     environment:
       PGPASSWORD: ${POSTGRES_PASSWORD:-pcc-dev}
     command:

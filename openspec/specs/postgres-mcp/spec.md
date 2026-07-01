@@ -7,12 +7,17 @@ schemas, run queries, and analyse performance on the PCC PostgreSQL instance.
 
 ## Current state (assessed 2026-07-01)
 
+Running `postgres:17-alpine`. Upgrading to `postgres:18-alpine` as part of this change.
+
 | Extension | Available | Enabled |
 |-----------|-----------|---------|
 | `pg_stat_statements` | ✓ (bundled with postgres:17-alpine) | ✗ — not in `shared_preload_libraries`, extension not created |
 | `hypopg` | ✗ — not in postgres:17-alpine base image | ✗ |
 
 `shared_preload_libraries` is currently empty. Only `plpgsql` is installed.
+
+**pg18 + hypopg confirmed available:** `postgres:18-alpine` pulls successfully;
+`postgresql-hypopg-1.4.2-r0` is in the Alpine apk repo (no version suffix — works with pg18).
 
 ## What postgres-mcp needs
 
@@ -29,8 +34,8 @@ Replace `image: postgres:17-alpine` with a lightweight custom image that:
 
 ```dockerfile
 # harness/postgres/Dockerfile
-FROM postgres:17-alpine
-RUN apk add --no-cache postgresql17-hypopg
+FROM postgres:18-alpine
+RUN apk add --no-cache postgresql-hypopg
 ```
 
 And add a `command` override to postgres in compose:
