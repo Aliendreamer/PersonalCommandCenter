@@ -7,6 +7,7 @@
       "Bash(pnpm *)",
       "Bash(npx *)",
       "Bash(node *)",
+      "Skill(*)",
       "Bash(docker *)",
       "Bash(openspec *)",
       "Bash(curl *)",
@@ -50,22 +51,6 @@
     "dotnet-template-engine@dotnet-agent-skills": true,
     "dotnet-test@dotnet-agent-skills": true,
     "dotnet-upgrade@dotnet-agent-skills": true
-  },
-  "mcpServers": {
-    "serena": {
-      "command": "uvx",
-      "args": [
-        "--from",
-        "git+https://github.com/oraios/serena",
-        "serena",
-        "start-mcp-server",
-        "--context",
-        "claude-code",
-        "--project-from-cwd",
-        "--open-web-dashboard",
-        "false"
-      ]
-    }
   },
   "extraKnownMarketplaces": {
     "dotnet-agent-skills": {
